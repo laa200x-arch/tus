@@ -604,7 +604,7 @@ final class MockDataStore: ObservableObject {
 
     // MARK: - v2 职场关系操作系统（吐槽广场 / 情绪打卡 / AI / 关系雷达）
 
-    @Published var tagDict: TagDict = Self.demoTagDict
+    @Published var tagDict: TagDict = MockDataStore.demoTagDict
     @Published var feedComplaints: [ComplaintModel] = []     // 吐槽广场 feed
     @Published var myComplaints: [ComplaintModel] = []       // 我的吐槽
     @Published var topics: [TopicItem] = []                  // 热搜榜

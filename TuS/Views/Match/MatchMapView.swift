@@ -376,7 +376,7 @@ struct AIRelationshipView: View {
                         .font(.title3)
                         .bold()
                         .foregroundStyle(Theme.textPrimary)
-                    Text([summary.position, summary.relation].filter { !$0.isEmpty }.joined(separator: " · "))
+                    Text([summary.position, summary.relation].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
                         .font(.caption2)
                         .foregroundStyle(Theme.textSecondary)
                 }
