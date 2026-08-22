@@ -331,7 +331,12 @@ function showColleagueForm(colleague) {
     attributeTags: colleague?.attributeTags || [],
     companyId: colleague?.companyId || '',
     notes: colleague?.notes || '',
-    avatarSymbol: colleague?.avatarSymbol || '👤'
+    avatarSymbol: colleague?.avatarSymbol || '👤',
+    age: colleague?.age != null ? colleague.age : '',
+    weight: colleague?.weight != null ? colleague.weight : '',
+    personalityScore: colleague?.personalityScore != null ? colleague.personalityScore : '',
+    workplaceType: colleague?.workplaceType || '',
+    riskLevel: colleague?.riskLevel || ''
   }
   v.innerHTML = `
     <div class="pet-page">
@@ -364,6 +369,28 @@ function showColleagueForm(colleague) {
         </div>
       </div>
       <div class="pet-section">
+        <div class="pet-section-head"><span class="pet-section-title">画像信息（品行系统数据）</span></div>
+        <div class="pet-group">
+          <div class="pet-row">
+            <div class="pet-field"><label>年龄</label><input class="pet-input" id="cf-age" type="number" min="16" max="80" value="${state.age}"></div>
+            <div class="pet-field"><label>体重 (kg)</label><input class="pet-input" id="cf-weight" type="number" min="30" max="150" step="0.1" value="${state.weight}"></div>
+          </div>
+          <div class="pet-field"><label>性格指数（0-5 星）</label><input class="pet-input" id="cf-personality" type="number" min="0" max="5" step="0.1" value="${state.personalityScore}"></div>
+          <div class="pet-field"><label>职场类型</label>
+            <select class="pet-input" id="cf-worktype">
+              <option value="">未设置</option>
+              ${['控制型', '甩锅型', '老好人型', '卷王型', '躺平型', '大嘴巴型', '技术大佬型', '两面派', '摸鱼型'].map((t) => `<option value="${esc(t)}" ${state.workplaceType === t ? 'selected' : ''}>${esc(t)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="pet-field"><label>风险等级</label>
+            <select class="pet-input" id="cf-risk">
+              <option value="">未设置</option>
+              ${['低', '中', '高'].map((r) => `<option value="${esc(r)}" ${state.riskLevel === r ? 'selected' : ''}>${esc(r)}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="pet-section">
         <div class="pet-section-head"><span class="pet-section-title">同事属性标签</span></div>
         <div class="pet-group">
           <div class="pet-chips" id="cf-attrs">${COLLEAGUE_ATTRS.map((a) => `<button type="button" class="pet-chip ${state.attributeTags.includes(a) ? 'active' : ''}" data-a="${esc(a)}">${esc(a)}</button>`).join('')}</div>
@@ -391,6 +418,11 @@ function showColleagueForm(colleague) {
     body.querySelector('#cf-position').addEventListener('input', (e) => { state.position = e.target.value })
     body.querySelector('#cf-department').addEventListener('input', (e) => { state.department = e.target.value })
     body.querySelector('#cf-notes').addEventListener('input', (e) => { state.notes = e.target.value })
+    body.querySelector('#cf-age').addEventListener('input', (e) => { state.age = e.target.value })
+    body.querySelector('#cf-weight').addEventListener('input', (e) => { state.weight = e.target.value })
+    body.querySelector('#cf-personality').addEventListener('input', (e) => { state.personalityScore = e.target.value })
+    body.querySelector('#cf-worktype').addEventListener('change', (e) => { state.workplaceType = e.target.value })
+    body.querySelector('#cf-risk').addEventListener('change', (e) => { state.riskLevel = e.target.value })
     body.querySelectorAll('#cf-relation .pet-chip').forEach((c) => c.addEventListener('click', () => {
       state.relation = c.dataset.r
       body.querySelectorAll('#cf-relation .pet-chip').forEach((x) => x.classList.toggle('active', x === c))
@@ -417,7 +449,12 @@ function showColleagueForm(colleague) {
         attributeTags: state.attributeTags,
         companyId: state.companyId || null,
         notes: state.notes.trim(),
-        avatarSymbol: state.avatarSymbol
+        avatarSymbol: state.avatarSymbol,
+        age: state.age === '' ? null : Number(state.age),
+        weight: state.weight === '' ? null : Number(state.weight),
+        personalityScore: state.personalityScore === '' ? null : Number(state.personalityScore),
+        workplaceType: state.workplaceType || null,
+        riskLevel: state.riskLevel || null
       }
       try {
         if (editing) await updateColleague(colleague.id, payload)
@@ -1801,6 +1838,12 @@ async function renderColleagueDetail(colleagueId) {
   const c = list.find((x) => String(x.id) === String(colleagueId))
   if (!c) { renderColleagues(); return }
   const cat = c.attributeTags || []
+  const profileRows = []
+  if (c.age != null) profileRows.push(`年龄 ${c.age}岁`)
+  if (c.weight != null) profileRows.push(`体重 ${c.weight}kg`)
+  if (c.personalityScore != null) profileRows.push(`性格指数 ${'★'.repeat(Math.max(1, Math.min(5, Math.round(c.personalityScore))))}${'☆'.repeat(5 - Math.max(1, Math.min(5, Math.round(c.personalityScore))))}`)
+  if (c.workplaceType) profileRows.push(`职场类型 ${esc(c.workplaceType)}`)
+  if (c.riskLevel) profileRows.push(`风险等级 ${esc(c.riskLevel)}`)
   v.innerHTML = `
     <div class="row" style="margin-bottom:14px">
       <button class="btn btn-outline btn-sm" id="cd-back">← 返回</button>
@@ -1810,10 +1853,11 @@ async function renderColleagueDetail(colleagueId) {
     <div class="card">
       <div class="row" style="gap:12px">
         <div class="colleague-avatar-lg">${esc(c.avatarSymbol || '👤')}</div>
-        <div>
+        <div style="flex:1;min-width:0">
           <div class="colleague-name-lg">${esc(c.name)}</div>
           <div class="card-sub">${esc(c.position || '')} · ${esc(c.department || '')} · ${esc(c.relation || '未填关系')}</div>
           ${cat.length ? `<div class="row" style="margin-top:6px;flex-wrap:wrap;gap:6px">${cat.map((x) => `<span class="tag">${esc(x)}</span>`).join('')}</div>` : ''}
+          ${profileRows.length ? `<div class="card-sub" style="margin-top:6px;color:#7c4dff">${profileRows.join(' · ')}</div>` : ''}
         </div>
       </div>
     </div>
@@ -1822,6 +1866,18 @@ async function renderColleagueDetail(colleagueId) {
     <div class="card" style="margin-top:12px">
       <div class="row"><span class="section-title" style="margin:0;flex:1">📡 关系雷达</span><span class="card-sub" id="cd-radar-edit-btn">编辑</span></div>
       <div id="cd-radar">加载中…</div>
+    </div>
+
+    <!-- 品行系统（v3 游戏化人格） -->
+    <div class="card" style="margin-top:12px">
+      <div class="row"><span class="section-title" style="margin:0;flex:1">🧬 品行系统</span><span class="card-sub">六维人格 · 行为预测</span></div>
+      <div id="cd-persona">加载中…</div>
+    </div>
+
+    <!-- 聊天记录分析（v3 AI 职场心理分析） -->
+    <div class="card" style="margin-top:12px">
+      <div class="section-title">💬 聊天记录分析</div>
+      <div id="cd-analysis">加载中…</div>
     </div>
 
     <!-- AI 解读 -->
@@ -1849,6 +1905,8 @@ async function renderColleagueDetail(colleagueId) {
     })
   })
   renderRelationshipRadar(c.id, 'cd-radar')
+  renderPersonaCard(c.id, 'cd-persona')
+  renderChatAnalysisCard('cd-analysis')
   renderCDRadarAI(c.id, 'cd-ai')
   renderCDRelatedComplaints(c.id, 'cd-list')
 }
@@ -1873,6 +1931,103 @@ async function renderRelationshipRadar(colleagueId, mountId) {
         </div>
       </div>`
   } catch (e) { box.innerHTML = '<div class="empty">雷达加载失败</div>' }
+}
+
+// v3 品行系统：六维人格打分 + 行为预测
+async function renderPersonaCard(colleagueId, mountId) {
+  const box = document.getElementById(mountId)
+  const DIMS = [
+    ['eq', '情商'], ['responsibility', '责任心'], ['control', '控制欲'],
+    ['execution', '执行力'], ['showmanship', '表演欲'], ['temper', '脾气']
+  ]
+  try {
+    const [g, pr] = await Promise.all([getPersona(colleagueId), getPersonaPrediction(colleagueId)])
+    const s = g.scores || {}
+    box.innerHTML = `
+      <div class="persona-sliders">
+        ${DIMS.map(([k, label]) => `
+          <div class="form-field" style="margin-bottom:6px">
+            <label>${label} <span id="pv-${k}">${Math.round(s[k] || 50)}</span></label>
+            <input type="range" min="0" max="100" value="${s[k] || 50}" id="ps-${k}" />
+          </div>`).join('')}
+      </div>
+      <div class="row" style="margin:6px 0 12px">
+        <span class="spacer"></span>
+        <button class="btn btn-primary btn-sm" id="persona-save">保存打分</button>
+      </div>
+      <div class="row" style="flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        ${(pr.traits || []).map((t) => `<span class="tag tag-vip">${esc(t.label)}</span>`).join('')}
+        <span class="tag">风险 ${esc(pr.riskLevel || '低')}</span>
+      </div>
+      <div class="persona-predict">
+        ${(pr.predictions || []).map((p) => `
+          <div class="pred-row">
+            <span class="pred-label">${esc(p.label)}</span>
+            <div class="pred-bar"><div class="pred-fill" style="width:${p.probability}%;background:${p.probability >= 60 ? '#ff6b6b' : p.probability >= 40 ? '#f29e4d' : '#51cf66'}"></div></div>
+            <span class="pred-num">${p.probability}%</span>
+          </div>`).join('')}
+      </div>
+      <div class="card-sub" style="margin-top:8px">${esc(pr.disclaimer || '')}</div>`
+    // 滑块实时值
+    DIMS.forEach(([k]) => {
+      box.querySelector('#ps-' + k).addEventListener('input', (e) => {
+        box.querySelector('#pv-' + k).textContent = e.target.value
+      })
+    })
+    box.querySelector('#persona-save').addEventListener('click', async () => {
+      const scores = {}
+      DIMS.forEach(([k]) => { scores[k] = Number(box.querySelector('#ps-' + k).value) })
+      try {
+        await postPersona(colleagueId, scores)
+        toast('✅ 品行打分已保存')
+        renderPersonaCard(colleagueId, mountId)
+      } catch (err) { toast(err.message) }
+    })
+  } catch (e) {
+    box.innerHTML = '<div class="empty">品行系统加载失败</div>'
+  }
+}
+
+// v3 聊天记录分析（粘贴文本 → AI 分析）
+function renderChatAnalysisCard(mountId) {
+  const box = document.getElementById(mountId)
+  box.innerHTML = `
+    <div class="card-sub" style="margin-bottom:8px">粘贴你与该同事的聊天记录（每行一条消息），AI 分析沟通模式与建议</div>
+    <textarea id="ca-input" rows="5" placeholder="你马上把这个改一下&#10;好，我看下&#10;你怎么又搞不定？&#10;这个不关我事…" style="width:100%"></textarea>
+    <div class="row" style="margin-top:8px">
+      <button class="btn btn-primary btn-sm" id="ca-run">🔍 开始分析</button>
+      <button class="btn btn-outline btn-sm" id="ca-demo" style="margin-left:8px">填入示例</button>
+    </div>
+    <div id="ca-result" style="margin-top:12px"></div>`
+  box.querySelector('#ca-run').addEventListener('click', async () => {
+    const text = box.querySelector('#ca-input').value.trim()
+    if (!text) return toast('请先粘贴聊天记录')
+    const res = box.querySelector('#ca-result')
+    res.innerHTML = '<div class="empty">分析中…</div>'
+    try {
+      const r = await analyzeChat({ text })
+      res.innerHTML = `
+        <div class="row" style="gap:14px;flex-wrap:wrap;margin-bottom:10px">
+          <span class="card-sub">共 ${r.total} 条消息</span>
+          ${r.avgReplyHours != null ? `<span class="card-sub">平均回复 ${r.avgReplyHours} 小时</span>` : ''}
+        </div>
+        <div class="card-sub" style="margin-bottom:6px">情绪分布</div>
+        <div class="sentiment-bar">
+          <div class="sent-pos" style="width:${r.sentiment.positive}%">积极 ${r.sentiment.positive}%</div>
+          <div class="sent-neu" style="width:${r.sentiment.neutral}%">中性 ${r.sentiment.neutral}%</div>
+          <div class="sent-neg" style="width:${r.sentiment.negative}%">消极 ${r.sentiment.negative}%</div>
+        </div>
+        ${(r.patterns || []).filter((p) => p.key !== 'balanced').length ? `
+          <div class="card-sub" style="margin:10px 0 6px">沟通模式</div>
+          <ul class="ca-patterns">${r.patterns.filter((p) => p.key !== 'balanced').map((p) => `<li>${esc(p.label)}（${p.count} 条，占 ${p.ratio}%）</li>`).join('')}</ul>` : ''}
+        <div class="card-sub" style="margin:10px 0 6px">建议</div>
+        <ul class="ca-suggestions">${r.suggestions.map((s2) => `<li>💡 ${esc(s2)}</li>`).join('')}</ul>
+        <div class="card-sub" style="margin-top:8px">${esc(r.disclaimer || '')}</div>`
+    } catch (err) { res.innerHTML = '<div class="empty">分析失败：' + esc(err.message) + '</div>' }
+  })
+  box.querySelector('#ca-demo').addEventListener('click', () => {
+    box.querySelector('#ca-input').value = '你马上把这个需求改一下\n好，我看下\n你怎么又搞不定？\n你自己看看\n今晚必须给我\n收到，辛苦了\n明天再说吧\n这个不关我事\n周六加个班处理一下'
+  })
 }
 
 function radarGrid() {

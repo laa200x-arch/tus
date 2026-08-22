@@ -1113,3 +1113,23 @@ body {
   .home-aside { width: 100%; flex-direction: row; flex-wrap: wrap; }
   .home-aside-card { flex: 1; min-width: 240px; }
 }
+
+/* ============================================================
+ * v3 品行系统 + 聊天分析
+ * ============================================================ */
+.pet-row { display: flex; gap: 12px; }
+.pet-row .pet-field { flex: 1; }
+.persona-sliders .form-field label { font-size: 13px; color: #4a3f63; display: flex; justify-content: space-between; }
+.persona-sliders input[type='range'] { width: 100%; accent-color: #7c4dff; }
+.persona-predict { display: flex; flex-direction: column; gap: 8px; }
+.pred-row { display: flex; align-items: center; gap: 10px; }
+.pred-label { width: 150px; font-size: 13px; color: #4a3f63; flex-shrink: 0; }
+.pred-bar { flex: 1; height: 8px; background: #f0eafb; border-radius: 4px; overflow: hidden; }
+.pred-fill { height: 100%; border-radius: 4px; transition: width .3s; }
+.pred-num { width: 44px; font-size: 13px; font-weight: 700; color: #4a3f63; text-align: right; }
+.sentiment-bar { display: flex; height: 18px; border-radius: 9px; overflow: hidden; font-size: 10px; color: #fff; }
+.sent-pos { background: #51cf66; display: flex; align-items: center; justify-content: center; }
+.sent-neu { background: #7c4dff; display: flex; align-items: center; justify-content: center; }
+.sent-neg { background: #ff6b6b; display: flex; align-items: center; justify-content: center; }
+.ca-patterns, .ca-suggestions { margin: 0; padding-left: 18px; font-size: 13px; color: #4a3f63; }
+.ca-patterns li, .ca-suggestions li { margin-bottom: 4px; }

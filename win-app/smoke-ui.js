@@ -55,9 +55,24 @@ app.whenReady().then(async () => {
       results.push(r)
       console.log('TAB', JSON.stringify(r))
     }
+    // v3 验证：进入第一个同事详情（品行系统 + 聊天分析渲染）
+    const detail = await w.webContents.executeJavaScript(`
+      (async () => {
+        try {
+          if (typeof renderColleagueDetail === 'function' && App.state.colleagues && App.state.colleagues[0]) {
+            renderColleagueDetail(App.state.colleagues[0].id)
+          }
+          await new Promise((res) => setTimeout(res, 1800))
+          const v = document.getElementById('view')
+          const html = v ? v.innerHTML : ''
+          return { hasPersona: html.includes('品行系统'), hasAnalysis: html.includes('聊天记录分析'), len: html.length }
+        } catch (err) { return { err: err.message } }
+      })()
+    `)
+    console.log('V3_DETAIL', JSON.stringify(detail))
     const errCount = errors.length
     console.log('CONSOLE_ERRORS:', errCount, errCount ? errors.slice(0, 5).join(' || ') : '')
-    console.log('SMOKE_RESULT:', results.every((r) => r && !r.err && r.htmlLen > 0) && errCount === 0 ? 'PASS' : 'FAIL')
+    console.log('SMOKE_RESULT:', results.every((r) => r && !r.err && r.htmlLen > 0) && detail && !detail.err && detail.hasPersona && errCount === 0 ? 'PASS' : 'FAIL')
   } catch (e) {
     console.log('SMOKE_EXEC_ERR:', e.message)
     console.log('SMOKE_RESULT: FAIL')

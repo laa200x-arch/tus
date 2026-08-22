@@ -286,6 +286,65 @@ struct SearchCompanyHit: Codable, Hashable {
     let scale: String?
 }
 
+// MARK: - v3 品行系统 + 聊天分析
+
+/// 同事品行六维人格打分（0-100）
+struct PersonaScores: Codable, Hashable {
+    var eq: Double = 50
+    var responsibility: Double = 50
+    var control: Double = 50
+    var execution: Double = 50
+    var showmanship: Double = 50
+    var temper: Double = 50
+}
+
+/// 品行预测（人格标签 + 行为预测）
+struct PersonaPrediction: Codable, Hashable {
+    let colleagueId: String
+    let colleagueName: String
+    let scores: PersonaScores
+    let traits: [PersonaTrait]
+    let predictions: [BehaviorPrediction]
+    let riskLevel: String
+    let disclaimer: String
+}
+
+struct PersonaTrait: Codable, Hashable {
+    let key: String
+    let label: String
+    let desc: String
+}
+
+struct BehaviorPrediction: Codable, Hashable {
+    let key: String
+    let label: String
+    let probability: Int
+}
+
+/// 聊天记录分析结果
+struct ChatAnalysis: Codable, Hashable {
+    let total: Int
+    let participants: [String]
+    let avgReplyHours: Double?
+    let sentiment: ChatSentiment
+    let patterns: [ChatPattern]
+    let suggestions: [String]
+    let disclaimer: String
+}
+
+struct ChatSentiment: Codable, Hashable {
+    let positive: Int
+    let neutral: Int
+    let negative: Int
+}
+
+struct ChatPattern: Codable, Hashable {
+    let key: String
+    let label: String
+    let count: Int
+    let ratio: Int
+}
+
 struct AIExtracted: Codable, Hashable {
     let category: String?
     let behaviorTags: [String]?

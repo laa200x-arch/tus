@@ -117,6 +117,12 @@ struct ServerColleague: Decodable {
     let companyId: String?
     let notes: String
     let avatarSymbol: String
+    // v3 画像扩展（可选兼容旧响应）
+    let age: Int?
+    let weight: Double?
+    let personalityScore: Double?
+    let workplaceType: String?
+    let riskLevel: String?
 }
 
 struct ServerCompany: Decodable {

@@ -82,7 +82,13 @@ export function colleaguesRouter(db) {
     attributeTags: row.attribute_tags ? JSON.parse(row.attribute_tags) : [],
     companyId: row.company_id != null ? String(row.company_id) : null,
     notes: row.notes || '',
-    avatarSymbol: row.avatar_symbol || '👤'
+    avatarSymbol: row.avatar_symbol || '👤',
+    // v3 画像扩展：年龄/体重/性格指数/职场类型/风险等级
+    age: row.age != null ? Number(row.age) : null,
+    weight: row.weight != null ? Number(row.weight) : null,
+    personalityScore: row.personality_score != null ? Number(row.personality_score) : null,
+    workplaceType: row.workplace_type || null,
+    riskLevel: row.risk_level || null
   })
 
   router.get('/colleagues', (req, res) => {
@@ -91,18 +97,26 @@ export function colleaguesRouter(db) {
   })
 
   router.post('/colleagues', (req, res) => {
-    const { name, position, department, relation, attributeTags, companyId, notes, avatarSymbol } = req.body || {}
+    const { name, position, department, relation, attributeTags, companyId, notes, avatarSymbol,
+      age, weight, personalityScore, workplaceType, riskLevel } = req.body || {}
     if (!name || !String(name).trim()) return res.status(400).json({ error: '姓名/昵称必填' })
     const risk = checkTextRisk(String(name))
     if (risk.isIllegal) return res.status(403).json({ error: risk.warning })
     const tags = Array.isArray(attributeTags) ? attributeTags.slice(0, 30) : []
     const r = db.run(
-      `INSERT INTO colleagues (user_id, name, position, department, relation, attribute_tags, company_id, notes, avatar_symbol, created_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?)`,
+      `INSERT INTO colleagues (user_id, name, position, department, relation, attribute_tags, company_id, notes, avatar_symbol,
+        age, weight, personality_score, workplace_type, risk_level, created_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [req.userId, String(name).trim(), String(position || '').trim(), String(department || '').trim(),
         String(relation || '').trim(), JSON.stringify(tags),
         companyId ? Number(companyId) : null, String(notes || '').trim(),
-        String(avatarSymbol || '👤'), now()]
+        String(avatarSymbol || '👤'),
+        age != null && age !== '' ? Number(age) : null,
+        weight != null && weight !== '' ? Number(weight) : null,
+        personalityScore != null && personalityScore !== '' ? Number(personalityScore) : null,
+        workplaceType ? String(workplaceType).slice(0, 32) : null,
+        riskLevel ? String(riskLevel).slice(0, 16) : null,
+        now()]
     )
     res.status(201).json({ colleague: serializeColleague(db.get('SELECT * FROM colleagues WHERE id = ?', [r.lastInsertRowid])) })
   })
@@ -110,12 +124,16 @@ export function colleaguesRouter(db) {
   router.put('/colleagues/:id', (req, res) => {
     const row = db.get('SELECT * FROM colleagues WHERE id = ? AND user_id = ?', [req.params.id, req.userId])
     if (!row) return res.status(404).json({ error: '同事不存在' })
-    const { name, position, department, relation, attributeTags, companyId, notes, avatarSymbol } = req.body || {}
+    const { name, position, department, relation, attributeTags, companyId, notes, avatarSymbol,
+      age, weight, personalityScore, workplaceType, riskLevel } = req.body || {}
     const tags = Array.isArray(attributeTags) ? attributeTags.slice(0, 30) : row.attribute_tags ? JSON.parse(row.attribute_tags) : []
     db.run(
       `UPDATE colleagues SET name = COALESCE(?, name), position = COALESCE(?, position), department = COALESCE(?, department),
         relation = COALESCE(?, relation), attribute_tags = ?, company_id = COALESCE(?, company_id),
-        notes = COALESCE(?, notes), avatar_symbol = COALESCE(?, avatar_symbol) WHERE id = ?`,
+        notes = COALESCE(?, notes), avatar_symbol = COALESCE(?, avatar_symbol),
+        age = COALESCE(?, age), weight = COALESCE(?, weight), personality_score = COALESCE(?, personality_score),
+        workplace_type = COALESCE(?, workplace_type), risk_level = COALESCE(?, risk_level)
+       WHERE id = ?`,
       [name != null ? String(name).trim() : null,
         position != null ? String(position).trim() : null,
         department != null ? String(department).trim() : null,
@@ -124,6 +142,11 @@ export function colleaguesRouter(db) {
         companyId != null ? (companyId ? Number(companyId) : null) : row.company_id,
         notes != null ? String(notes).trim() : null,
         avatarSymbol != null ? String(avatarSymbol) : null,
+        age != null && age !== '' ? Number(age) : null,
+        weight != null && weight !== '' ? Number(weight) : null,
+        personalityScore != null && personalityScore !== '' ? Number(personalityScore) : null,
+        workplaceType != null ? String(workplaceType).slice(0, 32) : null,
+        riskLevel != null ? String(riskLevel).slice(0, 16) : null,
         row.id]
     )
     res.json({ colleague: serializeColleague(db.get('SELECT * FROM colleagues WHERE id = ?', [row.id])) })

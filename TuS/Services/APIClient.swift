@@ -408,6 +408,34 @@ final class APIClient {
         try await request("/api/search", query: ["q": query])
     }
 
+    // MARK: - v3 品行系统 + 聊天分析
+
+    /// 拉取我对同事的六维品行打分
+    func getPersona(colleagueId: String) async throws -> (scored: Bool, scores: PersonaScores) {
+        let response: PersonaGetResponse = try await request("/api/persona/\(colleagueId)")
+        return (response.scored, response.scores)
+    }
+
+    /// 提交六维品行打分
+    @discardableResult
+    func postPersona(colleagueId: String, scores: PersonaScores) async throws -> PersonaScores {
+        let response: PersonaPostResponse = try await request("/api/persona/\(colleagueId)", method: "POST", body: ["scores": [
+            "eq": scores.eq, "responsibility": scores.responsibility, "control": scores.control,
+            "execution": scores.execution, "showmanship": scores.showmanship, "temper": scores.temper
+        ]])
+        return response.scores
+    }
+
+    /// 品行预测（人格标签 + 行为预测）
+    func getPersonaPrediction(colleagueId: String) async throws -> PersonaPrediction {
+        try await request("/api/persona/\(colleagueId)/prediction")
+    }
+
+    /// 聊天记录分析（text：多行消息）
+    func analyzeChat(text: String) async throws -> ChatAnalysis {
+        try await request("/api/analysis/chat", method: "POST", body: ["text": text])
+    }
+
     /// 发布吐槽（内容必填；其余可选；AI 识别结果一并随 aiExtracted 提交）
     @discardableResult
     func postComplaint(
@@ -636,4 +664,15 @@ private struct CommentResponse: Decodable {
 
 private struct HomeStatsResponse: Decodable {
     let stats: HomeStats
+}
+
+private struct PersonaGetResponse: Decodable {
+    let scored: Bool
+    let colleagueId: String
+    let scores: PersonaScores
+}
+
+private struct PersonaPostResponse: Decodable {
+    let ok: Bool
+    let scores: PersonaScores
 }

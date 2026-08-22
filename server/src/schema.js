@@ -58,7 +58,27 @@ CREATE TABLE IF NOT EXISTS colleagues (
   company_id INTEGER,
   notes TEXT NOT NULL DEFAULT '',
   avatar_symbol TEXT NOT NULL DEFAULT '👤',
+  age INTEGER,
+  weight REAL,
+  personality_score REAL,
+  workplace_type TEXT,
+  risk_level TEXT,
   created_at TEXT NOT NULL
+);
+
+-- 同事品行六维人格（用户对同事打分：情商/责任心/控制欲/执行力/表演欲/脾气）
+CREATE TABLE IF NOT EXISTS colleague_persona_scores (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  colleague_id INTEGER NOT NULL,
+  scorer_id INTEGER NOT NULL,
+  eq REAL NOT NULL DEFAULT 50,
+  responsibility REAL NOT NULL DEFAULT 50,
+  control REAL NOT NULL DEFAULT 50,
+  execution REAL NOT NULL DEFAULT 50,
+  showmanship REAL NOT NULL DEFAULT 50,
+  temper REAL NOT NULL DEFAULT 50,
+  created_at TEXT NOT NULL,
+  UNIQUE (colleague_id, scorer_id)
 );
 
 CREATE TABLE IF NOT EXISTS colleague_statuses (
@@ -261,7 +281,26 @@ CREATE TABLE IF NOT EXISTS colleagues (
   company_id INT NULL,
   notes VARCHAR(2000) NOT NULL DEFAULT '',
   avatar_symbol VARCHAR(16) NOT NULL DEFAULT '👤',
+  age INT NULL,
+  weight DOUBLE NULL,
+  personality_score DOUBLE NULL,
+  workplace_type VARCHAR(32) NULL,
+  risk_level VARCHAR(16) NULL,
   created_at DATETIME NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS colleague_persona_scores (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  colleague_id INT NOT NULL,
+  scorer_id INT NOT NULL,
+  eq DOUBLE NOT NULL DEFAULT 50,
+  responsibility DOUBLE NOT NULL DEFAULT 50,
+  control DOUBLE NOT NULL DEFAULT 50,
+  execution DOUBLE NOT NULL DEFAULT 50,
+  showmanship DOUBLE NOT NULL DEFAULT 50,
+  temper DOUBLE NOT NULL DEFAULT 50,
+  created_at DATETIME NOT NULL,
+  UNIQUE KEY uq_persona (colleague_id, scorer_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS colleague_statuses (

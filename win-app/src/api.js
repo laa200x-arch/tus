@@ -416,6 +416,20 @@ async function searchAll(q) {
   return api('/api/search', { query: { q } })
 }
 
+/* ---------- v3 品行系统 + 聊天分析 ---------- */
+async function getPersona(colleagueId) {
+  return api('/api/persona/' + colleagueId)
+}
+async function postPersona(colleagueId, scores) {
+  return api('/api/persona/' + colleagueId, { method: 'POST', body: { scores } })
+}
+async function getPersonaPrediction(colleagueId) {
+  return api('/api/persona/' + colleagueId + '/prediction')
+}
+async function analyzeChat(payload) {
+  return api('/api/analysis/chat', { method: 'POST', body: payload })
+}
+
 /* Node 环境导出（测试用） */
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -432,6 +446,7 @@ if (typeof module !== 'undefined' && module.exports) {
     fetchMoodToday, checkinMood, fetchMoodTrends, fetchMoodSummary,
     extractTagsAI, getRelationshipSummary, getPersonality,
     getRadar, postRadar, batchRadar,
-    fetchHomeStats, searchAll
+    fetchHomeStats, searchAll,
+    getPersona, postPersona, getPersonaPrediction, analyzeChat
   }
 }

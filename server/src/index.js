@@ -25,6 +25,8 @@ import { aiRouter } from './routes/ai.js'
 import { radarRouter } from './routes/radar.js'
 import { homeRouter } from './routes/home.js'
 import { searchRouter } from './routes/search.js'
+import { personaRouter } from './routes/persona.js'
+import { analysisRouter } from './routes/analysis.js'
 import { setupSocket } from './socket.js'
 import { smsStatus } from './sms.js'
 
@@ -43,6 +45,11 @@ async function main() {
   // 轻量迁移：users 表补充手机号列（注册手机验证，一手机号一号）
   try { db.exec('ALTER TABLE users ADD COLUMN phone TEXT') } catch { /* 列已存在 */ }
   try { db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_phone ON users(phone)') } catch { /* 索引已存在 */ }
+  // v3 迁移：同事画像扩展列（品行系统/画像升级）
+  const colleagueCols = ['age INTEGER', 'weight REAL', 'personality_score REAL', 'workplace_type TEXT', 'risk_level TEXT']
+  for (const col of colleagueCols) {
+    try { db.exec(`ALTER TABLE colleagues ADD COLUMN ${col}`) } catch { /* 列已存在 */ }
+  }
   // 演示数据
   if (config.autoSeed) {
     await seed(db)
@@ -161,6 +168,8 @@ async function main() {
   app.use('/api', radarRouter(db))             // 同事关系雷达打分
   app.use('/api', homeRouter(db))              // 首页统计聚合（Dashboard 4 卡片）
   app.use('/api', searchRouter(db))            // 全局搜索（同事/公司/话题）
+  app.use('/api', personaRouter(db))           // 同事品行六维 + 行为预测（v3）
+  app.use('/api', analysisRouter(db))          // 聊天记录 AI 分析（v3）
 
   // 404
   app.use((req, res) => {
