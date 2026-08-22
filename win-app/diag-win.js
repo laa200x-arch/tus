@@ -1,0 +1,10 @@
+const { app } = require('electron')
+app.commandLine.appendSwitch('no-sandbox')
+app.whenReady().then(async () => {
+  const { BrowserWindow } = require('electron')
+  const win = new BrowserWindow({ width: 800, height: 600, show: true, x: -2000, y: 0 })
+  console.log('created')
+  await new Promise(r => setTimeout(r, 1000))
+  console.log('done')
+  app.exit(0)
+}).catch(e => { console.error(e); app.exit(1) })

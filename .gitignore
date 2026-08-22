@@ -1,0 +1,51 @@
+# macOS
+.DS_Store
+
+# Xcode ç”¨æˆ·æ•°æ®ä¸æ´¾ç”Ÿæ•°æ®
+xcuserdata/
+DerivedData/
+build/
+*.xcuserstate
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# è¯ä¹¦ä¸å¯†é’¥ï¼ˆåˆ‡å‹¿æäº¤ï¼‰
+*.p12
+*.mobileprovision
+*.cer
+
+# ç³»ç»Ÿ
+Thumbs.db
+
+# µ÷ÊÔÁÙÊ±ÎÄ¼ş
+run.html
+logs.txt
+
+# ºó¶Ë
+server/node_modules/
+server/data/
+server/.env
+
+# ²¿Êğ¹¤¾ß£¨º¬·şÎñÆ÷Æ¾¾İ£¬¾ø²»Ìá½»£©
+.deploy/
+.tmp-validate/
+
+# Windows ×ÀÃæ°æ
+win-app/node_modules/
+win-app/dist/
+
+.dsh-vision-toolkit/
+
+# npm »º´æ£¨É³ÏäÄÚÊ¹ÓÃ£©
+.tmp-npm-cache/
+
+# ±¾µØÆ¾¾İÁÙÊ±ÎÄ¼ş£¨ÇĞÎğÌá½»£©
+.tmp-gh-token.txt
+.tmp-push.ps1
+.tmp-gh-cred
+
+# ´ò°ü»º´æÓëÔËĞĞÊ±ÉÏ´«Ä¿Â¼
+.tmp-electron-cache/
+server/uploads/

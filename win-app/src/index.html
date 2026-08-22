@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#ffffff">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' http://43.157.17.88:8020 http://localhost:8020 data: blob:; img-src 'self' http://43.157.17.88:8020 http://localhost:8020 data: blob:; media-src 'self' http://43.157.17.88:8020 http://localhost:8020 blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' http://43.157.17.88:8020 ws://43.157.17.88:8020 http://localhost:8020 ws://localhost:8020">
+  <title>吐槽同事</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 启动动画 -->
+  <div id="splash" class="splash">
+    <div class="splash-logo">💢</div>
+    <div class="splash-title">吐槽同事</div>
+    <div class="splash-sub">匿名树洞 · 放心吐槽你的职场日常</div>
+    <div class="splash-bar"><div class="splash-bar-inner"></div></div>
+  </div>
+
+  <!-- 登录页 -->
+  <div id="login-page" class="page center-page hidden">
+    <div class="login-card">
+      <div class="brand-icon">💢</div>
+      <h1 class="brand-title">吐槽同事</h1>
+      <p class="brand-subtitle">匿名树洞 · 放心吐槽你的职场日常</p>
+
+      <div id="saved-accounts" class="saved-accounts hidden"></div>
+
+      <div class="field">
+        <input id="login-username" type="text" placeholder="用户名" autocomplete="off">
+      </div>
+      <div class="field">
+        <input id="login-password" type="password" placeholder="密码（至少 6 位）">
+      </div>
+      <div id="register-field" class="field hidden">
+        <input id="login-nickname" type="text" placeholder="昵称">
+      </div>
+      <div id="register-phone-field" class="field hidden">
+        <input id="login-phone" type="tel" placeholder="手机号（选填，填写则需验证码）" maxlength="11" autocomplete="off">
+      </div>
+      <div id="register-code-field" class="field hidden">
+        <div style="display:flex;gap:8px">
+          <input id="login-code" type="text" placeholder="手机验证码" maxlength="6" style="flex:1" autocomplete="off">
+          <button id="send-code-btn" class="btn btn-outline" style="white-space:nowrap">获取验证码</button>
+        </div>
+      </div>
+      <div id="login-error" class="error-text hidden"></div>
+      <button id="login-submit" class="btn btn-primary btn-block">登 录</button>
+      <div class="login-links">
+        <button id="login-toggle" class="btn-link">没有账号？注册一个</button>
+        <button id="forgot-btn" class="btn-link">忘记密码？</button>
+      </div>
+      <p class="hint">服务地址：http://43.157.17.88:8020（体验账号 aqing / 123456）</p>
+    </div>
+  </div>
+
+  <!-- 主界面 -->
+  <div id="app" class="hidden">
+    <!-- 左侧导航栏 -->
+    <aside class="sidebar">
+      <div class="sidebar-brand"><span class="brand-icon-small">💢</span> 吐槽同事</div>
+      <div class="sidebar-tagline">职场关系操作系统</div>
+      <nav class="side-nav">
+        <button class="tab active" data-view="home"><span class="tab-icon">🏠</span><span>首页</span></button>
+        <button class="tab" data-view="complaint"><span class="tab-icon">🔥</span><span>吐槽广场</span></button>
+        <button class="tab" data-view="colleague"><span class="tab-icon">👥</span><span>同事</span></button>
+        <button class="tab" data-view="ai"><span class="tab-icon">🧠</span><span>AI 洞察</span></button>
+        <button class="tab" data-view="company"><span class="tab-icon">🏢</span><span>公司</span></button>
+        <button class="tab" data-view="mine"><span class="tab-icon">👤</span><span>我的</span></button>
+      </nav>
+      <div class="sidebar-promo" id="sidebar-promo">
+        <div class="promo-icon">🛒</div>
+        <div class="promo-title">小程序市场</div>
+        <div class="promo-sub">消息页进入 · 人人可发布</div>
+        <button class="promo-btn" id="promo-btn">去看看</button>
+      </div>
+    </aside>
+
+    <!-- 右侧：顶栏 + 内容区 -->
+    <div class="main-col">
+      <header class="topbar">
+        <div class="topbar-title">吐槽同事</div>
+        <div class="topbar-right">
+          <button class="bell-btn" id="msg-bell-btn" title="消息"><span class="bell-emoji">💬</span><span id="msg-bell-badge" class="bell-badge hidden"></span></button>
+          <button class="bell-btn" id="bell-btn" title="系统通知">🔔<span id="bell-dot" class="bell-dot hidden"></span></button>
+          <div class="user-menu" id="user-menu">
+            <span id="topbar-avatar" class="topbar-avatar"></span>
+            <span id="topbar-user-name" class="topbar-username"></span>
+            <span class="caret">▾</span>
+            <div class="user-dropdown hidden" id="user-dropdown">
+              <button class="dropdown-item" id="logout-btn">🚪 退出登录</button>
+            </div>
+          </div>
+        </div>
+      </header>
+      <main id="view" class="view"></main>
+    </div>
+
+    <!-- 消息抽屉（顶栏铃铛弹出） -->
+    <div id="msg-drawer-mask" class="modal-mask hidden">
+      <div id="msg-drawer-box" class="msg-drawer">
+        <div class="msg-drawer-head">
+          <span class="msg-drawer-title">💬 消息</span>
+          <button data-close class="modal-close" title="关闭">✕</button>
+        </div>
+        <div id="msg-drawer-body" class="msg-drawer-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 全局弹窗 -->
+  <div id="modal-mask" class="modal-mask hidden">
+    <div id="modal-box" class="modal-box"></div>
+  </div>
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="../node_modules/socket.io-client/dist/socket.io.min.js"></script>
+  <script src="api.js"></script>
+  <script src="views.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

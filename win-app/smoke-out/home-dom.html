@@ -1,0 +1,169 @@
+
+    <div class="home-wrap">
+      <!-- 打招呼 + 搜索框 -->
+      <div class="home-hero">
+        <div class="home-greet">
+          <span class="home-emoji">👋</span>
+          <span class="home-greet-text">深夜好，WinApp测试员！</span>
+        </div>
+        <div class="home-search" id="home-search">
+          <span class="home-search-icon">🔍</span>
+          <input id="home-search-input" placeholder="搜索同事、公司、话题…">
+        </div>
+      </div>
+
+      <!-- 4 个数据卡片 -->
+      <div class="home-stats" id="home-stats">
+        <div class="home-stat"><div class="home-stat-num" id="hs-complaints">0</div><div class="home-stat-label">今日吐槽</div></div>
+        <div class="home-stat"><div class="home-stat-num" id="hs-resonance">0</div><div class="home-stat-label">共鸣点数</div></div>
+        <div class="home-stat"><div class="home-stat-num" id="hs-mood">1</div><div class="home-stat-label">共振评分</div></div>
+        <div class="home-stat"><div class="home-stat-num" id="hs-health">—</div><div class="home-stat-label">关系健康度</div></div>
+      </div>
+
+      <!-- 今日打卡入口 -->
+      <div class="home-mood" id="home-mood">
+        <div class="home-mood-checked">
+          <span class="home-mood-emoji-big">😐</span>
+          <div style="flex:1">
+            <div class="home-mood-title">今日已打卡 · 2026-08-22</div>
+            <div class="card-sub">#deadline</div>
+          </div>
+          <button class="btn btn-outline btn-sm" id="mood-edit">编辑</button>
+        </div></div>
+
+      <!-- 关注 Tab -->
+      <div class="row" style="margin: 8px 0 12px">
+        <div class="home-tabs" id="home-tabs">
+          <button class="active" data-sort="hot">推荐</button>
+          <button data-sort="new">最新</button>
+        </div>
+        <span class="spacer"></span>
+        <button class="btn btn-outline btn-sm" id="home-more">进入广场 →</button>
+      </div>
+
+      <!-- feed 摘要（前 5） -->
+      <div class="home-feed" id="home-feed">
+    <div class="card complaint-card" data-cid="5">
+      <div class="row">
+        <div class="complaint-avatar">🎭</div>
+        <div style="flex:1;min-width:0">
+          <div class="feed-head">
+            <span class="feed-author">匿名用户</span>
+            <span class="card-sub">·</span>
+            <span class="feed-time">08-22 02:52</span>
+            <span class="card-sub">· annoyed</span>
+          </div>
+          
+          <div class="complaint-content">测试吐槽：隔壁工位天天外放短视频，真的会谢 🙃</div>
+          
+        </div>
+      </div>
+      <div class="complaint-actions">
+        <button class="cp-act-btn active" data-act="like">❤️ <span data-lc="">1</span></button>
+        <span class="spacer"></span>
+        <button class="cp-act-btn active" data-act="resonate">🤝 <span data-rc="">1</span> 共鸣</button>
+        <button class="cp-act-btn" data-act="del" title="删除">🗑</button>
+      </div>
+    </div>
+    <div class="card complaint-card" data-cid="4">
+      <div class="row">
+        <div class="complaint-avatar">🎭</div>
+        <div style="flex:1;min-width:0">
+          <div class="feed-head">
+            <span class="feed-author">匿名用户</span>
+            <span class="card-sub">·</span>
+            <span class="feed-time">08-22 02:52</span>
+            <span class="card-sub">· annoyed</span>
+          </div>
+          
+          <div class="complaint-content">测试吐槽：隔壁工位天天外放短视频，真的会谢 🙃</div>
+          
+        </div>
+      </div>
+      <div class="complaint-actions">
+        <button class="cp-act-btn active" data-act="like">❤️ <span data-lc="">1</span></button>
+        <span class="spacer"></span>
+        <button class="cp-act-btn active" data-act="resonate">🤝 <span data-rc="">1</span> 共鸣</button>
+        <button class="cp-act-btn" data-act="del" title="删除">🗑</button>
+      </div>
+    </div>
+    <div class="card complaint-card" data-cid="3">
+      <div class="row">
+        <div class="complaint-avatar">🎭</div>
+        <div style="flex:1;min-width:0">
+          <div class="feed-head">
+            <span class="feed-author">匿名用户</span>
+            <span class="card-sub">·</span>
+            <span class="feed-time">08-22 02:50</span>
+            <span class="card-sub">· annoyed</span>
+          </div>
+          
+          <div class="complaint-content">测试吐槽：隔壁工位天天外放短视频，真的会谢 🙃</div>
+          
+        </div>
+      </div>
+      <div class="complaint-actions">
+        <button class="cp-act-btn active" data-act="like">❤️ <span data-lc="">1</span></button>
+        <span class="spacer"></span>
+        <button class="cp-act-btn active" data-act="resonate">🤝 <span data-rc="">1</span> 共鸣</button>
+        <button class="cp-act-btn" data-act="del" title="删除">🗑</button>
+      </div>
+    </div>
+    <div class="card complaint-card" data-cid="2">
+      <div class="row">
+        <div class="complaint-avatar">face.smiling</div>
+        <div style="flex:1;min-width:0">
+          <div class="feed-head">
+            <span class="feed-author">阿青</span>
+            <span class="card-sub">·</span>
+            <span class="feed-time">08-22 02:44</span>
+            <span class="card-sub">· 😡</span>
+          </div>
+          
+          <div class="complaint-content">老板天天画大饼，996 受不了</div>
+          <div class="row" style="margin-top:8px;flex-wrap:wrap;gap:6px"> </div>
+        </div>
+      </div>
+      <div class="complaint-actions">
+        <button class="cp-act-btn " data-act="like">❤️ <span data-lc="">1</span></button>
+        <span class="spacer"></span>
+        <button class="cp-act-btn " data-act="resonate">🤝 <span data-rc="">1</span> 共鸣</button>
+        
+      </div>
+    </div>
+    <div class="card complaint-card" data-cid="1">
+      <div class="row">
+        <div class="complaint-avatar">face.smiling</div>
+        <div style="flex:1;min-width:0">
+          <div class="feed-head">
+            <span class="feed-author">阿青</span>
+            <span class="card-sub">·</span>
+            <span class="feed-time">08-22 02:44</span>
+            <span class="card-sub">· 😡</span>
+          </div>
+          
+          <div class="complaint-content">张三又甩锅，把活都推给别人</div>
+          <div class="row" style="margin-top:8px;flex-wrap:wrap;gap:6px"> </div>
+        </div>
+      </div>
+      <div class="complaint-actions">
+        <button class="cp-act-btn " data-act="like">❤️ <span data-lc="">0</span></button>
+        <span class="spacer"></span>
+        <button class="cp-act-btn " data-act="resonate">🤝 <span data-rc="">0</span> 共鸣</button>
+        
+      </div>
+    </div></div>
+
+      <!-- AI 今日洞察 -->
+      <div class="home-ai" id="home-ai">
+      <div class="home-ai-card">
+        <div class="row">
+          <span class="home-ai-label">🧠 AI 今日洞察</span>
+          <span class="spacer"></span>
+          <span class="personality-mini">🐟 摸鱼哲学家</span>
+        </div>
+        <ul class="home-ai-list"><li>你的情绪在周六明显下降，注意调整节奏。</li><li>最大压力源是「deadline」（1 次），建议针对性沟通。</li></ul>
+        <button class="btn btn-outline btn-sm" id="home-ai-more">查看完整 AI 洞察 →</button>
+      </div></div>
+    </div>
+  
