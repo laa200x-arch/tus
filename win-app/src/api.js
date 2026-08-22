@@ -430,6 +430,11 @@ async function analyzeChat(payload) {
   return api('/api/analysis/chat', { method: 'POST', body: payload })
 }
 
+/* ---------- v3 消息中心 ---------- */
+async function fetchNotifications() {
+  return api('/api/notifications')
+}
+
 /* Node 环境导出（测试用） */
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -447,6 +452,7 @@ if (typeof module !== 'undefined' && module.exports) {
     extractTagsAI, getRelationshipSummary, getPersonality,
     getRadar, postRadar, batchRadar,
     fetchHomeStats, searchAll,
-    getPersona, postPersona, getPersonaPrediction, analyzeChat
+    getPersona, postPersona, getPersonaPrediction, analyzeChat,
+    fetchNotifications
   }
 }

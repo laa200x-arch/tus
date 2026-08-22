@@ -27,6 +27,7 @@ import { homeRouter } from './routes/home.js'
 import { searchRouter } from './routes/search.js'
 import { personaRouter } from './routes/persona.js'
 import { analysisRouter } from './routes/analysis.js'
+import { notificationsRouter } from './routes/notifications.js'
 import { setupSocket } from './socket.js'
 import { smsStatus } from './sms.js'
 
@@ -170,6 +171,7 @@ async function main() {
   app.use('/api', searchRouter(db))            // 全局搜索（同事/公司/话题）
   app.use('/api', personaRouter(db))           // 同事品行六维 + 行为预测（v3）
   app.use('/api', analysisRouter(db))          // 聊天记录 AI 分析（v3）
+  app.use('/api', notificationsRouter(db))     // 消息中心（互动/AI提醒/系统）
 
   // 404
   app.use((req, res) => {

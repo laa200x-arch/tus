@@ -46,7 +46,7 @@ function bindModalMask() {
 function bindGlobalDelegates() {
   document.addEventListener('click', (e) => {
     const close = e.target.closest('[data-close]')
-    if (close) return closeModal()
+    if (close) return closeAllMasks()
     const fs = e.target.closest('[data-fullscreen]')
     if (fs) return openFullscreen(`<img src="${fs.currentSrc || fs.src}" alt="">`)
     const vid = e.target.closest('[data-video]')
@@ -61,6 +61,21 @@ function bindGlobalDelegates() {
       if (win) win.location = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=16/${lat}/${lng}`
     }
   })
+  // v3 全局关闭规则：ESC 关闭所有遮罩
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeAllMasks()
+  })
+  // 消息中心抽屉：点击空白遮罩关闭
+  const msgMask = document.getElementById('msg-drawer-mask')
+  if (msgMask) msgMask.addEventListener('click', (e) => {
+    if (e.target.id === 'msg-drawer-mask') closeAllMasks()
+  })
+}
+function closeAllMasks() {
+  const modal = document.getElementById('modal-mask')
+  if (modal) modal.classList.add('hidden')
+  const msg = document.getElementById('msg-drawer-mask')
+  if (msg) msg.classList.add('hidden')
 }
 function openFullscreen(html) {
   const mask = document.createElement('div')
@@ -1246,7 +1261,7 @@ async function renderHome() {
   const greet = hour < 6 ? '深夜好' : hour < 12 ? '早安' : hour < 14 ? '中午好' : hour < 18 ? '下午好' : '晚上好'
   v.innerHTML = `
     <div class="home-wrap">
-      <!-- 打招呼 + 搜索框（设计稿：搜索同事、公司、话题） -->
+      <!-- 打招呼 + 搜索框 -->
       <div class="home-hero">
         <div class="home-greet">
           <span class="home-emoji">👋</span>
@@ -1258,40 +1273,57 @@ async function renderHome() {
         </div>
       </div>
 
-      <!-- 4 个数据卡片（设计稿：今日吐槽 / 共鸣点赞 / 同事评分 / 关系健康） -->
-      <div class="home-stats" id="home-stats">
-        <div class="home-stat"><div class="home-stat-num" id="hs-complaints">—</div><div class="home-stat-label">今日吐槽</div></div>
-        <div class="home-stat"><div class="home-stat-num" id="hs-resonance">—</div><div class="home-stat-label">共鸣点赞</div></div>
-        <div class="home-stat"><div class="home-stat-num" id="hs-score">—</div><div class="home-stat-label">同事评分</div></div>
-        <div class="home-stat"><div class="home-stat-num" id="hs-health">—</div><div class="home-stat-label">关系健康</div></div>
-      </div>
-
       <div class="home-grid">
-        <!-- 左：主内容 -->
+        <!-- 左：主内容（v3 精简：状态 → 人格 → AI发现 → 热帖 → 同事关系） -->
         <div class="home-main">
-          <!-- 今日打卡入口 -->
-          <div class="home-mood" id="home-mood">加载中…</div>
+          <!-- 今日状态卡（打卡 + 一行小统计） -->
+          <div class="card home-status-card">
+            <div class="home-status-emoji" id="home-status-emoji">⏰</div>
+            <div style="flex:1;min-width:0">
+              <div id="home-mood">加载中…</div>
+              <div class="home-status-meta">
+                <span>今日吐槽 <b id="hs-complaints">—</b></span>
+                <span>共鸣点赞 <b id="hs-resonance">—</b></span>
+                <span>同事评分 <b id="hs-score">—</b></span>
+                <span>关系健康 <b id="hs-health">—</b></span>
+              </div>
+            </div>
+          </div>
 
-          <!-- 分类 Tab（设计稿：推荐 / 关注 / 公司 / 匿名 → 推荐 / 最新 / 匿名 / 我的同事） -->
-          <div class="row" style="margin: 8px 0 12px">
-            <div class="home-tabs" id="home-tabs">
+          <!-- 我的职场人格 -->
+          <div class="card home-persona" style="margin-top:12px" id="home-persona-card">
+            <div class="home-persona-emoji" id="hp-emoji">🧠</div>
+            <div style="flex:1;min-width:0">
+              <div class="home-persona-name" id="hp-name">职场人格加载中…</div>
+              <div class="home-persona-idx" id="hp-idx"></div>
+            </div>
+            <button class="btn btn-outline btn-sm" id="hp-more">查看详情 →</button>
+          </div>
+
+          <!-- AI 发现 -->
+          <div class="home-ai" id="home-ai" style="margin-top:12px">加载中…</div>
+
+          <!-- 热门吐槽 -->
+          <div class="row" style="margin: 14px 0 12px">
+            <span class="section-title" style="margin:0;flex:1">🔥 热门吐槽</span>
+            <div class="home-tabs" id="home-tabs" style="margin:0">
               <button class="active" data-filter="recommend">推荐</button>
               <button data-filter="new">最新</button>
               <button data-filter="anonymous">匿名</button>
               <button data-filter="colleague">我的同事</button>
             </div>
-            <span class="spacer"></span>
-            <button class="btn btn-outline btn-sm" id="home-more">进入广场 →</button>
+            <button class="btn btn-outline btn-sm" id="home-more" style="margin-left:10px">进入广场 →</button>
           </div>
-
-          <!-- feed -->
           <div class="home-feed" id="home-feed">加载中…</div>
 
-          <!-- AI 今日洞察 -->
-          <div class="home-ai" id="home-ai">加载中…</div>
+          <!-- 我的同事关系 -->
+          <div class="card" style="margin-top:14px">
+            <div class="row"><span class="section-title" style="margin:0;flex:1">👥 我的同事关系</span><button class="btn btn-outline btn-sm" id="home-colleague-more">管理同事 →</button></div>
+            <div id="home-colleagues" style="margin-top:10px">加载中…</div>
+          </div>
         </div>
 
-        <!-- 右：侧栏（设计稿：职场关系雷达 + 今日热榜 TOP3） -->
+        <!-- 右：侧栏（职场关系雷达 + 今日热榜 TOP3） -->
         <aside class="home-aside">
           <div class="home-aside-card">
             <div class="home-aside-title">📡 职场关系雷达</div>
@@ -1312,6 +1344,10 @@ async function renderHome() {
 function bindHome() {
   const v = document.getElementById('view')
   v.querySelector('#home-more').addEventListener('click', () => switchView('complaint'))
+  const cm = v.querySelector('#home-colleague-more')
+  if (cm) cm.addEventListener('click', () => switchView('colleague'))
+  const hp = v.querySelector('#hp-more')
+  if (hp) hp.addEventListener('click', () => switchView('ai'))
   // Tab 切换（推荐/最新/匿名/我的同事）
   v.querySelectorAll('#home-tabs button').forEach((b) => b.addEventListener('click', () => {
     v.querySelectorAll('#home-tabs button').forEach((x) => x.classList.toggle('active', x === b))
@@ -1326,7 +1362,7 @@ function bindHome() {
 }
 
 async function loadHome() {
-  // 数据卡片（设计稿 4 卡：后端聚合接口）
+  // 数据（今日状态卡内嵌小统计）
   try {
     const { stats } = await fetchHomeStats()
     document.getElementById('hs-complaints').textContent = stats.todayComplaints || 0
@@ -1335,15 +1371,63 @@ async function loadHome() {
     document.getElementById('hs-health').textContent = stats.healthScore != null ? stats.healthScore + ' 分' : '—'
   } catch (e) { /* ignore */ }
 
-  // 今日打卡
+  // 今日打卡（状态卡内）
   renderHomeMood()
+  // 职场人格卡
+  renderHomePersona()
+  // AI 发现
+  renderHomeAI()
   // feed（推荐）
   loadHomeFeed('recommend')
+  // 我的同事关系
+  renderHomeColleagues()
   // 右侧栏：雷达 + 热榜 TOP3
   renderHomeRadar()
   renderHomeTop3()
-  // AI 洞察
-  renderHomeAI()
+}
+
+// v3 首页：我的职场人格卡
+async function renderHomePersona() {
+  const nameEl = document.getElementById('hp-name')
+  const idxEl = document.getElementById('hp-idx')
+  const emojiEl = document.getElementById('hp-emoji')
+  if (!nameEl) return
+  try {
+    const p = await getPersonality()
+    nameEl.textContent = (p.emoji || '') + ' ' + (p.personality || '')
+    if (emojiEl) emojiEl.textContent = p.emoji || '🧠'
+    const s = p.stats || {}
+    idxEl.innerHTML = `
+      <span>情绪指数 <b>${s.emotionIndex ?? '—'}</b></span>
+      <span>关系敏感 <b>${s.relationshipSensitivity ?? '—'}</b></span>
+      <span>摸鱼能力 <b>${s.slackScore ?? '—'}</b></span>
+      <span>吐槽 <b>${s.totalComplaints ?? 0}</b> · 共鸣 <b>${s.totalResonances ?? 0}</b></span>`
+  } catch (e) {
+    nameEl.textContent = '职场人格加载失败'
+  }
+}
+
+// v3 首页：我的同事关系（横向 chips）
+async function renderHomeColleagues() {
+  const box = document.getElementById('home-colleagues')
+  if (!box) return
+  try {
+    const cols = (App.state.colleagues || []).slice(0, 8)
+    if (!cols.length) {
+      box.innerHTML = '<div class="empty">还没有同事档案，去「同事」添加第一位吧</div>'
+      return
+    }
+    box.innerHTML = `<div class="home-colleague-row">${cols.map((c) => `
+      <div class="home-colleague-chip" data-cid="${c.id}" title="${esc(c.position || '')}${c.workplaceType ? ' · ' + esc(c.workplaceType) : ''}">
+        <span>${esc(c.avatarSymbol || '👤')}</span><span>${esc(c.name)}</span>
+        ${c.riskLevel ? `<span class="tag" style="font-size:10px;padding:0 6px">${esc(c.riskLevel)}</span>` : ''}
+      </div>`).join('')}</div>`
+    box.querySelectorAll('.home-colleague-chip').forEach((el) => el.addEventListener('click', () => {
+      renderColleagueDetail(el.dataset.cid)
+    }))
+  } catch (e) {
+    box.innerHTML = '<div class="empty">同事加载失败</div>'
+  }
 }
 
 async function renderHomeRadar() {

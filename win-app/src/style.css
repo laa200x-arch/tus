@@ -1133,3 +1133,48 @@ body {
 .sent-neg { background: #ff6b6b; display: flex; align-items: center; justify-content: center; }
 .ca-patterns, .ca-suggestions { margin: 0; padding-left: 18px; font-size: 13px; color: #4a3f63; }
 .ca-patterns li, .ca-suggestions li { margin-bottom: 4px; }
+
+/* ============================================================
+ * v3 消息中心 + 新首页
+ * ============================================================ */
+.msg-drawer { width: 420px; }
+.msg-drawer-tabs { display: flex; gap: 4px; padding: 4px 14px 8px; border-bottom: 1px solid #f0eafb; }
+.msg-drawer-tabs button {
+  flex: 1; padding: 6px 0; font-size: 13px; border: none; border-radius: 8px;
+  background: #f4f0fc; color: #6b5f8a; cursor: pointer; transition: all .15s;
+}
+.msg-drawer-tabs button.active { background: #7c4dff; color: #fff; font-weight: 600; }
+.notif-item {
+  display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px;
+  border-bottom: 1px solid #f6f2fd; cursor: pointer; transition: background .12s;
+}
+.notif-item:hover { background: #faf8ff; }
+.notif-item.dim { opacity: .65; }
+.notif-avatar { font-size: 24px; line-height: 1.4; }
+.notif-body { flex: 1; min-width: 0; }
+.notif-title { font-weight: 700; font-size: 13.5px; color: #3a2f52; }
+.notif-text { font-size: 12.5px; color: #6b5f8a; margin-top: 2px; line-height: 1.5; }
+.notif-action { margin-top: 8px; }
+.notif-time { font-size: 11px; color: #b8b0cc; flex-shrink: 0; }
+
+/* 首页：今日状态卡（打卡 + 一行小统计） */
+.home-status-card { display: flex; align-items: center; gap: 12px; padding: 14px; }
+.home-status-emoji { font-size: 34px; }
+.home-status-meta { display: flex; gap: 14px; margin-top: 8px; flex-wrap: wrap; }
+.home-status-meta span { font-size: 12px; color: #8a7fa3; }
+.home-status-meta b { color: #4a3f63; }
+/* 首页：职场人格卡 */
+.home-persona { display: flex; align-items: center; gap: 12px; padding: 14px; }
+.home-persona-emoji { font-size: 36px; }
+.home-persona-name { font-weight: 700; font-size: 15px; color: #3a2f52; }
+.home-persona-idx { display: flex; gap: 14px; margin-top: 6px; flex-wrap: wrap; }
+.home-persona-idx span { font-size: 12px; color: #8a7fa3; }
+.home-persona-idx b { color: #7c4dff; }
+/* 首页：我的同事关系 */
+.home-colleague-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.home-colleague-chip {
+  flex-shrink: 0; display: flex; align-items: center; gap: 6px; cursor: pointer;
+  background: #faf9ff; border: 1px solid #f0eafb; border-radius: 10px; padding: 6px 10px;
+  font-size: 13px; color: #4a3f63; transition: border-color .15s;
+}
+.home-colleague-chip:hover { border-color: #c9b6f2; }

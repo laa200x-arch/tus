@@ -70,6 +70,38 @@ app.whenReady().then(async () => {
       })()
     `)
     console.log('V3_DETAIL', JSON.stringify(detail))
+    // v3 验证：首页新布局（职场人格卡 + 同事关系）
+    const home = await w.webContents.executeJavaScript(`
+      (async () => {
+        try {
+          switchView('home')
+          await new Promise((r) => setTimeout(r, 2000))
+          const v = document.getElementById('view')
+          const html = v ? v.innerHTML : ''
+          return { hasPersona: html.includes('我的职场人格'), hasColleagues: html.includes('我的同事关系'), hasStatus: html.includes('今日状态') }
+        } catch (err) { return { err: err.message } }
+      })()
+    `)
+    console.log('V3_HOME', JSON.stringify(home))
+    // v3 验证：消息中心抽屉（tabs + 通知）
+    const notif = await w.webContents.executeJavaScript(`
+      (async () => {
+        try {
+          if (typeof openMessageDrawer === 'function') await openMessageDrawer()
+          await new Promise((res) => setTimeout(res, 1500))
+          const mask = document.getElementById('msg-drawer-mask')
+          const body = document.getElementById('msg-drawer-body')
+          const tabs = document.getElementById('msg-tabs')
+          return {
+            open: mask && !mask.classList.contains('hidden'),
+            hasTabs: tabs ? tabs.querySelectorAll('button').length : 0,
+            bodyLen: body ? body.innerHTML.length : 0,
+            hasNotif: body ? body.innerHTML.includes('notif-item') : false
+          }
+        } catch (err) { return { err: err.message } }
+      })()
+    `)
+    console.log('V3_NOTIF', JSON.stringify(notif))
     const errCount = errors.length
     console.log('CONSOLE_ERRORS:', errCount, errCount ? errors.slice(0, 5).join(' || ') : '')
     console.log('SMOKE_RESULT:', results.every((r) => r && !r.err && r.htmlLen > 0) && detail && !detail.err && detail.hasPersona && errCount === 0 ? 'PASS' : 'FAIL')

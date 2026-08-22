@@ -345,6 +345,29 @@ struct ChatPattern: Codable, Hashable {
     let ratio: Int
 }
 
+// MARK: - v3 消息中心（互动 / AI提醒 / 系统）
+
+struct NotificationBundle: Codable, Hashable {
+    let total: Int
+    let interaction: [AppNotification]
+    let ai: [AppNotification]
+    let system: [AppNotification]
+}
+
+struct AppNotification: Codable, Hashable, Identifiable {
+    var id: String { "\(type)-\(time.timeIntervalSince1970)-\(text.hashValue)" }
+    let type: String
+    let actor: String?
+    let avatar: String?
+    let title: String?
+    let text: String
+    let action: String?
+    let actionView: String?
+    let complaintId: String?
+    let colleagueId: String?
+    let time: Date
+}
+
 struct AIExtracted: Codable, Hashable {
     let category: String?
     let behaviorTags: [String]?

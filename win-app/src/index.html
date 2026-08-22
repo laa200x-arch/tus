@@ -96,12 +96,18 @@
       <main id="view" class="view"></main>
     </div>
 
-    <!-- 消息抽屉（顶栏铃铛弹出） -->
+    <!-- 消息中心抽屉（v3：全部/AI提醒/互动/系统） -->
     <div id="msg-drawer-mask" class="modal-mask hidden">
       <div id="msg-drawer-box" class="msg-drawer">
         <div class="msg-drawer-head">
-          <span class="msg-drawer-title">💬 消息</span>
+          <span class="msg-drawer-title">🔔 消息中心</span>
           <button data-close class="modal-close" title="关闭">✕</button>
+        </div>
+        <div class="msg-drawer-tabs" id="msg-tabs">
+          <button class="active" data-tab="all">全部</button>
+          <button data-tab="ai">🤖 AI提醒</button>
+          <button data-tab="interaction">互动</button>
+          <button data-tab="system">系统</button>
         </div>
         <div id="msg-drawer-body" class="msg-drawer-body"></div>
       </div>

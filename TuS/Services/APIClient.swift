@@ -436,6 +436,11 @@ final class APIClient {
         try await request("/api/analysis/chat", method: "POST", body: ["text": text])
     }
 
+    /// 消息中心（互动 / AI提醒 / 系统）
+    func fetchNotifications() async throws -> NotificationBundle {
+        try await request("/api/notifications")
+    }
+
     /// 发布吐槽（内容必填；其余可选；AI 识别结果一并随 aiExtracted 提交）
     @discardableResult
     func postComplaint(

@@ -258,37 +258,57 @@ function bindTabs() {
   })
 }
 
-/* ---------- 消息抽屉（v2 顶栏入口）---------- */
+/* ---------- 消息中心抽屉（v3：全部/AI提醒/互动/系统） ---------- */
 async function openMessageDrawer() {
-  const box = document.getElementById('msg-drawer-box')
-  document.getElementById('msg-drawer-mask').classList.remove('hidden')
+  const mask = document.getElementById('msg-drawer-mask')
+  mask.classList.remove('hidden')
   const body = document.getElementById('msg-drawer-body')
-  body.innerHTML = '<div class="empty">加载中…</div>'
-  try {
-    await refreshAll()
-    const list = App.state.conversations || []
-    if (!list.length) {
-      body.innerHTML = '<div class="empty">暂无会话<br>去「同事」找人聊天</div>'
-      return
-    }
-    body.innerHTML = list.map((c) => `
-      <div class="msg-drawer-item" data-cid="${c.id}">
-        ${avatarHtml(c.partner, 'avatar avatar-sm')}
-        <div style="flex:1;min-width:0">
-          <div class="row"><span class="convo-name">${esc(c.partner.userName)}</span><span class="spacer"></span><span class="convo-time">${fmtTime(c.lastTime)}</span></div>
-          <div class="convo-last">${esc(c.lastMessageText || '')}</div>
+  const tabs = document.getElementById('msg-tabs')
+  let data = null
+
+  const render = (tab) => {
+    const items = tab === 'ai' ? data.ai
+      : tab === 'interaction' ? data.interaction
+      : tab === 'system' ? data.system
+      : [...data.ai, ...data.interaction, ...data.system]
+    if (!items.length) { body.innerHTML = '<div class="empty">暂无消息</div>'; return }
+    body.innerHTML = items.map((n) => `
+      <div class="notif-item ${n.type === 'all_good' ? 'dim' : ''}" data-view="${esc(n.actionView || '')}" data-cid="${esc(n.colleagueId || '')}" data-pid="${esc(n.complaintId || '')}">
+        ${n.actor ? `<span class="notif-avatar">${esc(n.avatar || '👤')}</span>` : ''}
+        <div class="notif-body">
+          ${n.title ? `<div class="notif-title">${esc(n.title)}</div>` : ''}
+          <div class="notif-text">${esc(n.text || '')}</div>
+          ${n.action ? `<button class="btn btn-primary btn-sm notif-action">${esc(n.action)}</button>` : ''}
         </div>
-        ${c.unreadCount > 0 ? `<span class="unread-dot">${c.unreadCount}</span>` : ''}
-      </div>
-    `).join('')
-    body.querySelectorAll('.msg-drawer-item').forEach((el) => el.addEventListener('click', () => {
-      const conv = list.find((x) => x.id === el.dataset.cid)
-      if (conv) {
-        document.getElementById('msg-drawer-mask').classList.add('hidden')
-        switchView('message')
-        setTimeout(() => showChat(conv), 100)
+        <span class="notif-time">${fmtTime(n.time)}</span>
+      </div>`).join('')
+    body.querySelectorAll('.notif-item').forEach((el) => el.addEventListener('click', (e) => {
+      const view = el.dataset.view
+      if (!view) return
+      if (e.target.closest('.notif-action')) e.stopPropagation()
+      mask.classList.add('hidden')
+      if (view === 'colleague' && el.dataset.cid) {
+        switchView('colleague')
+        setTimeout(() => renderColleagueDetail(el.dataset.cid), 120)
+      } else if (view === 'ai') {
+        switchView('ai')
+      } else {
+        switchView(view)
       }
     }))
+  }
+
+  tabs.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+    tabs.querySelectorAll('button').forEach((x) => x.classList.toggle('active', x === b))
+    if (data) render(b.dataset.tab)
+  }))
+  tabs.querySelectorAll('button')[0].classList.add('active')
+  tabs.querySelectorAll('button').forEach((x, i) => x.classList.toggle('active', i === 0))
+
+  body.innerHTML = '<div class="empty">加载中…</div>'
+  try {
+    data = await fetchNotifications()
+    render('all')
   } catch (e) { body.innerHTML = '<div class="empty">加载失败</div>' }
 }
 
