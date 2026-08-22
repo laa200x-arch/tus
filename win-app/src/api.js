@@ -1,5 +1,5 @@
 /* ============================================================
- * 吐槽同事 Windows 版 - 核心层（REST 封装 + 状态 + Socket.io）
+ * 职场那些事 Windows 版 - 核心层（REST 封装 + 状态 + Socket.io）
  * 纯 JS（无 DOM 依赖），可在 Node 中直接测试
  * ============================================================ */
 'use strict'
@@ -300,7 +300,7 @@ function connectSocket() {
         // 应用内弹窗（点击跳转会话）
         if (App.state.views.onNewMessage) App.state.views.onNewMessage(msg, conv)
         // 系统桌面通知
-        try { new Notification('吐槽同事 · ' + conv.partner.userName + ' 发来消息', { body: msg.text || '[媒体消息]' }) } catch (e) {}
+        try { new Notification('职场那些事 · ' + conv.partner.userName + ' 发来消息', { body: msg.text || '[媒体消息]' }) } catch (e) {}
         // 任务栏闪烁提醒（通过 preload 暴露的最小 API，渲染进程无 Node 权限）
         try {
           if (window.jiyu && window.jiyu.flash) window.jiyu.flash()

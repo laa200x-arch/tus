@@ -31,7 +31,7 @@ struct LoginView: View {
             }
 
             VStack(spacing: 4) {
-                Text("技遇")
+                Text("职场那些事")
                     .font(.largeTitle)
                     .bold()
                     .foregroundStyle(Theme.textPrimary)

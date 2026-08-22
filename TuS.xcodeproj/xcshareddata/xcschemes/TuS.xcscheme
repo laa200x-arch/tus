@@ -45,7 +45,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A00000000000000000000401"
-            BuildableName = "技遇.app"
+            BuildableName = "TuS.app"
             BlueprintName = "TuS"
             ReferencedContainer = "container:TuS.xcodeproj">
          </BuildableReference>
@@ -62,7 +62,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A00000000000000000000401"
-            BuildableName = "技遇.app"
+            BuildableName = "TuS.app"
             BlueprintName = "TuS"
             ReferencedContainer = "container:TuS.xcodeproj">
          </BuildableReference>

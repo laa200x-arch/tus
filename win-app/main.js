@@ -1,4 +1,4 @@
-// 吐槽同事 Windows 桌面版 - Electron 主进程
+// 职场那些事 Windows 桌面版 - Electron 主进程
 const { app, BrowserWindow, Notification, shell, ipcMain, dialog, Tray, Menu, nativeImage, nativeTheme } = require('electron')
 const path = require('path')
 
@@ -14,7 +14,7 @@ function createWindow() {
     height: 760,
     minWidth: 900,
     minHeight: 640,
-    title: '吐槽同事',
+    title: '职场那些事',
     autoHideMenuBar: true,
     webPreferences: {
       // 安全：禁用 Node 集成 + 开启上下文隔离，仅通过 preload 暴露最小 API（防 XSS→RCE）
@@ -41,8 +41,8 @@ function createWindow() {
       e.preventDefault()
       const choice = dialog.showMessageBoxSync(mainWindow, {
         type: 'question',
-        title: '退出吐槽同事',
-        message: '确定要退出吐槽同事吗？',
+        title: '退出职场那些事',
+        message: '确定要退出职场那些事吗？',
         detail: '选择「退出」将完全退出应用；选择「最小化到托盘」将继续在后台接收消息。',
         buttons: ['退出应用', '最小化到托盘', '取消'],
         defaultId: 1,
@@ -79,9 +79,9 @@ function createTray() {
   if (tray) return
   const icon = nativeImage.createEmpty()
   tray = new Tray(icon)
-  tray.setToolTip('吐槽同事')
+  tray.setToolTip('职场那些事')
   tray.setContextMenu(Menu.buildFromTemplate([
-    { label: '打开吐槽同事', click: () => { showWindow() } },
+    { label: '打开职场那些事', click: () => { showWindow() } },
     { type: 'separator' },
     { label: '退出应用', click: () => { global.__jiyuQuitting = true; app.quit() } }
   ]))

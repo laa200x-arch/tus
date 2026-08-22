@@ -20,7 +20,7 @@ struct LaunchView: View {
                     .scaleEffect(appeared ? 1 : 0.3)
                     .opacity(appeared ? 1 : 0)
             }
-            Text("技遇")
+            Text("职场那些事")
                 .font(.title)
                 .bold()
                 .foregroundStyle(Theme.textPrimary)

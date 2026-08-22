@@ -1,5 +1,5 @@
 /* ============================================================
- * 吐槽同事 Windows 版 - 视图层（登录/同事状态/消息/同事属性/我的）
+ * 职场那些事 Windows 版 - 视图层（登录/同事状态/消息/同事属性/我的）
  * 主题四维：同事属性 / 公司属性 / 主题 / 软件
  * ============================================================ */
 'use strict'
@@ -529,7 +529,7 @@ function renderMine() {
           <div class="card-title">账户与设置</div>
           <div class="tool-row" id="tool-rules"><span class="tool-icon">🛡</span>社区规范<span class="caret">›</span></div>
           <div class="tool-row" id="tool-mystatus"><span class="tool-icon">🗒️</span>我的状态历史<span class="caret">›</span></div>
-          <div class="tool-row" id="tool-about"><span class="tool-icon">ℹ️</span>关于吐槽同事<span class="caret">›</span></div>
+          <div class="tool-row" id="tool-about"><span class="tool-icon">ℹ️</span>关于职场那些事<span class="caret">›</span></div>
           <div class="tool-row tool-logout" id="tool-logout"><span class="tool-icon">🚪</span>退出登录<span class="caret">›</span></div>
         </div>
       </div>
@@ -552,7 +552,7 @@ function renderMine() {
   })
   v.querySelector('#tool-mystatus').addEventListener('click', showMyStatuses)
   v.querySelector('#tool-rules').addEventListener('click', () => showStaticText('社区规范', rulesText()))
-  v.querySelector('#tool-about').addEventListener('click', () => showStaticText('关于吐槽同事', aboutText()))
+  v.querySelector('#tool-about').addEventListener('click', () => showStaticText('关于职场那些事', aboutText()))
   v.querySelector('#tool-logout').addEventListener('click', () => {
     if (confirm('退出当前账号？退出后可在登录页一键切换其他账号')) { logout(); switchView('login') }
   })
@@ -641,10 +641,10 @@ function showStaticText(title, text) {
     <div class="modal-actions"><button class="btn btn-primary" data-close>关闭</button></div>`)
 }
 function rulesText() {
-  return '吐槽同事社区规范\n1. 仅记录与同事/职场相关的观察，禁止人身攻击、歧视与辱骂。\n2. 请勿泄露他人真实姓名、隐私与敏感信息。\n3. 文本/图片内容自动风控过滤，违规内容将被拦截。\n4. 违规处罚：首次警告 → 二次限流 → 三次封禁。\n5. 本平台为私人记录工具，内容仅你本人可见。'
+  return '职场那些事社区规范\n1. 仅记录与同事/职场相关的观察，禁止人身攻击、歧视与辱骂。\n2. 请勿泄露他人真实姓名、隐私与敏感信息。\n3. 文本/图片内容自动风控过滤，违规内容将被拦截。\n4. 违规处罚：首次警告 → 二次限流 → 三次封禁。\n5. 本平台为私人记录工具，内容仅你本人可见。'
 }
 function aboutText() {
-  return '吐槽同事 —— 一个帮你记录同事与公司、按主题与软件归档职场观察的小工具。\n维度：同事属性 / 公司属性 / 主题 / 软件。\n纯本地记录，不泄露、不交易。'
+  return '职场那些事 —— 一个帮你记录同事与公司、按主题与软件归档职场观察的小工具。\n维度：同事属性 / 公司属性 / 主题 / 软件。\n纯本地记录，不泄露、不交易。'
 }
 
 /* ================= 消息视图（保持聊天功能，移除订单引用） ================= */
@@ -2051,7 +2051,7 @@ async function renderPersonalityCard(box) {
   `
   box.querySelector('#ps-share').addEventListener('click', () => {
     const card = box.querySelector('.personality-card').outerHTML
-    navigator.clipboard.writeText(`我刚解锁了「${r.personality}」 — ${tpl.desc}\n来自吐槽同事`)
+    navigator.clipboard.writeText(`我刚解锁了「${r.personality}」 — ${tpl.desc}\n来自职场那些事`)
       .then(() => toast('✅ 文案已复制到剪贴板'))
       .catch(() => toast('复制失败：浏览器不支持'))
   })

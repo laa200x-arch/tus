@@ -1,5 +1,5 @@
 /**
- * 吐槽同事后端入口（Node.js + Express + Socket.io + MySQL/SQLite）
+ * 职场那些事后端入口（Node.js + Express + Socket.io + MySQL/SQLite）
  */
 import express from 'express'
 import cors from 'cors'
@@ -73,7 +73,7 @@ async function main() {
   app.get('/api/version', (req, res) => {
     res.json({
       current: '2.0.0',
-      updateMessage: '吐槽同事 v2.0.0 职场关系操作系统：吐槽广场 / 行为标签 / 情绪打卡 / 关系雷达 / AI 洞察 / 职场人格',
+      updateMessage: '职场那些事 v2.0.0 职场关系操作系统：吐槽广场 / 行为标签 / 情绪打卡 / 关系雷达 / AI 洞察 / 职场人格',
       downloadUrl: 'https://github.com/laa200x-arch/jiyu/releases'
     })
   })

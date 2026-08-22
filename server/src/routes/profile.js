@@ -1,6 +1,6 @@
 /**
  * 个人档案路由：资料编辑 / 公开用户搜索（用于私聊找人）
- * 吐槽同事已移除技能 / 认证 / 曝光的互换属性。
+ * 职场那些事已移除技能 / 认证 / 曝光的互换属性。
  */
 import { Router } from 'express'
 import { requireAuth, serializeUser } from '../middleware.js'

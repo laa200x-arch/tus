@@ -53,7 +53,7 @@ final class RealtimeClient {
         }
         newSocket.on("match:push") { [weak self] data, _ in
             guard let payload = data.first as? [String: Any] else { return }
-            let from = (payload["from"] as? [String: Any])?["userName"] as? String ?? "技遇"
+            let from = (payload["from"] as? [String: Any])?["userName"] as? String ?? "职场那些事"
             let message = payload["message"] as? String ?? "你收到一条新的互换邀约"
             DispatchQueue.main.async {
                 self?.onMatchPush?(from, message)
