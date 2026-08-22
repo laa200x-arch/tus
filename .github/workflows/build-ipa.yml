@@ -1,6 +1,6 @@
 name: Build IPA
 
-# 云端自动打包：在 GitHub 的 macOS 服务器上编译「技遇」并产出 .ipa 安装包
+# 云端自动打包：在 GitHub 的 macOS 服务器上编译「吐槽同事」并产出 .ipa 安装包
 # 触发方式：
 #   1. 手动：仓库 Actions 页面 → Build IPA → Run workflow
 #   2. 自动：push 到 main 分支
