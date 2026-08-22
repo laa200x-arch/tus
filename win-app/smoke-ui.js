@@ -102,6 +102,25 @@ app.whenReady().then(async () => {
       })()
     `)
     console.log('V3_NOTIF', JSON.stringify(notif))
+    // 同事宇宙 + 分享图验证
+    const uni = await w.webContents.executeJavaScript(`
+      (async () => {
+        try {
+          switchView('colleague')
+          await new Promise((r) => setTimeout(r, 1500))
+          const v = document.getElementById('view')
+          const html = v ? v.innerHTML : ''
+          const tabs = v ? v.querySelectorAll('#cu-tabs button').length : 0
+          let shareBtn = false
+          switchView('ai')
+          await new Promise((r) => setTimeout(r, 1500))
+          const aiHtml = document.getElementById('view') ? document.getElementById('view').innerHTML : ''
+          shareBtn = aiHtml.includes('ps-share')
+          return { hasUniverse: html.includes('同事宇宙'), tabCount: tabs, hasShareBtn: shareBtn }
+        } catch (err) { return { err: err.message } }
+      })()
+    `)
+    console.log('V3_UNIVERSE', JSON.stringify(uni))
     const errCount = errors.length
     console.log('CONSOLE_ERRORS:', errCount, errCount ? errors.slice(0, 5).join(' || ') : '')
     console.log('SMOKE_RESULT:', results.every((r) => r && !r.err && r.htmlLen > 0) && detail && !detail.err && detail.hasPersona && errCount === 0 ? 'PASS' : 'FAIL')

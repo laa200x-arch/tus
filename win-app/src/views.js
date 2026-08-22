@@ -5,9 +5,23 @@
 'use strict'
 
 /* ---------- 工具 ---------- */
-function esc(s) {
-  return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+function esc(s) {  return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
 }
+
+// v3 Skeleton 骨架屏（加载占位）
+function skeletonFeed(n = 3) {
+  let s = ''
+  for (let i = 0; i < n; i++) {
+    s += `<div class="card sk-card"><div class="row"><div class="skeleton sk-avatar"></div><div style="flex:1"><div class="skeleton sk-line w60"></div><div class="skeleton sk-line w80"></div><div class="skeleton sk-line w40"></div></div></div></div>`
+  }
+  return s
+}
+function skeletonBox(rows = 2) {
+  let s = ''
+  for (let i = 0; i < rows; i++) s += `<div class="skeleton sk-line w80"></div>`
+  return `<div class="sk-card">${s}</div>`
+}
+
 function fmtTime(iso) {
   if (!iso) return ''
   const d = new Date(iso)
@@ -244,12 +258,17 @@ async function renderColleagues() {
   const v = document.getElementById('view')
   v.innerHTML = `
     <div class="apple-header">
-      <div class="apple-title">👥 同事</div>
-      <div class="apple-subtitle">建立同事档案，AI 帮你维护关系雷达与职场画像</div>
+      <div class="apple-title">👥 同事宇宙</div>
+      <div class="apple-subtitle">我的同事 · 领导画像 · 关系地图</div>
     </div>
-    <div class="pet-section">
+    <div class="cp-tabs" id="cu-tabs">
+      <button class="active" data-cu="all">我的同事</button>
+      <button data-cu="leaders">领导画像</button>
+      <button data-cu="map">关系地图</button>
+    </div>
+    <div class="pet-section" style="margin-top:10px">
       <div class="pet-section-head">
-        <span class="pet-section-title">同事档案</span>
+        <span class="pet-section-title" id="cu-title">同事档案</span>
         <button class="pet-edit-btn" id="colleague-add" style="width:auto;padding:0 14px;border-radius:999px;font-weight:700">＋ 添加</button>
       </div>
       <div id="colleague-list"></div>
@@ -263,16 +282,66 @@ async function renderColleagues() {
     </div>`
   v.querySelector('#colleague-add').addEventListener('click', () => showColleagueForm())
   v.querySelector('#company-add').addEventListener('click', () => showCompanyForm())
+  v.querySelectorAll('#cu-tabs button').forEach((b) => b.addEventListener('click', () => {
+    v.querySelectorAll('#cu-tabs button').forEach((x) => x.classList.toggle('active', x === b))
+    renderColleagueSegment(b.dataset.cu)
+  }))
   await Promise.all([
     fetchCompanies().then(() => renderCompanies()),
-    fetchColleagues().then(renderColleagueCards)
+    fetchColleagues().then(() => renderColleagueSegment('all'))
   ])
 }
 
-function renderColleagueCards() {
+// 同事宇宙分段渲染
+function renderColleagueSegment(seg) {
+  const el = document.getElementById('colleague-list')
+  const title = document.getElementById('cu-title')
+  if (!el || !title) return
+  const all = App.state.colleagues || []
+  if (seg === 'map') {
+    title.textContent = '关系地图'
+    return renderRelationMap(el)
+  }
+  if (seg === 'leaders') {
+    const leaders = all.filter((c) => (c.relation || '').includes('领导') || (c.workplaceType || '').includes('领导'))
+    title.textContent = `领导画像（${leaders.length}）`
+    return renderColleagueCards(leaders)
+  }
+  title.textContent = `同事档案（${all.length}）`
+  renderColleagueCards(all)
+}
+
+// 关系地图：按与我的关系分组
+function renderRelationMap(el) {
+  const all = App.state.colleagues || []
+  if (!all.length) {
+    el.innerHTML = `<div class="pet-group pet-empty"><div class="pet-empty-icon">🗺️</div><div class="pet-empty-title">还没有同事</div><div class="pet-empty-sub">添加同事后这里会按关系生成地图</div></div>`
+    return
+  }
+  const groups = {}
+  for (const c of all) {
+    const rel = c.relation || '其他'
+    ;(groups[rel] = groups[rel] || []).push(c)
+  }
+  el.innerHTML = Object.entries(groups).map(([rel, list]) => `
+    <div style="margin-bottom:14px">
+      <div class="pet-section-title" style="margin-bottom:8px">${esc(rel)}（${list.length}）</div>
+      <div class="home-colleague-row">${list.map((c) => `
+        <div class="home-colleague-chip" data-cid="${c.id}" title="${esc(c.position || '')}">
+          <span>${esc(c.avatarSymbol || '👤')}</span><span>${esc(c.name)}</span>
+          ${c.riskLevel ? `<span class="tag" style="font-size:10px;padding:0 6px">${esc(c.riskLevel)}</span>` : ''}
+        </div>`).join('')}</div>
+    </div>`).join('')
+  el.querySelectorAll('.home-colleague-chip').forEach((chip) => chip.addEventListener('click', () => {
+    renderColleagueDetail(chip.dataset.cid)
+  }))
+}
+
+function renderColleagueCards(list) {
   const el = document.getElementById('colleague-list')
   if (!el) return
-  if (!App.state.colleagues.length) {
+  const items = list || App.state.colleagues
+  if (!items.length) {
     el.innerHTML = `
       <div class="pet-group pet-empty">
         <div class="pet-empty-icon">👥</div>
@@ -281,7 +350,7 @@ function renderColleagueCards() {
       </div>`
     return
   }
-  el.innerHTML = App.state.colleagues.map((c) => {
+  el.innerHTML = items.map((c) => {
     const company = (App.state.companies || []).find((x) => String(x.id) === String(c.companyId))
     return `
     <div class="pet-card-main" data-detailcolleague="${c.id}" style="margin-bottom:10px">
@@ -303,7 +372,7 @@ function renderColleagueCards() {
   }))
   el.querySelectorAll('[data-editcolleague-btn]').forEach((b) => b.addEventListener('click', (e) => {
     e.stopPropagation()
-    showColleagueForm(App.state.colleagues.find((c) => c.id === b.dataset.editcolleagueBtn))
+    showColleagueForm(items.find((c) => c.id === b.dataset.editcolleagueBtn))
   }))
 }
 
@@ -1433,6 +1502,7 @@ async function renderHomeColleagues() {
 async function renderHomeRadar() {
   const box = document.getElementById('home-radar')
   if (!box) return
+  box.innerHTML = skeletonBox(1)
   try {
     const cols = await fetchColleagues()
     const ids = (cols.colleagues || []).map((c) => c.id).slice(0, 50)
@@ -1462,6 +1532,7 @@ async function renderHomeRadar() {
 async function renderHomeTop3() {
   const box = document.getElementById('home-top3')
   if (!box) return
+  box.innerHTML = skeletonBox(3)
   try {
     const data = await fetchTopics()
     const list = (data.topics || []).slice(0, 3)
@@ -1576,7 +1647,7 @@ async function renderHomeMood() {
 
 async function loadHomeFeed(filter) {
   const box = document.getElementById('home-feed')
-  box.innerHTML = '<div class="empty">加载中…</div>'
+  box.innerHTML = skeletonFeed(3)
   try {
     const sort = filter === 'new' ? 'new' : 'hot'
     const data = await fetchFeedComplaints(sort, filter)
@@ -1594,7 +1665,7 @@ async function loadHomeFeed(filter) {
 
 async function renderHomeAI() {
   const box = document.getElementById('home-ai')
-  box.innerHTML = '<div class="empty">加载中…</div>'
+  box.innerHTML = skeletonBox(2)
   try {
     const [summary, personality] = await Promise.all([fetchMoodSummary(), getPersonality()])
     const insights = []
@@ -1643,7 +1714,7 @@ async function renderComplaint(opts = {}) {
   }))
   const body = v.querySelector('#cp-body')
   if (mode === 'topics') return loadTopics(body)
-  body.innerHTML = '<div class="empty">加载中…</div>'
+  body.innerHTML = skeletonFeed(3)
   let data
   try {
     data = mode === 'mine' ? await fetchMineComplaints() : await fetchFeedComplaints(sort, filter)
@@ -1659,7 +1730,7 @@ async function renderComplaint(opts = {}) {
 }
 
 async function loadTopics(body) {
-  body.innerHTML = '<div class="empty">加载中…</div>'
+  body.innerHTML = skeletonFeed(3)
   try {
     const data = await fetchTopics()
     const list = data.topics || []
@@ -2252,7 +2323,7 @@ async function renderAI() {
 
 async function renderAISub(sub) {
   const box = document.getElementById('ai-body')
-  box.innerHTML = '<div class="empty">加载中…</div>'
+  box.innerHTML = skeletonBox(3)
   try {
     if (sub === 'personality') return renderPersonalityCard(box)
     if (sub === 'trends') return renderMoodTrends(box)
@@ -2284,16 +2355,112 @@ async function renderPersonalityCard(box) {
       </div>
       <div class="ai-disclaimer">${esc(r.disclaimer)}</div>
       <div class="row" style="margin-top:14px">
-        <button class="btn btn-outline btn-sm" id="ps-share">📤 分享职场人格卡片</button>
+        <button class="btn btn-primary btn-sm" id="ps-share">📤 生成分享图</button>
       </div>
     </div>
   `
   box.querySelector('#ps-share').addEventListener('click', () => {
-    const card = box.querySelector('.personality-card').outerHTML
-    navigator.clipboard.writeText(`我刚解锁了「${r.personality}」 — ${tpl.desc}\n来自职场那些事`)
-      .then(() => toast('✅ 文案已复制到剪贴板'))
-      .catch(() => toast('复制失败：浏览器不支持'))
+    try {
+      const canvas = drawPersonalityShare(r, tpl)
+      const dataUrl = canvas.toDataURL('image/png')
+      openModal(`
+        <div class="modal-title">📤 职场人格分享卡</div>
+        <div style="text-align:center"><img src="${dataUrl}" style="max-width:320px;border-radius:14px;box-shadow:0 4px 20px rgba(124,77,255,.25)"></div>
+        <div class="row" style="margin-top:12px;gap:8px">
+          <button class="btn btn-primary" style="flex:1" id="share-download">⬇️ 保存图片</button>
+          <button class="btn btn-outline" style="flex:1" id="share-copy">📋 复制图片</button>
+        </div>
+      `, (box2) => {
+        box2.querySelector('#share-download').addEventListener('click', () => {
+          const a = document.createElement('a')
+          a.href = dataUrl; a.download = '职场人格-' + (r.personality || 'card') + '.png'
+          a.click()
+        })
+        box2.querySelector('#share-copy').addEventListener('click', () => {
+          canvas.toBlob(async (blob) => {
+            try {
+              await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+              toast('✅ 图片已复制，去朋友圈粘贴吧')
+            } catch (e) { toast('复制图片失败，请用「保存图片」') }
+          })
+        })
+      })
+    } catch (e) {
+      // canvas 不可用时降级为复制文案
+      navigator.clipboard.writeText(`我刚解锁了「${r.personality}」 — ${tpl.desc}\n来自职场那些事`)
+        .then(() => toast('✅ 文案已复制到剪贴板'))
+        .catch(() => toast('生成分享图失败'))
+    }
   })
+}
+
+// 绘制职场人格分享图（canvas）
+function drawPersonalityShare(r, tpl) {
+  const W = 600, H = 800
+  const canvas = document.createElement('canvas')
+  canvas.width = W; canvas.height = H
+  const ctx = canvas.getContext('2d')
+  const g = ctx.createLinearGradient(0, 0, 0, H)
+  g.addColorStop(0, '#7c4dff'); g.addColorStop(1, '#4a24b8')
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H)
+  ctx.globalAlpha = 0.12; ctx.fillStyle = '#fff'
+  ctx.beginPath(); ctx.arc(W - 50, 90, 130, 0, Math.PI * 2); ctx.fill()
+  ctx.beginPath(); ctx.arc(40, H - 70, 100, 0, Math.PI * 2); ctx.fill()
+  ctx.globalAlpha = 1
+  ctx.textAlign = 'center'; ctx.fillStyle = '#fff'
+  ctx.font = 'bold 30px "Microsoft YaHei", sans-serif'
+  ctx.fillText('我的职场人格', W / 2, 78)
+  ctx.font = '96px "Segoe UI Emoji", sans-serif'
+  ctx.fillText(tpl.emoji || '🐟', W / 2, 230)
+  ctx.font = 'bold 38px "Microsoft YaHei", sans-serif'
+  ctx.fillText(r.personality || '🐟 摸鱼哲学家', W / 2, 315)
+  ctx.font = '19px "Microsoft YaHei", sans-serif'
+  ctx.fillStyle = 'rgba(255,255,255,.92)'
+  const descLines = wrapText(ctx, tpl.desc || '', W / 2, 365, W - 110)
+  const stats = [
+    ['吐槽次数', r.stats.totalComplaints], ['共鸣次数', r.stats.totalResonances],
+    ['情绪指数', r.stats.emotionIndex], ['关系敏感度', r.stats.relationshipSensitivity], ['摸鱼能力', r.stats.slackScore]
+  ]
+  const startY = Math.max(440, 380 + descLines * 30)
+  stats.forEach(([label, v], i) => {
+    const y = startY + i * 58
+    ctx.fillStyle = 'rgba(255,255,255,.16)'
+    roundRect(ctx, 70, y, W - 140, 46, 23); ctx.fill()
+    ctx.textAlign = 'left'; ctx.fillStyle = '#fff'
+    ctx.font = 'bold 17px "Microsoft YaHei", sans-serif'
+    ctx.fillText(label, 95, y + 29)
+    ctx.textAlign = 'right'
+    ctx.fillText(String(v), W - 95, y + 29)
+    ctx.fillStyle = 'rgba(255,255,255,.28)'
+    roundRect(ctx, 210, y + 36, W - 380, 6, 3); ctx.fill()
+    ctx.fillStyle = '#ffd166'
+    roundRect(ctx, 210, y + 36, (W - 380) * Math.min(1, (Number(v) || 0) / 100), 6, 3); ctx.fill()
+  })
+  ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255,255,255,.7)'
+  ctx.font = '16px "Microsoft YaHei", sans-serif'
+  ctx.fillText('职场那些事 · 职场关系操作系统', W / 2, H - 36)
+  return canvas
+}
+function wrapText(ctx, text, x, y, maxWidth) {
+  const lines = []
+  const chars = String(text).split('')
+  let line = ''
+  for (const ch of chars) {
+    if (ctx.measureText(line + ch).width > maxWidth) { lines.push(line); line = ch }
+    else line += ch
+  }
+  if (line) lines.push(line)
+  lines.slice(0, 3).forEach((l, i) => ctx.fillText(l, x, y + i * 28))
+  return Math.min(lines.length, 3)
+}
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath()
+  ctx.moveTo(x + r, y)
+  ctx.arcTo(x + w, y, x + w, y + h, r)
+  ctx.arcTo(x + w, y + h, x, y + h, r)
+  ctx.arcTo(x, y + h, x, y, r)
+  ctx.arcTo(x, y, x + w, y, r)
+  ctx.closePath()
 }
 
 async function renderMoodTrends(box) {
@@ -2424,7 +2591,7 @@ async function renderCompany() {
 
 async function renderCOSub(sub) {
   const box = document.getElementById('co-body')
-  box.innerHTML = '<div class="empty">加载中…</div>'
+  box.innerHTML = skeletonBox(3)
   try {
     if (sub === 'profile') return renderCompanyProfile(box)
     if (sub === 'hot') return renderCompanyHot(box)
