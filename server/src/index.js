@@ -74,7 +74,7 @@ async function main() {
     res.json({
       current: '2.0.0',
       updateMessage: '职场那些事 v2.0.0 职场关系操作系统：吐槽广场 / 行为标签 / 情绪打卡 / 关系雷达 / AI 洞察 / 职场人格',
-      downloadUrl: 'https://github.com/laa200x-arch/jiyu/releases'
+      downloadUrl: 'https://github.com/laa200x-arch/tus/releases'
     })
   })
 
