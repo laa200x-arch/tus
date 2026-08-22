@@ -17,6 +17,9 @@ struct MineView: View {
     @State private var alertMessage = ""
     @State private var avatarItem: PhotosPickerItem?
     @State private var isUploadingAvatar = false
+    // v3：「更多」并入「我的」→ 同事档案 / AI 洞察 入口
+    @State private var showColleagues = false
+    @State private var showAI = false
     @AppStorage("jiyu.syncHistory") private var syncHistory = true
 
     var body: some View {
@@ -36,6 +39,8 @@ struct MineView: View {
         .sheet(isPresented: $showProfile) { NavigationStack { UserProfileView(user: store.currentUser) } }
         .sheet(isPresented: $showCompanyList) { CompanyListView() }
         .sheet(isPresented: $showMyStatuses) { MyComplaintsView() }
+        .sheet(isPresented: $showColleagues) { NavigationStack { ColleagueTabView() } }
+        .sheet(isPresented: $showAI) { NavigationStack { AITabView() } }
         .alert(alertTitle, isPresented: $showAlert) {
             Button("好的", role: .cancel) {}
         } message: {
@@ -200,7 +205,7 @@ struct MineView: View {
                 .foregroundStyle(Theme.textPrimary)
             HStack(spacing: 12) {
                 statTile("\(store.colleagues.count)", "同事档案", color: Theme.primary) {
-                    // 同事档案在「同事属性」Tab 查看
+                    showColleagues = true
                 }
                 statTile("\(store.companies.count)", "公司属性", color: Theme.secondary) {
                     showCompanyList = true
@@ -266,13 +271,18 @@ struct MineView: View {
 
     private var toolsSection: some View {
         VStack(spacing: 0) {
+            // v3：「更多」并入「我的」—— AI 洞察入口
+            toolRow(icon: "sparkles", title: "AI 洞察") { showAI = true }
+            Divider().padding(.leading, 40)
+            toolRow(icon: "person.2", title: "同事档案") { showColleagues = true }
+            Divider().padding(.leading, 40)
             toolRow(icon: "building.2", title: "公司属性管理") { showCompanyList = true }
             Divider().padding(.leading, 40)
             toolRow(icon: "text.bubble", title: "我的吐槽") { showMyStatuses = true }
             Divider().padding(.leading, 40)
-            toolRow(icon: "info.circle", title: "关于吐槽同事") {
-                alertTitle = "关于吐槽同事"
-                alertMessage = "吐槽同事 —— 记录职场里的千奇百怪：甩锅、画饼、加班、PUA…… 四维标签（同事属性 / 公司属性 / 主题 / 软件）帮你把槽点记得清清楚楚。文明吐槽，不指名道姓，不人身攻击。"
+            toolRow(icon: "info.circle", title: "关于职场那些事") {
+                alertTitle = "关于职场那些事"
+                alertMessage = "职场那些事 —— 记录职场里的千奇百怪：甩锅、画饼、加班、PUA…… 四维标签（同事属性 / 公司属性 / 主题 / 软件）帮你把槽点记得清清楚楚。文明吐槽，不指名道姓，不人身攻击。"
                 showAlert = true
             }
             Divider().padding(.leading, 40)

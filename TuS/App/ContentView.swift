@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// 应用主框架：6 大 Tab（首页 / 吐槽广场 / 同事属性 / AI 洞察 / 消息 / 我的）
-/// 职场关系操作系统 v2：同事属性 + 公司属性 + 情绪打卡 + AI + 关系雷达
+/// 应用主框架：5 大 Tab（首页 / 吐槽 / AI / 消息 / 我的）
+/// 职场关系操作系统 v3：「更多」并入「我的」（设置 / AI 洞察 / 同事档案），AI 洞察上移为中间 Tab
 struct ContentView: View {
     @EnvironmentObject private var store: MockDataStore
     @State private var tabIndex = 0
@@ -24,25 +24,17 @@ struct ContentView: View {
                 ComplaintTabView()
             }
             .tabItem {
-                Label("吐槽广场", systemImage: "flame")
+                Label("吐槽", systemImage: "flame")
             }
             .tag(1)
-
-            NavigationStack {
-                ColleagueTabView()
-            }
-            .tabItem {
-                Label("同事属性", systemImage: "person.2")
-            }
-            .tag(2)
 
             NavigationStack {
                 AITabView()
             }
             .tabItem {
-                Label("AI 洞察", systemImage: "sparkles")
+                Label("AI", systemImage: "sparkles")
             }
-            .tag(3)
+            .tag(2)
 
             NavigationStack {
                 MessageView()
@@ -51,7 +43,7 @@ struct ContentView: View {
                 Label("消息", systemImage: "message")
             }
             .badge(store.unreadTotal > 0 ? store.unreadTotal : 0)
-            .tag(4)
+            .tag(3)
 
             NavigationStack {
                 MineView()
@@ -59,7 +51,7 @@ struct ContentView: View {
             .tabItem {
                 Label("我的", systemImage: "person")
             }
-            .tag(5)
+            .tag(4)
         }
         .tint(Theme.primary)
         .task {
