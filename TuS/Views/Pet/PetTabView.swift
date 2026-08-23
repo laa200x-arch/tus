@@ -346,7 +346,7 @@ struct ColleagueEditView: View {
                         }
                         .padding(.vertical, 4)
                     }
-                    .onChange(of: avatarItem) { _, newItem in
+                    .onChange(of: avatarItem) { newItem in
                         guard let newItem else { return }
                         Task {
                             isUploadingAvatar = true
