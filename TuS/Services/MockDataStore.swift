@@ -481,7 +481,9 @@ final class MockDataStore: ObservableObject {
         attributeTags: [String] = [],
         companyId: UUID? = nil,
         notes: String = "",
-        avatarSymbol: String = "👤"
+        avatarSymbol: String = "👤",
+        avatarUrl: String? = nil,
+        quote: String = ""
     ) async throws -> ColleagueModel {
         if isServerMode {
             var body: [String: Any] = [
@@ -490,6 +492,8 @@ final class MockDataStore: ObservableObject {
                 "notes": notes, "avatarSymbol": avatarSymbol
             ]
             if let companyId { body["companyId"] = companyId.serverIDString }
+            if let avatarUrl { body["avatarUrl"] = avatarUrl }
+            body["quote"] = quote
             let server = try await APIClient.shared.addColleague(body)
             let model = ColleagueModel(server: server)
             colleagues.insert(model, at: 0)
@@ -505,7 +509,9 @@ final class MockDataStore: ObservableObject {
             companyName: companyId.flatMap { id in companies.first(where: { $0.id == id })?.name },
             notes: notes,
             avatarSymbol: avatarSymbol,
-            time: Date()
+            time: Date(),
+            avatarUrl: avatarUrl,
+            quote: quote
         )
         colleagues.insert(model, at: 0)
         return model
@@ -520,6 +526,8 @@ final class MockDataStore: ObservableObject {
                 "notes": model.notes, "avatarSymbol": model.avatarSymbol
             ]
             if let cid = model.companyId { body["companyId"] = cid.serverIDString }
+            if let avatarUrl = model.avatarUrl { body["avatarUrl"] = avatarUrl }
+            body["quote"] = model.quote
             let server = try await APIClient.shared.updateColleague(id: serverID, body)
             if let idx = colleagues.firstIndex(where: { $0.id == model.id }) {
                 colleagues[idx] = ColleagueModel(server: server)

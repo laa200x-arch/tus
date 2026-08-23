@@ -63,6 +63,8 @@ CREATE TABLE IF NOT EXISTS colleagues (
   personality_score REAL,
   workplace_type TEXT,
   risk_level TEXT,
+  avatar_url TEXT,
+  quote TEXT,
   created_at TEXT NOT NULL
 );
 
@@ -286,6 +288,8 @@ CREATE TABLE IF NOT EXISTS colleagues (
   personality_score DOUBLE NULL,
   workplace_type VARCHAR(32) NULL,
   risk_level VARCHAR(16) NULL,
+  avatar_url VARCHAR(255) NULL,
+  quote VARCHAR(500) NULL,
   created_at DATETIME NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

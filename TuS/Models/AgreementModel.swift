@@ -119,6 +119,9 @@ struct ColleagueModel: Codable, Identifiable, Hashable {
     var notes: String            // 备注
     var avatarSymbol: String
     var time: Date
+    // v3.1：照片头像 + 经典语录
+    var avatarUrl: String?
+    var quote: String = ""
 
     init(
         id: UUID = UUID(),
@@ -131,7 +134,9 @@ struct ColleagueModel: Codable, Identifiable, Hashable {
         companyName: String? = nil,
         notes: String = "",
         avatarSymbol: String = "👤",
-        time: Date = Date()
+        time: Date = Date(),
+        avatarUrl: String? = nil,
+        quote: String = ""
     ) {
         self.id = id
         self.name = name
@@ -144,6 +149,8 @@ struct ColleagueModel: Codable, Identifiable, Hashable {
         self.notes = notes
         self.avatarSymbol = avatarSymbol
         self.time = time
+        self.avatarUrl = avatarUrl
+        self.quote = quote
     }
 }
 

@@ -123,6 +123,9 @@ struct ServerColleague: Decodable {
     let personalityScore: Double?
     let workplaceType: String?
     let riskLevel: String?
+    // v3.1：照片头像 + 经典语录
+    let avatarUrl: String?
+    let quote: String?
 }
 
 struct ServerCompany: Decodable {
@@ -277,7 +280,9 @@ extension ColleagueModel {
             companyId: server.companyId.flatMap { UUID(serverID: $0) },
             companyName: nil,
             notes: server.notes,
-            avatarSymbol: server.avatarSymbol
+            avatarSymbol: server.avatarSymbol,
+            avatarUrl: server.avatarUrl,
+            quote: server.quote ?? ""
         )
     }
 }

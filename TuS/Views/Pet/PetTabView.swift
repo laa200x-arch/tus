@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 
 /// 同事属性（Tab）：同事档案 + 公司属性 两大维度
 struct ColleagueTabView: View {
@@ -131,7 +132,18 @@ struct ColleagueCardView: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            SymbolAvatar(symbol: colleague.avatarSymbol, size: 46)
+            // v3.1：照片头像优先
+            if let avatarUrl = colleague.avatarUrl, let url = URL(string: AppConfig.serverBase + avatarUrl) {
+                AsyncImage(url: url) { img in
+                    img.resizable().scaledToFill()
+                } placeholder: {
+                    ProgressView()
+                }
+                .frame(width: 46, height: 46)
+                .clipShape(Circle())
+            } else {
+                SymbolAvatar(symbol: colleague.avatarSymbol, size: 46)
+            }
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
                     Text(colleague.name)
@@ -251,6 +263,11 @@ struct ColleagueEditView: View {
     @State private var notes = ""
     @State private var avatarSymbol = "👤"
     @State private var showError = false
+    // v3.1：照片头像 + 经典语录
+    @State private var avatarUrl: String? = nil
+    @State private var quote = ""
+    @State private var avatarItem: PhotosPickerItem?
+    @State private var isUploadingAvatar = false
 
     private let symbols = ["👤", "👔", "💼", "🧑‍💼", "💻", "📣", "🧑‍💻", "👩‍💼", "🧑‍🔧", "🧑‍🏫"]
 
@@ -279,6 +296,40 @@ struct ColleagueEditView: View {
                     }
                 }
                 Section("头像") {
+                    HStack(spacing: 14) {
+                        // 照片预览或符号
+                        Group {
+                            if let avatarUrl, let url = URL(string: AppConfig.serverBase + avatarUrl) {
+                                AsyncImage(url: url) { img in
+                                    img.resizable().scaledToFill()
+                                } placeholder: {
+                                    ProgressView()
+                                }
+                                .frame(width: 56, height: 56)
+                                .clipShape(Circle())
+                            } else {
+                                Text(avatarSymbol.isEmpty ? "👤" : avatarSymbol)
+                                    .font(.system(size: 30))
+                                    .frame(width: 56, height: 56)
+                                    .background(Circle().fill(Theme.inputBg))
+                            }
+                        }
+                        VStack(alignment: .leading, spacing: 8) {
+                            PhotosPicker(selection: $avatarItem, matching: .images) {
+                                Label(isUploadingAvatar ? "上传中…" : "从相册选照片", systemImage: "photo")
+                                    .font(.footnote)
+                            }
+                            .disabled(isUploadingAvatar)
+                            if avatarUrl != nil {
+                                Button("清除照片") {
+                                    avatarUrl = nil
+                                    avatarItem = nil
+                                }
+                                .font(.footnote)
+                                .foregroundStyle(.red)
+                            }
+                        }
+                    }
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 10) {
                             ForEach(symbols, id: \.self) { s in
@@ -295,11 +346,30 @@ struct ColleagueEditView: View {
                         }
                         .padding(.vertical, 4)
                     }
+                    .onChange(of: avatarItem) { _, newItem in
+                        guard let newItem else { return }
+                        Task {
+                            isUploadingAvatar = true
+                            defer { isUploadingAvatar = false }
+                            if let data = try? await newItem.loadTransferable(type: Data.self) {
+                                do {
+                                    let url = try await APIClient.shared.uploadMedia(data: data, fileName: "colleague-avatar.jpg", mimeType: "image/jpeg")
+                                    await MainActor.run {
+                                        avatarUrl = url
+                                        avatarSymbol = "👤"
+                                    }
+                                } catch {
+                                    await MainActor.run { showError = true }
+                                }
+                            }
+                        }
+                    }
                 }
                 Section("属性标签（多选）") {
                     tagGrid(ColleagueAttrs.all, selected: $attributeTags)
                 }
                 Section("备注") {
+                    TextField("TA 的经典语录（口头禅 / 名场面）", text: $quote)
                     TextField("记录 TA 的离谱瞬间…", text: $notes, axis: .vertical)
                         .lineLimit(2...5)
                 }
@@ -334,6 +404,8 @@ struct ColleagueEditView: View {
         companyId = c.companyId
         notes = c.notes
         avatarSymbol = c.avatarSymbol.isEmpty ? "👤" : c.avatarSymbol
+        avatarUrl = c.avatarUrl
+        quote = c.quote
     }
 
     private func tagGrid(_ all: [String], selected: Binding<Set<String>>) -> some View {
@@ -370,6 +442,8 @@ struct ColleagueEditView: View {
                     c.companyId = companyId
                     c.notes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
                     c.avatarSymbol = avatarSymbol
+                    c.avatarUrl = avatarUrl
+                    c.quote = quote.trimmingCharacters(in: .whitespacesAndNewlines)
                     try await store.updateColleague(c)
                 } else {
                     _ = try await store.addColleague(
@@ -380,7 +454,9 @@ struct ColleagueEditView: View {
                         attributeTags: Array(attributeTags),
                         companyId: companyId,
                         notes: notes.trimmingCharacters(in: .whitespacesAndNewlines),
-                        avatarSymbol: avatarSymbol
+                        avatarSymbol: avatarSymbol,
+                        avatarUrl: avatarUrl,
+                        quote: quote.trimmingCharacters(in: .whitespacesAndNewlines)
                     )
                 }
                 dismiss()

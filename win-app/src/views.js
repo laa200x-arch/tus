@@ -22,6 +22,22 @@ function skeletonBox(rows = 2) {
   return `<div class="sk-card">${s}</div>`
 }
 
+// 同事头像：有照片显示照片，否则显示符号
+function colleagueAvatarHtml(c, cls) {
+  if (c && c.avatarUrl) {
+    return `<div class="${cls}" style="overflow:hidden"><img src="${App.SERVER}${esc(c.avatarUrl)}" style="width:100%;height:100%;object-fit:cover"></div>`
+  }
+  return `<div class="${cls}">${esc((c && c.avatarSymbol) || '👤')}</div>`
+}
+// 小头像（chips 用）：照片 20px 圆图 / emoji
+function colleagueAvatarMini(c) {
+  if (c && c.avatarUrl) {
+    return `<img src="${App.SERVER}${esc(c.avatarUrl)}" style="width:20px;height:20px;border-radius:50%;object-fit:cover">`
+  }
+  return `<span>${esc((c && c.avatarSymbol) || '👤')}</span>`
+}
+
+
 function fmtTime(iso) {
   if (!iso) return ''
   const d = new Date(iso)
@@ -328,7 +344,7 @@ function renderRelationMap(el) {
       <div class="pet-section-title" style="margin-bottom:8px">${esc(rel)}（${list.length}）</div>
       <div class="home-colleague-row">${list.map((c) => `
         <div class="home-colleague-chip" data-cid="${c.id}" title="${esc(c.position || '')}">
-          <span>${esc(c.avatarSymbol || '👤')}</span><span>${esc(c.name)}</span>
+          ${colleagueAvatarMini(c)}<span>${esc(c.name)}</span>
           ${c.riskLevel ? `<span class="tag" style="font-size:10px;padding:0 6px">${esc(c.riskLevel)}</span>` : ''}
         </div>`).join('')}</div>
     </div>`).join('')
@@ -354,7 +370,7 @@ function renderColleagueCards(list) {
     const company = (App.state.companies || []).find((x) => String(x.id) === String(c.companyId))
     return `
     <div class="pet-card-main" data-detailcolleague="${c.id}" style="margin-bottom:10px">
-      <div class="pet-card-avatar">${esc(c.avatarSymbol || '👤')}</div>
+      ${colleagueAvatarHtml(c, 'pet-card-avatar')}
       <div class="pet-card-info">
         <div class="pet-card-name">${esc(c.name)} <span class="card-sub">· ${esc(c.position || '')}</span></div>
         <div class="pet-card-meta">${esc(c.relation || '未填关系')}${company ? ' · ' + esc(company.name) : ''}${c.department ? ' · ' + esc(c.department) : ''}</div>
@@ -416,6 +432,8 @@ function showColleagueForm(colleague) {
     companyId: colleague?.companyId || '',
     notes: colleague?.notes || '',
     avatarSymbol: colleague?.avatarSymbol || '👤',
+    avatarUrl: colleague?.avatarUrl || '',
+    quote: colleague?.quote || '',
     age: colleague?.age != null ? colleague.age : '',
     weight: colleague?.weight != null ? colleague.weight : '',
     personalityScore: colleague?.personalityScore != null ? colleague.personalityScore : '',
@@ -441,6 +459,16 @@ function showColleagueForm(colleague) {
       <div class="pet-section">
         <div class="pet-section-head"><span class="pet-section-title">基本信息</span></div>
         <div class="pet-group">
+          <div class="pet-field"><label>头像（照片或符号）</label>
+            <div class="row" style="gap:10px;align-items:center">
+              <div id="cf-avatar-preview" class="colleague-avatar-lg">${state.avatarUrl ? `<img src="${App.SERVER}${esc(state.avatarUrl)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">` : esc(state.avatarSymbol)}</div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <button class="btn btn-outline btn-sm" id="cf-avatar-pick">🖼 选照片</button>
+                <input type="file" id="cf-avatar-file" accept="image/*" hidden>
+                ${state.avatarUrl ? `<button class="btn btn-outline btn-sm" id="cf-avatar-clear">清除照片</button>` : ''}
+              </div>
+            </div>
+          </div>
           <div class="pet-field"><label>姓名 / 昵称 *</label><input class="pet-input" id="cf-name" maxlength="20" value="${esc(state.name)}"></div>
           <div class="pet-field"><label>职位</label><input class="pet-input" id="cf-position" maxlength="30" value="${esc(state.position)}"></div>
           <div class="pet-field"><label>部门</label><input class="pet-input" id="cf-department" maxlength="30" value="${esc(state.department)}"></div>
@@ -483,6 +511,7 @@ function showColleagueForm(colleague) {
       <div class="pet-section">
         <div class="pet-section-head"><span class="pet-section-title">其他备注</span></div>
         <div class="pet-group">
+          <div class="pet-field"><label>经典语录（他的口头禅 / 名场面）</label><input class="pet-input" id="cf-quote" maxlength="100" placeholder="例：这个需求很简单，明天上线…" value="${esc(state.quote)}"></div>
           <textarea class="pet-input" id="cf-notes" rows="4" maxlength="2000" style="resize:vertical">${esc(state.notes)}</textarea>
         </div>
       </div>
@@ -502,6 +531,31 @@ function showColleagueForm(colleague) {
     body.querySelector('#cf-position').addEventListener('input', (e) => { state.position = e.target.value })
     body.querySelector('#cf-department').addEventListener('input', (e) => { state.department = e.target.value })
     body.querySelector('#cf-notes').addEventListener('input', (e) => { state.notes = e.target.value })
+    body.querySelector('#cf-quote').addEventListener('input', (e) => { state.quote = e.target.value })
+    // 头像照片上传
+    body.querySelector('#cf-avatar-pick').addEventListener('click', () => body.querySelector('#cf-avatar-file').click())
+    body.querySelector('#cf-avatar-file').addEventListener('change', async (e) => {
+      const file = e.target.files && e.target.files[0]
+      if (!file) return
+      try {
+        const blob = await compressImage(file, 512)
+        const url = await uploadMedia(await blob.arrayBuffer(), 'colleague-avatar.jpg', 'image/jpeg')
+        state.avatarUrl = url
+        state.avatarSymbol = '👤'
+        const pv = body.querySelector('#cf-avatar-preview')
+        pv.innerHTML = `<img src="${App.SERVER}${esc(url)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`
+        const clear = body.querySelector('#cf-avatar-clear')
+        if (clear) clear.style.display = 'inline-block'
+        toast('✅ 照片已上传，保存后生效')
+      } catch (err) { toast('头像上传失败：' + err.message) }
+    })
+    const clearBtn = body.querySelector('#cf-avatar-clear')
+    if (clearBtn) clearBtn.addEventListener('click', () => {
+      state.avatarUrl = ''
+      state.avatarSymbol = '👤'
+      body.querySelector('#cf-avatar-preview').textContent = '👤'
+      clearBtn.style.display = 'none'
+    })
     body.querySelector('#cf-age').addEventListener('input', (e) => { state.age = e.target.value })
     body.querySelector('#cf-weight').addEventListener('input', (e) => { state.weight = e.target.value })
     body.querySelector('#cf-personality').addEventListener('input', (e) => { state.personalityScore = e.target.value })
@@ -538,7 +592,9 @@ function showColleagueForm(colleague) {
         weight: state.weight === '' ? null : Number(state.weight),
         personalityScore: state.personalityScore === '' ? null : Number(state.personalityScore),
         workplaceType: state.workplaceType || null,
-        riskLevel: state.riskLevel || null
+        riskLevel: state.riskLevel || null,
+        avatarUrl: state.avatarUrl || null,
+        quote: state.quote.trim()
       }
       try {
         if (editing) await updateColleague(colleague.id, payload)
@@ -1488,7 +1544,7 @@ async function renderHomeColleagues() {
     }
     box.innerHTML = `<div class="home-colleague-row">${cols.map((c) => `
       <div class="home-colleague-chip" data-cid="${c.id}" title="${esc(c.position || '')}${c.workplaceType ? ' · ' + esc(c.workplaceType) : ''}">
-        <span>${esc(c.avatarSymbol || '👤')}</span><span>${esc(c.name)}</span>
+        ${colleagueAvatarMini(c)}<span>${esc(c.name)}</span>
         ${c.riskLevel ? `<span class="tag" style="font-size:10px;padding:0 6px">${esc(c.riskLevel)}</span>` : ''}
       </div>`).join('')}</div>`
     box.querySelectorAll('.home-colleague-chip').forEach((el) => el.addEventListener('click', () => {
@@ -2007,12 +2063,13 @@ async function renderColleagueDetail(colleagueId) {
     </div>
     <div class="card">
       <div class="row" style="gap:12px">
-        <div class="colleague-avatar-lg">${esc(c.avatarSymbol || '👤')}</div>
+        ${colleagueAvatarHtml(c, 'colleague-avatar-lg')}
         <div style="flex:1;min-width:0">
           <div class="colleague-name-lg">${esc(c.name)}</div>
           <div class="card-sub">${esc(c.position || '')} · ${esc(c.department || '')} · ${esc(c.relation || '未填关系')}</div>
           ${cat.length ? `<div class="row" style="margin-top:6px;flex-wrap:wrap;gap:6px">${cat.map((x) => `<span class="tag">${esc(x)}</span>`).join('')}</div>` : ''}
           ${profileRows.length ? `<div class="card-sub" style="margin-top:6px;color:#7c4dff">${profileRows.join(' · ')}</div>` : ''}
+          ${c.quote ? `<div class="quote-box" style="margin-top:8px">💬 「${esc(c.quote)}」</div>` : ''}
         </div>
       </div>
     </div>

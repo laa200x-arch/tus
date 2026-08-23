@@ -64,7 +64,18 @@ struct ColleagueDetailView: View {
     private var headerCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 14) {
-                SymbolAvatar(symbol: colleague.avatarSymbol, size: 56)
+                // v3.1：照片头像优先
+                if let avatarUrl = colleague.avatarUrl, let url = URL(string: AppConfig.serverBase + avatarUrl) {
+                    AsyncImage(url: url) { img in
+                        img.resizable().scaledToFill()
+                    } placeholder: {
+                        ProgressView()
+                    }
+                    .frame(width: 56, height: 56)
+                    .clipShape(Circle())
+                } else {
+                    SymbolAvatar(symbol: colleague.avatarSymbol, size: 56)
+                }
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         Text(colleague.name)
@@ -96,6 +107,17 @@ struct ColleagueDetailView: View {
                     Text(companyName)
                         .font(.caption)
                         .foregroundStyle(Theme.textPrimary)
+                }
+            }
+            // v3.1：经典语录
+            if !colleague.quote.isEmpty {
+                HStack(spacing: 6) {
+                    Text("💬")
+                        .font(.caption)
+                    Text("「\(colleague.quote)」")
+                        .font(.caption)
+                        .italic()
+                        .foregroundStyle(Theme.secondary)
                 }
             }
         }

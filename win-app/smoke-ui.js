@@ -121,6 +121,19 @@ app.whenReady().then(async () => {
       })()
     `)
     console.log('V3_UNIVERSE', JSON.stringify(uni))
+    // 同事表单：照片上传 + 经典语录
+    const form = await w.webContents.executeJavaScript(`
+      (async () => {
+        try {
+          if (typeof showColleagueForm === 'function') showColleagueForm(null)
+          await new Promise((r) => setTimeout(r, 800))
+          const v = document.getElementById('view')
+          const html = v ? v.innerHTML : ''
+          return { hasAvatarPick: html.includes('cf-avatar-pick'), hasQuote: html.includes('cf-quote') }
+        } catch (err) { return { err: err.message } }
+      })()
+    `)
+    console.log('V3_FORM', JSON.stringify(form))
     const errCount = errors.length
     console.log('CONSOLE_ERRORS:', errCount, errCount ? errors.slice(0, 5).join(' || ') : '')
     console.log('SMOKE_RESULT:', results.every((r) => r && !r.err && r.htmlLen > 0) && detail && !detail.err && detail.hasPersona && errCount === 0 ? 'PASS' : 'FAIL')

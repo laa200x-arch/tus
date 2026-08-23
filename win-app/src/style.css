@@ -1134,6 +1134,12 @@ body {
 .ca-patterns, .ca-suggestions { margin: 0; padding-left: 18px; font-size: 13px; color: #4a3f63; }
 .ca-patterns li, .ca-suggestions li { margin-bottom: 4px; }
 
+/* 同事经典语录 */
+.quote-box {
+  display: inline-block; background: #fff5e6; border: 1px solid #ffd9a3; color: #9a6b1f;
+  border-radius: 10px; padding: 6px 10px; font-size: 13px;
+}
+
 /* ============================================================
  * v3 消息中心 + 新首页
  * ============================================================ */

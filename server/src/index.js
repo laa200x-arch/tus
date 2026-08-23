@@ -47,7 +47,8 @@ async function main() {
   try { db.exec('ALTER TABLE users ADD COLUMN phone TEXT') } catch { /* 列已存在 */ }
   try { db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_phone ON users(phone)') } catch { /* 索引已存在 */ }
   // v3 迁移：同事画像扩展列（品行系统/画像升级）
-  const colleagueCols = ['age INTEGER', 'weight REAL', 'personality_score REAL', 'workplace_type TEXT', 'risk_level TEXT']
+  const colleagueCols = ['age INTEGER', 'weight REAL', 'personality_score REAL', 'workplace_type TEXT', 'risk_level TEXT',
+    'avatar_url TEXT', 'quote TEXT']
   for (const col of colleagueCols) {
     try { db.exec(`ALTER TABLE colleagues ADD COLUMN ${col}`) } catch { /* 列已存在 */ }
   }
