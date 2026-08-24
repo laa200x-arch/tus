@@ -1256,7 +1256,7 @@ async function runMiniApp(id) {
       if (frame.requestFullscreen) frame.requestFullscreen().catch(() => toast('全屏被浏览器拦截，可点击右上角 × 缩放窗口'))
     })
     window.addEventListener('message', (e) => {
-      if (e.data && e.data.type === 'jiyuScore' && typeof e.data.score === 'number') submitScore(id, e.data.score)
+      if (e.data && e.data.type === 'tusScore' && typeof e.data.score === 'number') submitScore(id, e.data.score)
     })
     document.getElementById('ma-refresh-scores').addEventListener('click', () => renderScores(id))
   } catch (e) { toast('加载失败：' + e.message) }

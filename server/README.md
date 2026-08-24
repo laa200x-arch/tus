@@ -1,4 +1,4 @@
-# 技遇后端服务（Node.js + Express + MySQL/SQLite + Socket.io）
+# 职场那些事后端服务（Node.js + Express + MySQL/SQLite + Socket.io）
 
 纯公益技能互换平台的服务端，对应方案 4.1/4.2 技术栈。
 **已通过 32 项端到端冒烟测试**（`npm test`）。
@@ -36,11 +36,11 @@ npm install && npm start    # 或：docker compose up -d --build
 ```bash
 # 1. 安装 Node 20+ 与 MySQL 8
 # 2. 建库建账号
-mysql -uroot -p -e "CREATE DATABASE jiyu DEFAULT CHARSET utf8mb4; CREATE USER 'jiyu'@'%' IDENTIFIED BY 'jiyu123456'; GRANT ALL ON jiyu.* TO 'jiyu'@'%'; FLUSH PRIVILEGES;"
+mysql -uroot -p -e "CREATE DATABASE tucao DEFAULT CHARSET utf8mb4; CREATE USER 'tucao'@'%' IDENTIFIED BY 'jiyu123456'; GRANT ALL ON jiyu.* TO 'tucao'@'%'; FLUSH PRIVILEGES;"
 # 3. 上传 server/ 目录，配置 .env（DB_DRIVER=mysql + JWT_SECRET 随机串）
 # 4. 用 PM2 守护进程
 npm install
-npx pm2 start src/index.js --name jiyu
+npx pm2 start src/index.js --name tucao-server
 npx pm2 save && npx pm2 startup
 # 5. 安全组放行 3000 端口（或经 Nginx 反代 + HTTPS）
 ```

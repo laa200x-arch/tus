@@ -255,7 +255,7 @@ struct MiniAppRunView: View {
     }
 }
 
-/// WKWebView 桥接（SwiftUI；注册 jiyuScore 消息处理器接收小程序分数上报）
+/// WKWebView 桥接（SwiftUI；注册 tusScore 消息处理器接收小程序分数上报）
 struct MiniAppWebView: UIViewRepresentable {
     let html: String
     let scoreHandler: (Int) -> Void
@@ -267,22 +267,22 @@ struct MiniAppWebView: UIViewRepresentable {
     func makeUIView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
         config.allowsInlineMediaPlayback = true
-        // 桥接：小程序内 window.parent.postMessage({type:'jiyuScore', score})
-        // → WKWebView 转发到 messageHandlers.jiyuScore → 原生提交排行榜
+        // 桥接：小程序内 window.parent.postMessage({type:'tusScore', score})
+        // → WKWebView 转发到 messageHandlers.tusScore → 原生提交排行榜
         let bridge = WKUserScript(source: """
         (function(){
           if (!window.parent) return;
           var orig = window.parent.postMessage.bind(window.parent);
           window.parent.postMessage = function(data, origin){
-            if (data && data.type === 'jiyuScore') {
-              try { window.webkit.messageHandlers.jiyuScore.postMessage(data); } catch(e) {}
+            if (data && data.type === 'tusScore') {
+              try { window.webkit.messageHandlers.tusScore.postMessage(data); } catch(e) {}
             }
             orig(data, origin);
           };
         })();
         """, injectionTime: .atDocumentStart, forMainFrameOnly: true)
         config.userContentController.addUserScript(bridge)
-        config.userContentController.add(context.coordinator, name: "jiyuScore")
+        config.userContentController.add(context.coordinator, name: "tusScore")
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.isOpaque = false
         webView.backgroundColor = .white
@@ -298,7 +298,7 @@ struct MiniAppWebView: UIViewRepresentable {
             self.scoreHandler = scoreHandler
         }
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-            guard message.name == "jiyuScore",
+            guard message.name == "tusScore",
                   let body = message.body as? [String: Any],
                   let score = body["score"] as? Int else { return }
             scoreHandler(score)

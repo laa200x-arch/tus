@@ -56,7 +56,7 @@ node test-v2b.js     # v2.1 设计稿对齐（11 项：feed 筛选/评论/统计
 ```bash
 cd win-app
 npm install
-npm start            # 打开「技遇」桌面应用（已连接线上服务器）
+npm start            # 打开「职场那些事」桌面应用（已连接线上服务器）
 ```
 
 ### iOS 版
@@ -112,8 +112,8 @@ git push -u origin main
 ### Windows 版本发布到 GitHub Releases
 
 ```bash
-node tools/release-win.mjs --tag win-v1.1.0 --name "技遇 Windows v1.1.0" \
-  --exe "win-app/dist/技遇 Setup 1.0.0.exe" --body "本次更新内容…"
+node tools/release-win.mjs --tag win-v1.1.0 --name "职场那些事 Windows v1.1.0" \
+  --exe "win-app/dist/职场那些事 Setup 1.0.0.exe" --body "本次更新内容…"
 ```
 
 - token 自动从 git 凭据管理器读取（或设置 `GH_TOKEN` 环境变量）
@@ -233,7 +233,7 @@ exchange/
 | 格式 | **单个 HTML 文件**，CSS/JS 全部内联（自包含），无任何构建工具 |
 | 大小 | ≤ **5MB** |
 | 禁止 | 外链脚本（`<script src>`）、外链样式（`<link>`）、内嵌 iframe、外部网络请求、localStorage |
-| 桥接 | 游戏结束 `window.parent.postMessage({type:'jiyuScore', score}, '*')` → 自动上榜（同账号保留最高分，全用户可见） |
+| 桥接 | 游戏结束 `window.parent.postMessage({type:'tusScore', score}, '*')` → 自动上榜（同账号保留最高分，全用户可见） |
 | 运行环境 | 沙箱 iframe（win）/ WKWebView（iOS），无网络权限，键盘需先点击画面 |
 | 示例 | `server/src/snake-app.html`（贪吃蛇，预置在市场） |
 | 发布 | Windows 端：消息页 → 小程序 → 发布（选择 .html 文件 + 名称/简介/图标） |

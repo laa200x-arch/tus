@@ -1,4 +1,4 @@
-# 技遇 Windows 桌面版
+# 职场那些事 Windows 桌面版
 
 纯公益技能互换平台 Windows 客户端，与 iOS 版**功能一致、共用同一服务器**（任何设备数据实时同步）。
 
@@ -21,7 +21,7 @@ npm start            # 启动应用（需要显示器）
 
 ```bash
 npm run pack         # 便携版 exe（dist/）
-npm run dist         # 安装版 exe（dist/技遇 Setup x.x.x.exe，可安装到开始菜单/桌面）
+npm run dist         # 安装版 exe（dist/职场那些事 Setup x.x.x.exe，可安装到开始菜单/桌面）
 ```
 
 国内网络建议设置镜像加速：
@@ -30,7 +30,7 @@ $env:ELECTRON_MIRROR = 'https://npmmirror.com/mirrors/electron/'
 $env:ELECTRON_BUILDER_BINARIES_MIRROR = 'https://npmmirror.com/mirrors/electron-builder-binaries/'
 ```
 
-**绿色版**：`dist/win-unpacked/技遇.exe` 可直接双击运行（免安装）。
+**绿色版**：`dist/win-unpacked/职场那些事.exe` 可直接双击运行（免安装）。
 
 ## 窗口与退出
 
@@ -38,7 +38,7 @@ $env:ELECTRON_BUILDER_BINARIES_MIRROR = 'https://npmmirror.com/mirrors/electron-
 - **主题**：紫罗兰主色 + 暖橙强调 + 浅紫灰背景，现代卡片/胶囊风（与 iOS 端一致）
 - **窗口可缩放**（最小 900×640），顶部栏可拖动
 - **退出确认**：点击关闭按钮会弹出确认框（退出应用 / 最小化到托盘 / 取消）
-- **最小化到托盘**：缩小后驻留系统托盘，继续接收消息与桌面通知；托盘菜单可「打开技遇」或「退出应用」
+- **最小化到托盘**：缩小后驻留系统托盘，继续接收消息与桌面通知；托盘菜单可「打开职场那些事」或「退出应用」
 
 ## 功能清单（与 iOS 版一致）
 

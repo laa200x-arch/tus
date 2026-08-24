@@ -108,7 +108,7 @@
     finalEl.textContent = '得分 ' + score
     over.classList.add('show')
     // 上报分数给宿主（小程序桥接：宿主监听 postMessage 提交排行榜）
-    try { window.parent.postMessage({ type: 'jiyuScore', score: score }, '*') } catch (e) { /* 独立打开时忽略 */ }
+    try { window.parent.postMessage({ type: 'tusScore', score: score }, '*') } catch (e) { /* 独立打开时忽略 */ }
   }
   document.addEventListener('keydown', function (e) {
     var k = e.key
