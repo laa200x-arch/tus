@@ -7,7 +7,7 @@ import { spawnSync } from 'node:child_process'
 import { readFileSync, existsSync } from 'node:fs'
 import { resolve, basename } from 'node:path'
 
-const REPO = 'laa200x-arch/jiyu'
+const REPO = 'laa200x-arch/tus'
 const args = process.argv.slice(2)
 const opt = (key, def = '') => {
   const i = args.indexOf('--' + key)
