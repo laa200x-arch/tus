@@ -91,6 +91,37 @@ try {
   const token = login.data.token
   assert.equal(typeof token, 'string')
 
+  const partnerLogin = await api('/api/auth/login', {
+    method: 'POST', body: { username: 'linxiao', password: '123456' }
+  })
+  assert.equal(partnerLogin.status, 200)
+
+  const openedConversation = await api('/api/conversations/open', {
+    method: 'POST', token, body: { partnerId: partnerLogin.data.user.id }
+  })
+  assert.equal(openedConversation.status, 200)
+  const conversationId = openedConversation.data.conversation.id
+
+  const emojiMessage = await api('/api/messages', {
+    method: 'POST', token,
+    body: {
+      conversationId,
+      text: '客户端文本不应保存',
+      mediaType: 'little_energy_emoji',
+      mediaUrl: 'xnz_happy'
+    }
+  })
+  assert.equal(emojiMessage.status, 201)
+  assert.equal(emojiMessage.data.message.mediaType, 'little_energy_emoji')
+  assert.equal(emojiMessage.data.message.mediaUrl, 'xnz_happy')
+  assert.equal(emojiMessage.data.message.text, '[小能仔·开心]')
+
+  const invalidEmojiMessage = await api('/api/messages', {
+    method: 'POST', token,
+    body: { conversationId, mediaType: 'little_energy_emoji', mediaUrl: '../bad.png' }
+  })
+  assert.equal(invalidEmojiMessage.status, 400)
+
   const update = await api('/api/me/profile', {
     method: 'PUT', token,
     body: { littleEnergyOutfit: {

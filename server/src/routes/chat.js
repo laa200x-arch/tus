@@ -5,6 +5,7 @@
 import { Router } from 'express'
 import { requireAuth, serializeUser, serializeMessage } from '../middleware.js'
 import { checkTextRisk } from '../risk.js'
+import { MOODS, isLittleEnergyEmoji } from '../little-energy.js'
 
 export function chatRouter(db, bus = { io: null }) {
   const router = Router()
@@ -131,15 +132,24 @@ export function chatRouter(db, bus = { io: null }) {
    * 供 REST 与 Socket.io 共用
    */
   function saveMessage(senderId, conversationId, { text = '', mediaType = null, mediaUrl = null, orderId = null } = {}) {
-    const content = String(text || '').trim()
+    let content = String(text || '').trim()
+    let normalizedMediaType = mediaType
+    let normalizedMediaUrl = mediaUrl
+    if (mediaType === 'little_energy_emoji') {
+      if (!isLittleEnergyEmoji(mediaUrl)) return { error: '小能仔表情无效', status: 400 }
+      const mood = MOODS.find((item) => item.id === mediaUrl)
+      content = `[小能仔·${mood.label}]`
+      normalizedMediaType = 'little_energy_emoji'
+      normalizedMediaUrl = mood.id
+    }
     const orderRef = orderId ? String(orderId) : null
-    if (!content && !mediaUrl && !orderRef) return { error: '消息不能为空', status: 400 }
+    if (!content && !normalizedMediaUrl && !orderRef) return { error: '消息不能为空', status: 400 }
     const convo = db.get('SELECT * FROM conversations WHERE id = ?', [conversationId])
     if (!convo) return { error: '会话不存在', status: 404 }
     if (convo.user_a !== senderId && convo.user_b !== senderId) {
       return { error: '无权访问该会话', status: 403 }
     }
-    const preview = content || (mediaType === 'video' ? '[视频]' : mediaType === 'audio' ? '[语音]' : mediaType === 'location' ? '[位置]' : '[图片]')
+    const preview = content || (normalizedMediaType === 'video' ? '[视频]' : normalizedMediaType === 'audio' ? '[语音]' : normalizedMediaType === 'location' ? '[位置]' : '[图片]')
     // 内容风控：命中违禁词则原文不发送，追加系统提示
     const risk = checkTextRisk(content)
     if (risk.isIllegal) {
@@ -160,13 +170,13 @@ export function chatRouter(db, bus = { io: null }) {
     }
     const r = db.run(
       `INSERT INTO messages (conversation_id, sender_id, text, media_type, media_url, order_id, is_system_note, created_at) VALUES (?,?,?,?,?,?,?,?)`,
-      [convo.id, senderId, content, mediaType, mediaUrl, orderRef, 0, now()]
+      [convo.id, senderId, content, normalizedMediaType, normalizedMediaUrl, orderRef, 0, now()]
     )
-    updatePreviewAndBroadcast(convo, senderId, preview, r.lastInsertRowid, mediaType, mediaUrl, orderRef)
+    updatePreviewAndBroadcast(convo, senderId, preview, r.lastInsertRowid, normalizedMediaType, normalizedMediaUrl, orderRef)
     return {
       message: serializeMessage({
         id: r.lastInsertRowid, conversation_id: convo.id, sender_id: senderId,
-        text: content, media_type: mediaType, media_url: mediaUrl, order_id: orderRef,
+        text: content, media_type: normalizedMediaType, media_url: normalizedMediaUrl, order_id: orderRef,
         is_system_note: 0, created_at: now(), sender_is_me: true
       })
     }

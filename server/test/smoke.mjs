@@ -352,6 +352,29 @@ if (aqingToken && linxiaoToken && conversationId) {
     const normalReceived = await normalReceipts
     check('双方实时收到消息', normalReceived, normalReceived ? '' : '等待接收超时')
 
+    const emojiPayload = {
+      conversationId,
+      text: '客户端文本不应保存',
+      mediaType: 'little_energy_emoji',
+      mediaUrl: 'xnz_happy'
+    }
+    const emojiReceipts = waitForMessages(
+      received,
+      linReceived,
+      (message) => message?.mediaType === 'little_energy_emoji' &&
+        message?.mediaUrl === 'xnz_happy' && message?.text === '[小能仔·开心]'
+    )
+    const emojiAck = await socketSend(s1, emojiPayload, 'Socket 小能仔 Emoji 消息确认')
+    check('Socket 小能仔 Emoji 消息发送成功',
+      emojiAck?.ok === true &&
+        emojiAck?.message?.mediaType === 'little_energy_emoji' &&
+        emojiAck?.message?.mediaUrl === 'xnz_happy' &&
+        emojiAck?.message?.text === '[小能仔·开心]',
+      '收到规范化确认'
+    )
+    const emojiReceived = await emojiReceipts
+    check('双方实时收到相同小能仔 Emoji 消息', emojiReceived, emojiReceived ? '' : '等待接收超时')
+
     const blockedReceipts = waitForMessages(
       received, linReceived, (message) => message?.text?.includes('已被平台风控拦截')
     )
@@ -362,6 +385,8 @@ if (aqingToken && linxiaoToken && conversationId) {
   } else {
     check('Socket 消息发送成功', false, 'Socket 未连接')
     check('双方实时收到消息', false, 'Socket 未连接')
+    check('Socket 小能仔 Emoji 消息发送成功', false, 'Socket 未连接')
+    check('双方实时收到相同小能仔 Emoji 消息', false, 'Socket 未连接')
     check('Socket 违禁消息被拦截', false, 'Socket 未连接')
     check('双方收到拦截系统提示', false, 'Socket 未连接')
   }

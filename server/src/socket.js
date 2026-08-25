@@ -30,7 +30,7 @@ export function setupSocket(httpServer, db, chatApi) {
     socket.join(`user:${userId}`)
     console.log(`[socket] 用户 ${userId} 已连接 (${socket.id})`)
 
-    // 实时发送消息（走与 REST 相同风控与落库；支持 orderId 订单引用）
+    // 实时发送消息（走与 REST 相同的风控、订单与小能仔 Emoji 规范化落库路径）
     socket.on('chat:send', (payload, ack) => {
       const conversationId = payload?.conversationId
       const text = payload?.text || ''
