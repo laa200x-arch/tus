@@ -1,0 +1,43 @@
+{
+  "moods": [
+    { "id": "xnz_happy", "label": "开心", "legacyEmoji": "😄", "score": 3, "assetName": "xnz_happy", "fallbackText": "[小能仔·开心]" },
+    { "id": "xnz_joyful", "label": "快乐", "legacyEmoji": null, "score": 3, "assetName": "xnz_joyful", "fallbackText": "[小能仔·快乐]" },
+    { "id": "xnz_calm", "label": "平静", "legacyEmoji": "😐", "score": 1, "assetName": "xnz_calm", "fallbackText": "[小能仔·平静]" },
+    { "id": "xnz_excited", "label": "兴奋", "legacyEmoji": null, "score": 3, "assetName": "xnz_excited", "fallbackText": "[小能仔·兴奋]" },
+    { "id": "xnz_proud", "label": "自豪", "legacyEmoji": null, "score": 3, "assetName": "xnz_proud", "fallbackText": "[小能仔·自豪]" },
+    { "id": "xnz_love", "label": "爱心", "legacyEmoji": null, "score": 3, "assetName": "xnz_love", "fallbackText": "[小能仔·爱心]" },
+    { "id": "xnz_grateful", "label": "感激", "legacyEmoji": null, "score": 3, "assetName": "xnz_grateful", "fallbackText": "[小能仔·感激]" },
+    { "id": "xnz_expectant", "label": "期待", "legacyEmoji": null, "score": 2, "assetName": "xnz_expectant", "fallbackText": "[小能仔·期待]" },
+    { "id": "xnz_surprised", "label": "惊讶", "legacyEmoji": null, "score": 0, "assetName": "xnz_surprised", "fallbackText": "[小能仔·惊讶]" },
+    { "id": "xnz_worried", "label": "担忧", "legacyEmoji": null, "score": -1, "assetName": "xnz_worried", "fallbackText": "[小能仔·担忧]" },
+    { "id": "xnz_anxious", "label": "焦虑", "legacyEmoji": null, "score": -2, "assetName": "xnz_anxious", "fallbackText": "[小能仔·焦虑]" },
+    { "id": "xnz_tired", "label": "疲惫", "legacyEmoji": "😮‍💨", "score": -2, "assetName": "xnz_tired", "fallbackText": "[小能仔·疲惫]" },
+    { "id": "xnz_stressed", "label": "压力大", "legacyEmoji": null, "score": -3, "assetName": "xnz_stressed", "fallbackText": "[小能仔·压力大]" },
+    { "id": "xnz_sad", "label": "难过", "legacyEmoji": "💀", "score": -3, "assetName": "xnz_sad", "fallbackText": "[小能仔·难过]" },
+    { "id": "xnz_disappointed", "label": "失望", "legacyEmoji": null, "score": -2, "assetName": "xnz_disappointed", "fallbackText": "[小能仔·失望]" },
+    { "id": "xnz_lonely", "label": "孤独", "legacyEmoji": null, "score": -3, "assetName": "xnz_lonely", "fallbackText": "[小能仔·孤独]" },
+    { "id": "xnz_irritated", "label": "烦躁", "legacyEmoji": null, "score": -2, "assetName": "xnz_irritated", "fallbackText": "[小能仔·烦躁]" },
+    { "id": "xnz_angry", "label": "愤怒", "legacyEmoji": "😡", "score": -3, "assetName": "xnz_angry", "fallbackText": "[小能仔·愤怒]" },
+    { "id": "xnz_jealous", "label": "嫉妒", "legacyEmoji": null, "score": -2, "assetName": "xnz_jealous", "fallbackText": "[小能仔·嫉妒]" },
+    { "id": "xnz_embarrassed", "label": "尴尬", "legacyEmoji": null, "score": -1, "assetName": "xnz_embarrassed", "fallbackText": "[小能仔·尴尬]" },
+    { "id": "xnz_guilty", "label": "愧疚", "legacyEmoji": null, "score": -2, "assetName": "xnz_guilty", "fallbackText": "[小能仔·愧疚]" },
+    { "id": "xnz_confused", "label": "困惑", "legacyEmoji": null, "score": -1, "assetName": "xnz_confused", "fallbackText": "[小能仔·困惑]" },
+    { "id": "xnz_shocked", "label": "震惊", "legacyEmoji": null, "score": -1, "assetName": "xnz_shocked", "fallbackText": "[小能仔·震惊]" },
+    { "id": "xnz_determined", "label": "坚定", "legacyEmoji": null, "score": 2, "assetName": "xnz_determined", "fallbackText": "[小能仔·坚定]" },
+    { "id": "xnz_motivated", "label": "斗志", "legacyEmoji": null, "score": 3, "assetName": "xnz_motivated", "fallbackText": "[小能仔·斗志]" },
+    { "id": "xnz_composed", "label": "从容", "legacyEmoji": "🙂", "score": 1, "assetName": "xnz_composed", "fallbackText": "[小能仔·从容]" },
+    { "id": "xnz_sleepy", "label": "困倦", "legacyEmoji": null, "score": -2, "assetName": "xnz_sleepy", "fallbackText": "[小能仔·困倦]" }
+  ],
+  "outfits": {
+    "tops": ["top_tshirt", "top_hoodie", "top_shirt", "top_sweater", "top_jacket"],
+    "bottoms": ["bottom_slacks", "bottom_jeans", "bottom_cargo", "bottom_shorts", "bottom_skirt"],
+    "shoes": ["shoes_sneakers", "shoes_canvas", "shoes_leather", "shoes_boots", "shoes_casual"],
+    "accessories": ["accessory_glasses", "accessory_hat", "accessory_headphones", "accessory_watch", "accessory_necklace", "accessory_ring", "accessory_bracelet", "accessory_backpack", "accessory_tote_bag", "accessory_crossbody_bag", "accessory_belt", "accessory_hairclip"]
+  },
+  "defaultOutfit": {
+    "topId": "top_tshirt",
+    "bottomId": "bottom_slacks",
+    "shoesId": "shoes_sneakers",
+    "accessoryIds": []
+  }
+}
