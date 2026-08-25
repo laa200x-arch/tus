@@ -4,6 +4,7 @@
  * 覆盖：健康 / 鉴权 / 当前职场关系接口 / REST 与 Socket 聊天风控 / 注册手机号唯一性
  */
 import { io as createClient } from 'socket.io-client'
+import { api as requestApi, waitForMessages, withFixtureCleanup } from './smoke-helpers.mjs'
 
 const BASE = process.env.BASE_URL || 'http://localhost:3000'
 const runId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
@@ -42,10 +43,6 @@ function hasFields(value, fields) {
   return isObject(value) && fields.every((field) => Object.hasOwn(value, field))
 }
 
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
 function connectSocket(socket, name) {
   return new Promise((resolve) => {
     const timeout = setTimeout(() => {
@@ -79,15 +76,7 @@ function socketSend(socket, payload, name) {
 }
 
 async function api(path, { method = 'GET', token, body } = {}) {
-  const headers = { 'Content-Type': 'application/json' }
-  if (token) headers.Authorization = `Bearer ${token}`
-  const res = await fetch(`${BASE}${path}`, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined
-  })
-  const data = await res.json().catch(() => ({}))
-  return { status: res.status, data }
+  return requestApi(path, { method, token, body }, { base: BASE })
 }
 
 console.log('══════ 职场那些事后端冒烟测试 ══════\n')
@@ -183,43 +172,47 @@ if (aqingToken && conversationId) {
 // 5. 吐槽：创建、广场、点赞、共鸣、删除
 let complaintId = null
 if (aqingToken) {
-  const created = await api('/api/complaints', {
-    method: 'POST', token: aqingToken,
-    body: {
-      content: `冒烟吐槽 ${runId}`,
-      category: 'leader',
-      behaviorTags: ['meeting_bs'],
-      sentiment: 'tired'
+  await withFixtureCleanup(async () => {
+    const created = await api('/api/complaints', {
+      method: 'POST', token: aqingToken,
+      body: {
+        content: `冒烟吐槽 ${runId}`,
+        category: 'leader',
+        behaviorTags: ['meeting_bs'],
+        sentiment: 'tired'
+      }
+    })
+    const data = responseObject('创建吐槽响应', created, 201)
+    const valid = hasFields(data?.complaint, ['id', 'content', 'likeCount', 'resonanceCount'])
+    check('创建吐槽', valid, `status=${created.status}`)
+    if (valid) complaintId = data.complaint.id
+
+    if (complaintId) {
+      const feed = await api('/api/complaints/feed?sort=new', { token: aqingToken })
+      const complaints = responseArray('吐槽广场响应', feed, 'complaints')
+      check('吐槽出现在广场', complaints.some((complaint) => complaint?.id === complaintId))
+
+      const liked = await api(`/api/complaints/${complaintId}/like`, { method: 'POST', token: aqingToken })
+      const likeData = responseObject('吐槽点赞响应', liked)
+      check('点赞吐槽', likeData?.liked === true && Number.isFinite(likeData?.likeCount), `status=${liked.status}`)
+
+      const resonated = await api(`/api/complaints/${complaintId}/resonate`, { method: 'POST', token: aqingToken })
+      const resonanceData = responseObject('吐槽共鸣响应', resonated)
+      check('共鸣吐槽', resonanceData?.resonated === true && Number.isFinite(resonanceData?.resonanceCount), `status=${resonated.status}`)
+    } else {
+      check('吐槽出现在广场', false, '创建响应缺少 complaint 对象')
+      check('点赞吐槽', false, '创建响应缺少 complaint id')
+      check('共鸣吐槽', false, '创建响应缺少 complaint id')
+      check('删除吐槽', false, '创建响应缺少 complaint id')
+    }
+  }, async () => {
+    if (complaintId) {
+      const deleted = await api(`/api/complaints/${complaintId}`, { method: 'DELETE', token: aqingToken })
+      const deleteData = responseObject('删除吐槽响应', deleted)
+      check('删除吐槽', deleteData?.ok === true, `status=${deleted.status}`)
+      complaintId = null
     }
   })
-  const data = responseObject('创建吐槽响应', created, 201)
-  const valid = hasFields(data?.complaint, ['id', 'content', 'likeCount', 'resonanceCount'])
-  check('创建吐槽', valid, `status=${created.status}`)
-  if (valid) complaintId = data.complaint.id
-
-  if (complaintId) {
-    const feed = await api('/api/complaints/feed?sort=new', { token: aqingToken })
-    const complaints = responseArray('吐槽广场响应', feed, 'complaints')
-    check('吐槽出现在广场', complaints.some((complaint) => complaint?.id === complaintId))
-
-    const liked = await api(`/api/complaints/${complaintId}/like`, { method: 'POST', token: aqingToken })
-    const likeData = responseObject('吐槽点赞响应', liked)
-    check('点赞吐槽', likeData?.liked === true && Number.isFinite(likeData?.likeCount), `status=${liked.status}`)
-
-    const resonated = await api(`/api/complaints/${complaintId}/resonate`, { method: 'POST', token: aqingToken })
-    const resonanceData = responseObject('吐槽共鸣响应', resonated)
-    check('共鸣吐槽', resonanceData?.resonated === true && Number.isFinite(resonanceData?.resonanceCount), `status=${resonated.status}`)
-
-    const deleted = await api(`/api/complaints/${complaintId}`, { method: 'DELETE', token: aqingToken })
-    const deleteData = responseObject('删除吐槽响应', deleted)
-    check('删除吐槽', deleteData?.ok === true, `status=${deleted.status}`)
-    complaintId = null
-  } else {
-    check('吐槽出现在广场', false, '创建响应缺少 complaint 对象')
-    check('点赞吐槽', false, '创建响应缺少 complaint id')
-    check('共鸣吐槽', false, '创建响应缺少 complaint id')
-    check('删除吐槽', false, '创建响应缺少 complaint id')
-  }
 } else {
   check('创建吐槽', false, '缺少 aqing token')
   check('吐槽出现在广场', false, '缺少 aqing token')
@@ -264,44 +257,48 @@ if (aqingToken) {
 // 7. 同事、关系雷达、关系总结和清理
 let colleagueId = null
 if (aqingToken) {
-  const created = await api('/api/colleagues', {
-    method: 'POST', token: aqingToken,
-    body: { name: `冒烟同事 ${runId}`, position: '工程师', relation: '同组', attributeTags: ['techstar'] }
-  })
-  const data = responseObject('创建同事响应', created, 201)
-  const valid = hasFields(data?.colleague, ['id', 'name', 'attributeTags'])
-  check('创建同事', valid, `status=${created.status}`)
-  if (valid) colleagueId = data.colleague.id
-
-  if (colleagueId) {
-    const scores = { cooperation: 81, expertise: 82, communication: 83, support: 84, trust: 85 }
-    const posted = await api(`/api/radar/${colleagueId}`, {
-      method: 'POST', token: aqingToken, body: { scores }
+  await withFixtureCleanup(async () => {
+    const created = await api('/api/colleagues', {
+      method: 'POST', token: aqingToken,
+      body: { name: `冒烟同事 ${runId}`, position: '工程师', relation: '同组', attributeTags: ['techstar'] }
     })
-    const postData = responseObject('关系雷达提交响应', posted)
-    check('提交关系雷达', postData?.ok === true && hasFields(postData?.scores, Object.keys(scores)), `status=${posted.status}`)
+    const data = responseObject('创建同事响应', created, 201)
+    const valid = hasFields(data?.colleague, ['id', 'name', 'attributeTags'])
+    check('创建同事', valid, `status=${created.status}`)
+    if (valid) colleagueId = data.colleague.id
 
-    const fetched = await api(`/api/radar/${colleagueId}`, { token: aqingToken })
-    const getData = responseObject('关系雷达查询响应', fetched)
-    check('读取关系雷达', getData?.scored === true && getData?.scores?.trust === scores.trust, `status=${fetched.status}`)
+    if (colleagueId) {
+      const scores = { cooperation: 81, expertise: 82, communication: 83, support: 84, trust: 85 }
+      const posted = await api(`/api/radar/${colleagueId}`, {
+        method: 'POST', token: aqingToken, body: { scores }
+      })
+      const postData = responseObject('关系雷达提交响应', posted)
+      check('提交关系雷达', postData?.ok === true && hasFields(postData?.scores, Object.keys(scores)), `status=${posted.status}`)
 
-    const relationship = await api(`/api/ai/relationship/${colleagueId}`, { token: aqingToken })
-    const relationshipData = responseObject('关系总结响应', relationship)
-    check('关系总结文档形状', hasFields(relationshipData, [
-      'colleagueId', 'colleagueName', 'radar', 'healthScore', 'relationType',
-      'conflicts', 'topBehaviors', 'suggestions', 'disclaimer'
-    ]) && Array.isArray(relationshipData?.conflicts) && Array.isArray(relationshipData?.suggestions), `status=${relationship.status}`)
+      const fetched = await api(`/api/radar/${colleagueId}`, { token: aqingToken })
+      const getData = responseObject('关系雷达查询响应', fetched)
+      check('读取关系雷达', getData?.scored === true && getData?.scores?.trust === scores.trust, `status=${fetched.status}`)
 
-    const deleted = await api(`/api/colleagues/${colleagueId}`, { method: 'DELETE', token: aqingToken })
-    const deleteData = responseObject('删除同事响应', deleted)
-    check('删除同事', deleteData?.ok === true, `status=${deleted.status}`)
-    colleagueId = null
-  } else {
-    check('提交关系雷达', false, '创建响应缺少 colleague id')
-    check('读取关系雷达', false, '创建响应缺少 colleague id')
-    check('关系总结文档形状', false, '创建响应缺少 colleague id')
-    check('删除同事', false, '创建响应缺少 colleague id')
-  }
+      const relationship = await api(`/api/ai/relationship/${colleagueId}`, { token: aqingToken })
+      const relationshipData = responseObject('关系总结响应', relationship)
+      check('关系总结文档形状', hasFields(relationshipData, [
+        'colleagueId', 'colleagueName', 'radar', 'healthScore', 'relationType',
+        'conflicts', 'topBehaviors', 'suggestions', 'disclaimer'
+      ]) && Array.isArray(relationshipData?.conflicts) && Array.isArray(relationshipData?.suggestions), `status=${relationship.status}`)
+    } else {
+      check('提交关系雷达', false, '创建响应缺少 colleague id')
+      check('读取关系雷达', false, '创建响应缺少 colleague id')
+      check('关系总结文档形状', false, '创建响应缺少 colleague id')
+      check('删除同事', false, '创建响应缺少 colleague id')
+    }
+  }, async () => {
+    if (colleagueId) {
+      const deleted = await api(`/api/colleagues/${colleagueId}`, { method: 'DELETE', token: aqingToken })
+      const deleteData = responseObject('删除同事响应', deleted)
+      check('删除同事', deleteData?.ok === true, `status=${deleted.status}`)
+      colleagueId = null
+    }
+  })
 } else {
   check('创建同事', false, '缺少 aqing token')
   check('提交关系雷达', false, '缺少 aqing token')
@@ -347,17 +344,21 @@ if (aqingToken && linxiaoToken && conversationId) {
 
   if (s1Connected && s2Connected) {
     const socketText = `通过 Socket 发送的实时消息 ${runId}`
+    const normalReceipts = waitForMessages(
+      received, linReceived, (message) => message?.text === socketText
+    )
     const normalAck = await socketSend(s1, { conversationId, text: socketText }, 'Socket 正常消息确认')
     check('Socket 消息发送成功', normalAck?.ok === true, '收到确认')
-    await delay(300)
-    check('双方实时收到消息', received.some((message) => message?.text === socketText) &&
-      linReceived.some((message) => message?.text === socketText))
+    const normalReceived = await normalReceipts
+    check('双方实时收到消息', normalReceived, normalReceived ? '' : '等待接收超时')
 
+    const blockedReceipts = waitForMessages(
+      received, linReceived, (message) => message?.text?.includes('已被平台风控拦截')
+    )
     const blockedAck = await socketSend(s1, { conversationId, text: '私下转账给你' }, 'Socket 违禁消息确认')
     check('Socket 违禁消息被拦截', blockedAck?.blocked === true, '收到确认')
-    await delay(300)
-    check('双方收到拦截系统提示', received.some((message) => message?.text?.includes('已被平台风控拦截')) &&
-      linReceived.some((message) => message?.text?.includes('已被平台风控拦截')))
+    const blockedReceived = await blockedReceipts
+    check('双方收到拦截系统提示', blockedReceived, blockedReceived ? '' : '等待接收超时')
   } else {
     check('Socket 消息发送成功', false, 'Socket 未连接')
     check('双方实时收到消息', false, 'Socket 未连接')
