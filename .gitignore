@@ -1,7 +1,7 @@
 # macOS
 .DS_Store
 
-# Xcode ç”¨æˆ·æ•°æ®ä¸æ´¾ç”Ÿæ•°æ®
+# Xcode é¢ã„¦åŸ›éç‰ˆåµæ¶“åº¢æ·³é¢ç†¸æšŸé¹?
 xcuserdata/
 DerivedData/
 build/
@@ -11,41 +11,44 @@ build/
 .build/
 .swiftpm/
 
-# è¯ä¹¦ä¸å¯†é’¥ï¼ˆåˆ‡å‹¿æäº¤ï¼‰
+# ç’‡ä½·åŠŸæ¶“åº¡ç˜‘é–½ãƒ¯ç´™é’å›§å¬é»æ„ªæ°¦é”›?
 *.p12
 *.mobileprovision
 *.cer
 
-# ç³»ç»Ÿ
+# ç»¯è¤ç²º
 Thumbs.db
 
-# µ÷ÊÔÁÙÊ±ÎÄ¼ş
+# è°ƒè¯•ä¸´æ—¶æ–‡ä»¶
 run.html
 logs.txt
 
-# ºó¶Ë
+# åç«¯
 server/node_modules/
 server/data/
 server/.env
 
-# ²¿Êğ¹¤¾ß£¨º¬·şÎñÆ÷Æ¾¾İ£¬¾ø²»Ìá½»£©
+# éƒ¨ç½²å·¥å…·ï¼ˆå«æœåŠ¡å™¨å‡­æ®ï¼Œç»ä¸æäº¤ï¼‰
 .deploy/
 .tmp-validate/
 
-# Windows ×ÀÃæ°æ
+# Windows æ¡Œé¢ç‰ˆ
 win-app/node_modules/
 win-app/dist/
 
 .dsh-vision-toolkit/
 
-# npm »º´æ£¨É³ÏäÄÚÊ¹ÓÃ£©
+# npm ç¼“å­˜ï¼ˆæ²™ç®±å†…ä½¿ç”¨ï¼‰
 .tmp-npm-cache/
 
-# ±¾µØÆ¾¾İÁÙÊ±ÎÄ¼ş£¨ÇĞÎğÌá½»£©
+# æœ¬åœ°å‡­æ®ä¸´æ—¶æ–‡ä»¶ï¼ˆåˆ‡å‹¿æäº¤ï¼‰
 .tmp-gh-token.txt
 .tmp-push.ps1
 .tmp-gh-cred
 
-# ´ò°ü»º´æÓëÔËĞĞÊ±ÉÏ´«Ä¿Â¼
+# Isolated feature worktrees
+.worktrees/
+
+# æ‰“åŒ…ç¼“å­˜ä¸è¿è¡Œæ—¶ä¸Šä¼ ç›®å½•
 .tmp-electron-cache/
 server/uploads/
