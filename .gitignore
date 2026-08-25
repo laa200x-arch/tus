@@ -1,7 +1,7 @@
 # macOS
 .DS_Store
 
-# Xcode 鐢ㄦ埛鏁版嵁涓庢淳鐢熸暟鎹?
+# Xcode 用户数据与派生数据
 xcuserdata/
 DerivedData/
 build/
@@ -11,12 +11,12 @@ build/
 .build/
 .swiftpm/
 
-# 璇佷功涓庡瘑閽ワ紙鍒囧嬁鎻愪氦锛?
+# 证书与密钥（切勿提交）
 *.p12
 *.mobileprovision
 *.cer
 
-# 绯荤粺
+# 系统
 Thumbs.db
 
 # 调试临时文件
@@ -48,6 +48,9 @@ win-app/dist/
 
 # Isolated feature worktrees
 .worktrees/
+
+# Subagent-driven development scratch workspace
+.superpowers/
 
 # 打包缓存与运行时上传目录
 .tmp-electron-cache/
