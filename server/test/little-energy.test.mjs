@@ -4,8 +4,26 @@ import { MOODS, normalizeMood, normalizeOutfit, isLittleEnergyEmoji } from '../s
 
 assert.equal(MOODS.length, 27)
 assert.equal(new Set(MOODS.map((m) => m.id)).size, 27)
-assert.equal(normalizeMood('😄'), 'xnz_happy')
-assert.equal(normalizeMood('😐'), 'xnz_calm')
+
+const legacyEmojiMappings = [
+  ['😄', 'xnz_happy'],
+  ['😐', 'xnz_calm'],
+  ['😮‍💨', 'xnz_tired'],
+  ['💀', 'xnz_sad'],
+  ['😡', 'xnz_angry'],
+  ['🙂', 'xnz_composed']
+]
+const catalogLegacyMappings = MOODS
+  .filter((mood) => typeof mood.legacyEmoji === 'string')
+  .map((mood) => [mood.legacyEmoji, mood.id])
+
+assert.equal(catalogLegacyMappings.length, legacyEmojiMappings.length)
+assert.equal(new Set(catalogLegacyMappings.map(([emoji]) => emoji)).size, catalogLegacyMappings.length)
+assert.equal(new Set(catalogLegacyMappings.map(([, moodId]) => moodId)).size, catalogLegacyMappings.length)
+assert.deepEqual(new Map(catalogLegacyMappings), new Map(legacyEmojiMappings))
+for (const [emoji, moodId] of legacyEmojiMappings) {
+  assert.equal(normalizeMood(emoji), moodId)
+}
 assert.equal(normalizeMood('xnz_angry'), 'xnz_angry')
 assert.equal(normalizeMood('unknown'), 'xnz_happy')
 assert.deepEqual(normalizeOutfit({ topId: 'bad' }), {
