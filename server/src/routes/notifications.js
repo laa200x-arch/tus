@@ -8,8 +8,7 @@
  */
 import { Router } from 'express'
 import { requireAuth } from '../middleware.js'
-
-const NEG_MOODS = ['😡', '💀', '😮‍💨']
+import { moodScore } from '../little-energy.js'
 
 export function notificationsRouter(db) {
   const router = Router()
@@ -48,7 +47,7 @@ export function notificationsRouter(db) {
     // 最近 7 天负面情绪占比
     const week = db.all(`SELECT mood, stress_sources FROM mood_checkins WHERE user_id = ? ORDER BY checkin_date DESC LIMIT 7`, [uid])
     if (week.length >= 2) {
-      const neg = week.filter((w) => NEG_MOODS.includes(w.mood)).length
+      const neg = week.filter((w) => moodScore(w.mood) < 0).length
       const ratio = Math.round((neg / week.length) * 100)
       if (ratio >= 40) {
         ai.push({ type: 'stress', title: '😮‍💨 情绪预警', text: `最近 ${week.length} 天里你有 ${ratio}% 的日子情绪偏负面，注意休息和调节。`, action: '查看情绪趋势', actionView: 'ai', time: now })

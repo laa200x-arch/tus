@@ -58,6 +58,7 @@ const server = spawn(process.execPath, ['src/index.js'], {
   },
   stdio: 'ignore'
 })
+const serverExited = once(server, 'exit')
 
 async function api(path, { method = 'GET', token, body } = {}) {
   const response = await fetch(`${baseUrl}${path}`, {
@@ -133,14 +134,17 @@ try {
   })
   assert.equal(invalidMood.status, 400)
 
-  const legacyCheckin = await api('/api/mood/checkin', {
-    method: 'POST', token, body: { mood: '😐', stressSources: [], note: '' }
-  })
-  assert.equal(legacyCheckin.status, 200)
-  assert.equal(legacyCheckin.data.mood, 'xnz_calm')
+  for (const [emoji, moodId] of legacyEmojiMappings) {
+    const legacyCheckin = await api('/api/mood/checkin', {
+      method: 'POST', token, body: { mood: emoji, stressSources: [], note: '' }
+    })
+    assert.equal(legacyCheckin.status, 200)
+    assert.equal(legacyCheckin.data.mood, moodId)
+  }
 
   const database = new DatabaseSync(databasePath)
-  database.prepare('UPDATE mood_checkins SET mood = ? WHERE user_id = ?').run('😐', Number(login.data.user.id))
+  const userId = Number(login.data.user.id)
+  database.prepare('UPDATE mood_checkins SET mood = ? WHERE user_id = ?').run('😐', userId)
   database.close()
 
   const today = await api('/api/mood/today', { token })
@@ -148,13 +152,66 @@ try {
   const trends = await api('/api/mood/trends?days=7', { token })
   assert.equal(trends.data.trend.at(-1).mood, 'xnz_calm')
 
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  const yesterdayDate = yesterday.toISOString().slice(0, 10)
+  const notificationDatabase = new DatabaseSync(databasePath)
+  notificationDatabase.prepare(`
+    INSERT INTO mood_checkins (user_id, mood, stress_sources, note, checkin_date, created_at)
+    VALUES (?, ?, '[]', '', ?, ?)
+  `).run(userId, 'xnz_sad', yesterdayDate, new Date().toISOString())
+  notificationDatabase.close()
+
+  const stableNegativeNotifications = await api('/api/notifications', { token })
+  assert.equal(stableNegativeNotifications.data.ai.some((item) => item.type === 'stress' && item.title === '😮‍💨 情绪预警'), true)
+
+  const legacyNotificationDatabase = new DatabaseSync(databasePath)
+  legacyNotificationDatabase.prepare('UPDATE mood_checkins SET mood = ? WHERE user_id = ? AND checkin_date = ?').run('😡', userId, yesterdayDate)
+  legacyNotificationDatabase.close()
+
+  const legacyNegativeNotifications = await api('/api/notifications', { token })
+  assert.equal(legacyNegativeNotifications.data.ai.some((item) => item.type === 'stress' && item.title === '😮‍💨 情绪预警'), true)
+
+  const summaryDatabase = new DatabaseSync(databasePath)
+  summaryDatabase.prepare('DELETE FROM mood_checkins WHERE user_id = ?').run(userId)
+  const summaryDate = new Date().toISOString().slice(0, 10)
+  summaryDatabase.prepare(`
+    INSERT INTO mood_checkins (user_id, mood, stress_sources, note, checkin_date, created_at)
+    VALUES (?, ?, '[]', '', ?, ?)
+  `).run(userId, 'xnz_happy', summaryDate, new Date().toISOString())
+  summaryDatabase.close()
+
+  const positiveOnlySummary = await api('/api/mood/summary', { token })
+  assert.deepEqual(positiveOnlySummary.data.hotWeekdays, [])
+  assert.equal(positiveOnlySummary.data.insights.some((insight) => insight.includes('明显下降')), false)
+
+  const negativeSummaryDatabase = new DatabaseSync(databasePath)
+  negativeSummaryDatabase.prepare(`
+    INSERT INTO mood_checkins (user_id, mood, stress_sources, note, checkin_date, created_at)
+    VALUES (?, ?, '[]', '', ?, ?)
+  `).run(userId, 'xnz_sad', yesterdayDate, new Date().toISOString())
+  negativeSummaryDatabase.close()
+
+  const negativeSummary = await api('/api/mood/summary', { token })
+  assert.equal(negativeSummary.data.hotWeekdays.length > 0, true)
+  assert.equal(negativeSummary.data.insights.some((insight) => insight.includes('明显下降')), true)
+
+  const malformedPersistedOutfitDatabase = new DatabaseSync(databasePath)
+  malformedPersistedOutfitDatabase.prepare('UPDATE users SET little_energy_outfit = ? WHERE id = ?').run('{broken json', userId)
+  malformedPersistedOutfitDatabase.close()
+
+  const malformedPersistedOutfit = await api('/api/me', { token })
+  assert.deepEqual(malformedPersistedOutfit.data.user.littleEnergyOutfit, {
+    topId: 'top_tshirt', bottomId: 'bottom_slacks', shoesId: 'shoes_sneakers', accessoryIds: []
+  })
+
   const tags = await api('/api/tags')
   assert.equal(tags.status, 200)
   assert.equal(tags.data.moods.length, 27)
   assert.deepEqual(tags.data.moods, MOODS)
 } finally {
-  server.kill()
-  await once(server, 'exit')
+  if (server.exitCode === null) server.kill()
+  await serverExited
   await rm(tempDir, { recursive: true, force: true })
 }
 

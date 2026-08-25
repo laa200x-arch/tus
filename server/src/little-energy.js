@@ -8,6 +8,7 @@ export const OUTFIT_CATALOG = catalog.outfits
 export const DEFAULT_OUTFIT = catalog.defaultOutfit
 
 const moodIds = new Set(MOODS.map((mood) => mood.id))
+const moodScores = new Map(MOODS.map((mood) => [mood.id, mood.score]))
 const legacyMoodIds = new Map(
   MOODS
     .filter((mood) => typeof mood.legacyEmoji === 'string')
@@ -25,6 +26,10 @@ function allowedOrDefault(value, allowed, fallback) {
 export function normalizeMood(value) {
   if (typeof value !== 'string') return MOODS[0].id
   return moodIds.has(value) ? value : (legacyMoodIds.get(value) || MOODS[0].id)
+}
+
+export function moodScore(value) {
+  return moodScores.get(normalizeMood(value)) ?? 0
 }
 
 export function normalizeOutfit(value) {

@@ -10,6 +10,7 @@ import multer from 'multer'
 import { config } from './config.js'
 import { initDb, closeDb } from './db.js'
 import { SQLITE_DDL, MYSQL_DDL } from './schema.js'
+import { applyMigrations } from './migrations.js'
 import { seed, ensureSampleApps, ensureSampleDomainData } from './seed.js'
 import { requireAuth, serializeUser } from './middleware.js'
 import { authRouter } from './routes/auth.js'
@@ -37,23 +38,7 @@ async function main() {
   const db = await initDb()
   // 建表
   await db.exec(config.dbDriver === 'mysql' ? MYSQL_DDL : SQLITE_DDL)
-  // 轻量迁移：messages 表补充媒体字段
-  try { await db.exec('ALTER TABLE messages ADD COLUMN media_type TEXT') } catch { /* 列已存在 */ }
-  try { await db.exec('ALTER TABLE messages ADD COLUMN media_url TEXT') } catch { /* 列已存在 */ }
-  try { await db.exec('ALTER TABLE messages ADD COLUMN order_id TEXT') } catch { /* 列已存在 */ }
-  // 轻量迁移：users 表补充头像 URL 列
-  try { await db.exec('ALTER TABLE users ADD COLUMN avatar_url TEXT') } catch { /* 列已存在 */ }
-  // 轻量迁移：users 表补充小能仔穿搭资料列
-  try { await db.exec(`ALTER TABLE users ADD COLUMN little_energy_outfit ${config.dbDriver === 'mysql' ? 'TEXT NULL' : 'TEXT'}`) } catch { /* 列已存在 */ }
-  // 轻量迁移：users 表补充手机号列（注册手机验证，一手机号一号）
-  try { await db.exec('ALTER TABLE users ADD COLUMN phone TEXT') } catch { /* 列已存在 */ }
-  try { await db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_phone ON users(phone)') } catch { /* 索引已存在 */ }
-  // v3 迁移：同事画像扩展列（品行系统/画像升级）
-  const colleagueCols = ['age INTEGER', 'weight REAL', 'personality_score REAL', 'workplace_type TEXT', 'risk_level TEXT',
-    'avatar_url TEXT', 'quote TEXT']
-  for (const col of colleagueCols) {
-    try { await db.exec(`ALTER TABLE colleagues ADD COLUMN ${col}`) } catch { /* 列已存在 */ }
-  }
+  await applyMigrations(db, config.dbDriver)
   // 演示数据
   if (config.autoSeed) {
     await seed(db)

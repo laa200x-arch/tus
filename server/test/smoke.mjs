@@ -126,7 +126,7 @@ let linxiaoId = null
   const data = responseObject('标签字典响应', tags)
   check('16 个同事类型', Array.isArray(data?.colleagueTypes) && data.colleagueTypes.length === 16)
   check('14 个行为标签', Array.isArray(data?.behaviorTags) && data.behaviorTags.length === 14)
-  check('6 个当前基础情绪', Array.isArray(data?.moods) && data.moods.length === 6)
+  check('27 个当前基础情绪', Array.isArray(data?.moods) && data.moods.length === 27)
   check('10 个压力来源', Array.isArray(data?.stressSources) && data.stressSources.length === 10)
 }
 
@@ -225,7 +225,7 @@ if (aqingToken) {
 if (aqingToken) {
   const first = await api('/api/mood/checkin', {
     method: 'POST', token: aqingToken,
-    body: { mood: '🙂', stressSources: ['meeting'], note: `第一次打卡 ${runId}` }
+    body: { mood: 'xnz_composed', stressSources: ['meeting'], note: `第一次打卡 ${runId}` }
   })
   const firstData = responseObject('首次情绪打卡响应', first)
   check('首次情绪打卡', firstData?.ok === true && typeof firstData?.date === 'string', `status=${first.status}`)
@@ -233,20 +233,20 @@ if (aqingToken) {
   const secondNote = `同日更新 ${runId}`
   const second = await api('/api/mood/checkin', {
     method: 'POST', token: aqingToken,
-    body: { mood: '😄', stressSources: ['coworker'], note: secondNote }
+    body: { mood: 'xnz_happy', stressSources: ['coworker'], note: secondNote }
   })
   const secondData = responseObject('同日情绪更新响应', second)
-  check('同日情绪打卡 upsert', secondData?.ok === true && secondData?.mood === '😄' && secondData?.note === secondNote,
+  check('同日情绪打卡 upsert', secondData?.ok === true && secondData?.mood === 'xnz_happy' && secondData?.note === secondNote,
     `status=${second.status}`)
 
   const today = await api('/api/mood/today', { token: aqingToken })
   const todayData = responseObject('今日情绪响应', today)
-  check('今日情绪反映 upsert', todayData?.checked === true && todayData?.mood === '😄' && todayData?.note === secondNote,
+  check('今日情绪反映 upsert', todayData?.checked === true && todayData?.mood === 'xnz_happy' && todayData?.note === secondNote,
     `status=${today.status}`)
 
   const trends = await api('/api/mood/trends?days=7', { token: aqingToken })
   const trend = responseArray('情绪趋势响应', trends, 'trend')
-  check('情绪趋势包含今日更新', trend.some((item) => item?.date === todayData?.date && item?.mood === '😄'))
+  check('情绪趋势包含今日更新', trend.some((item) => item?.date === todayData?.date && item?.mood === 'xnz_happy'))
 } else {
   check('首次情绪打卡', false, '缺少 aqing token')
   check('同日情绪打卡 upsert', false, '缺少 aqing token')

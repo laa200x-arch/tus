@@ -7,9 +7,7 @@
  */
 import { Router } from 'express'
 import { requireAuth } from '../middleware.js'
-import { MOODS, normalizeMood } from '../little-energy.js'
-
-const moodScores = new Map(MOODS.map((mood) => [mood.id, mood.score]))
+import { MOODS, moodScore, normalizeMood } from '../little-energy.js'
 
 function isSupportedMood(value) {
   return typeof value === 'string' && MOODS.some((mood) => mood.id === value || mood.legacyEmoji === value)
@@ -118,8 +116,8 @@ export function moodRouter(db) {
       weekdayMood[wd].push(normalizeMood(r.mood))
     }
     const hotWeekdays = Object.entries(weekdayMood)
-      .map(([wd, moods]) => ({ wd: Number(wd), count: moods.filter((m) => moodScores.get(m) < 0).length, total: moods.length }))
-      .filter((x) => x.total > 0)
+      .map(([wd, moods]) => ({ wd: Number(wd), count: moods.filter((m) => moodScore(m) < 0).length, total: moods.length }))
+      .filter((x) => x.total > 0 && x.count > 0)
       .sort((a, b) => (b.count / b.total) - (a.count / a.total))
       .slice(0, 2)
       .map((x) => ['周日','周一','周二','周三','周四','周五','周六'][x.wd])

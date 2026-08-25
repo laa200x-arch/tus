@@ -30,17 +30,22 @@ function initSqlite() {
   }
 }
 
+export function mysqlConnectionOptions(mysqlConfig) {
+  return {
+    host: mysqlConfig.host,
+    port: mysqlConfig.port,
+    user: mysqlConfig.user,
+    password: mysqlConfig.password,
+    database: mysqlConfig.database,
+    charset: 'utf8mb4',
+    timezone: '+00:00',
+    multipleStatements: true
+  }
+}
+
 async function initMysql() {
   const mysql = await import('mysql2/promise')
-  const conn = await mysql.createConnection({
-    host: config.mysql.host,
-    port: config.mysql.port,
-    user: config.mysql.user,
-    password: config.mysql.password,
-    database: config.mysql.database,
-    charset: 'utf8mb4',
-    timezone: '+00:00'
-  })
+  const conn = await mysql.createConnection(mysqlConnectionOptions(config.mysql))
   db = conn
   return {
     exec: (sql) => conn.query(sql).then(() => ({})),

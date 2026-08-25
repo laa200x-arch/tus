@@ -103,7 +103,7 @@ export async function seed(db, { force = false } = {}) {
 // ── CLI 入口：npm run seed [--force] ──
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const db = await initDb()
-  db.exec(config.dbDriver === 'mysql' ? MYSQL_DDL : SQLITE_DDL)
+  await db.exec(config.dbDriver === 'mysql' ? MYSQL_DDL : SQLITE_DDL)
   await seed(db, { force: process.argv.includes('--force') })
 }
 
