@@ -1,14 +1,16 @@
 /**
- * 技遇后端端到端冒烟测试
+ * 职场那些事后端端到端冒烟测试
  * 运行：node test/smoke.mjs  （需先启动服务：npm start）
- * 覆盖：登录 / 匹配算法 / 距离过滤 / 文本风控(消息+动态) / 协议签署 / 互换完成 / 信用分重算 / 曝光 / Socket 实时消息
+ * 覆盖：健康 / 鉴权 / 当前职场关系接口 / REST 与 Socket 聊天风控 / 注册手机号唯一性
  */
 import { io as createClient } from 'socket.io-client'
 
 const BASE = process.env.BASE_URL || 'http://localhost:3000'
+const runId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
 let passed = 0
 let failed = 0
+
 function check(name, cond, extra = '') {
   if (cond) {
     passed++
@@ -17,6 +19,63 @@ function check(name, cond, extra = '') {
     failed++
     console.log(`  ❌ ${name}${extra ? ` — ${extra}` : ''}`)
   }
+}
+
+function isObject(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function responseObject(name, response, expectedStatus = 200) {
+  const ok = response.status === expectedStatus && isObject(response.data)
+  check(name, ok, `status=${response.status}`)
+  return ok ? response.data : null
+}
+
+function responseArray(name, response, key, expectedStatus = 200) {
+  const data = responseObject(name, response, expectedStatus)
+  const value = data && Array.isArray(data[key]) ? data[key] : null
+  if (!value) check(`${name} 包含 ${key} 数组`, false, `status=${response.status}`)
+  return value || []
+}
+
+function hasFields(value, fields) {
+  return isObject(value) && fields.every((field) => Object.hasOwn(value, field))
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function connectSocket(socket, name) {
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      check(`${name} Socket 连接`, false, '超时')
+      resolve(false)
+    }, 5000)
+    socket.once('connect', () => {
+      clearTimeout(timeout)
+      check(`${name} Socket 连接`, true)
+      resolve(true)
+    })
+    socket.once('connect_error', (error) => {
+      clearTimeout(timeout)
+      check(`${name} Socket 连接`, false, error.message)
+      resolve(false)
+    })
+  })
+}
+
+function socketSend(socket, payload, name) {
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      check(name, false, '确认超时')
+      resolve(null)
+    }, 5000)
+    socket.emit('chat:send', payload, (ack) => {
+      clearTimeout(timeout)
+      resolve(ack)
+    })
+  })
 }
 
 async function api(path, { method = 'GET', token, body } = {}) {
@@ -31,246 +90,337 @@ async function api(path, { method = 'GET', token, body } = {}) {
   return { status: res.status, data }
 }
 
-console.log('══════ 技遇后端冒烟测试 ══════\n')
+console.log('══════ 职场那些事后端冒烟测试 ══════\n')
 
 // 1. 健康检查
 {
-  const { status, data } = await api('/api/health')
-  check('健康检查', status === 200 && data.ok === true)
+  const health = await api('/api/health')
+  const data = responseObject('健康检查响应', health)
+  check('健康检查', data?.ok === true, `status=${health.status}`)
 }
 
-// 2. 登录演示账号 阿青
-let aqing = null
-let linxiao = null
+// 2. 演示账号与登录失败
+let aqingToken = null
+let linxiaoToken = null
+let linxiaoId = null
 {
-  const { status, data } = await api('/api/auth/login', { method: 'POST', body: { username: 'aqing', password: '123456' } })
-  check('登录 aqing', status === 200 && !!data.token, `user=${data.user?.userName}`)
-  aqing = data
-}
-
-// 3. 错误密码应被拒绝
-{
-  const { status } = await api('/api/auth/login', { method: 'POST', body: { username: 'aqing', password: 'wrongpass' } })
-  check('错误密码被拒绝', status === 401)
-}
-
-// 4. 双向匹配（核心算法）：预期至少包含 林晓/米粒/周可（VIP/高信用优先）
-{
-  const { status, data } = await api('/api/match', { token: aqing.token })
-  check('双向匹配接口', status === 200 && data.matches.length > 0, `共 ${data.matches.length} 位匹配`)
-  const names = data.matches.map((m) => m.user.userName)
-  check('匹配含 林晓', names.includes('林晓'))
-  check('匹配含 周可', names.includes('周可'))
-  check('匹配含 米粒', names.includes('米粒'))
-  check('匹配含 韩雪', names.includes('韩雪'))
-  // 匹配理由双向性：每个结果必须同时有"我教对方"和"对方教我"
-  const allBidirectional = data.matches.every(
-    (m) => m.mySkillsForThem.length > 0 && m.theirSkillsForMe.length > 0
-  )
-  check('匹配均为双向对等', allBidirectional)
-  // VIP 优先：林晓(90, VIP) 应排首位
-  check('VIP 曝光用户优先', data.matches[0]?.user?.userName === '林晓')
-  linxiao = data.matches.find((m) => m.user.userName === '林晓')
-}
-
-// 5. 同城 10km 过滤：陈默(12km)/阿哲(20km) 应被排除
-{
-  const { status, data } = await api('/api/match?nearbyOnly=1', { token: aqing.token })
-  const names = data.matches.map((m) => m.user.userName)
-  check('同城10km过滤', status === 200 && !names.includes('陈默') && !names.includes('阿哲'),
-    `剩余 ${names.length} 位`)
-}
-
-// 6. 关键词过滤
-{
-  const { status, data } = await api('/api/match?keyword=日语', { token: aqing.token })
-  const names = data.matches.map((m) => m.user.userName)
-  check('关键词「日语」过滤', status === 200 && names.includes('米粒') && names.includes('陈默'))
-}
-
-// 7. 消息风控：发送「多少钱」应被拦截并追加系统提示
-let blockedMessage = null
-{
-  const convs = await api('/api/conversations', { token: aqing.token })
-  const conv = convs.data.conversations[0]
-  const { status, data } = await api('/api/messages', {
-    method: 'POST', token: aqing.token,
-    body: { conversationId: conv.id, text: '这个课程多少钱？' }
+  const login = await api('/api/auth/login', {
+    method: 'POST', body: { username: 'aqing', password: '123456' }
   })
-  check('违禁消息被拦截', status === 201 && data.blocked === true, data.warning?.slice(0, 30) + '…')
-  const msgs = await api(`/api/conversations/${conv.id}/messages`, { token: aqing.token })
-  const last = msgs.data.messages[msgs.data.messages.length - 1]
-  check('拦截后追加系统提示', last?.isSystemNote === true && last.text.includes('违禁词'))
-  blockedMessage = last
+  const data = responseObject('登录 aqing 响应', login)
+  const valid = !!data?.token && hasFields(data?.user, ['id', 'userName'])
+  check('登录 aqing', valid, `status=${login.status}`)
+  if (valid) aqingToken = data.token
 }
-
-// 8. 正常消息可发送
 {
-  const convs = await api('/api/conversations', { token: aqing.token })
-  const conv = convs.data.conversations[0]
-  const { status, data } = await api('/api/messages', {
-    method: 'POST', token: aqing.token,
-    body: { conversationId: conv.id, text: '周六下午两点图书馆见，我教你剪辑基础' }
+  const login = await api('/api/auth/login', {
+    method: 'POST', body: { username: 'linxiao', password: '123456' }
   })
-  check('正常消息发送成功', status === 201 && data.blocked !== true)
-}
-
-// 9. 动态风控：发布含「收费」动态应被拒
-{
-  const { status } = await api('/api/dynamics', {
-    method: 'POST', token: aqing.token,
-    body: { content: '承接视频剪辑，收费 50 元' }
-  })
-  check('违规动态被拦截', status === 403)
-}
-{
-  const { status } = await api('/api/dynamics', {
-    method: 'POST', token: aqing.token,
-    body: { content: '周末组队去公园拍秋景，欢迎摄影搭子～' }
-  })
-  check('合规动态发布成功', status === 201)
-}
-
-// 10. 协议签署 → 互换记录生成 + 匹配推送
-{
-  const partner = linxiao?.user
-  if (partner) {
-    const { status, data } = await api('/api/agreements', {
-      method: 'POST', token: aqing.token,
-      body: {
-        partnerId: partner.id, mySkillName: '视频剪辑', learnSkillName: '摄影',
-        exchangeType: 'both', scheduledTime: '本周日 15:00', location: '国贸图书馆'
-      }
-    })
-    check('签署协议', status === 201 && !!data.record, `status=${status}`)
-    check('生成互换记录(pending)', data.record?.status === 'pending')
-  } else {
-    check('签署协议', false, '缺少匹配用户')
+  const data = responseObject('登录 linxiao 响应', login)
+  const valid = !!data?.token && hasFields(data?.user, ['id', 'userName'])
+  check('登录 linxiao', valid, `status=${login.status}`)
+  if (valid) {
+    linxiaoToken = data.token
+    linxiaoId = data.user.id
   }
 }
-
-// 11. 互换完成 + 评价 + 信用分重算
 {
-  const { data } = await api('/api/exchanges', { token: aqing.token })
-  const rec = data.records.find((r) => r.status === 'pending')
-  if (rec) {
-    const done = await api(`/api/exchanges/${rec.id}/complete`, { method: 'POST', token: aqing.token })
-    check('互换标记完成', done.status === 200)
-    const evalRes = await api('/api/evaluations', {
-      method: 'POST', token: aqing.token,
-      body: { recordId: rec.id, punctuality: 5, serious: 5, communication: 5, comment: '教得超认真！' }
-    })
-    check('提交评价成功', evalRes.status === 200)
-    const recs = await api('/api/exchanges', { token: aqing.token })
-    const updated = recs.data.records.find((r) => r.id === rec.id)
-    check('互换状态→completed 且已评价', updated?.status === 'completed' && updated?.evaluateGiven === true)
+  const login = await api('/api/auth/login', {
+    method: 'POST', body: { username: 'aqing', password: 'wrongpass' }
+  })
+  check('错误密码被拒绝', login.status === 401, `status=${login.status}`)
+}
+
+// 3. 当前标签字典（公开接口）
+{
+  const tags = await api('/api/tags')
+  const data = responseObject('标签字典响应', tags)
+  check('16 个同事类型', Array.isArray(data?.colleagueTypes) && data.colleagueTypes.length === 16)
+  check('14 个行为标签', Array.isArray(data?.behaviorTags) && data.behaviorTags.length === 14)
+  check('6 个当前基础情绪', Array.isArray(data?.moods) && data.moods.length === 6)
+  check('10 个压力来源', Array.isArray(data?.stressSources) && data.stressSources.length === 10)
+}
+
+// 4. REST 聊天：建立会话、文本风控与正常消息
+let conversationId = null
+if (aqingToken && linxiaoId) {
+  const opened = await api('/api/conversations/open', {
+    method: 'POST', token: aqingToken, body: { partnerId: linxiaoId }
+  })
+  const data = responseObject('REST 聊天会话响应', opened)
+  const valid = hasFields(data?.conversation, ['id', 'partner'])
+  check('建立 REST 聊天会话', valid, `status=${opened.status}`)
+  if (valid) conversationId = data.conversation.id
+} else {
+  check('建立 REST 聊天会话', false, '缺少已验证的演示账号')
+}
+
+if (aqingToken && conversationId) {
+  const blocked = await api('/api/messages', {
+    method: 'POST', token: aqingToken,
+    body: { conversationId, text: '这个课程多少钱？' }
+  })
+  const data = responseObject('REST 风控消息响应', blocked, 201)
+  check('REST 违禁消息被拦截', data?.blocked === true && isObject(data?.message), `status=${blocked.status}`)
+
+  const messages = await api(`/api/conversations/${conversationId}/messages`, { token: aqingToken })
+  const list = responseArray('REST 聊天记录响应', messages, 'messages')
+  const last = list.at(-1)
+  check('REST 拦截后追加系统提示', last?.isSystemNote === true && last?.text?.includes('违禁词') === true)
+
+  const normal = await api('/api/messages', {
+    method: 'POST', token: aqingToken,
+    body: { conversationId, text: `冒烟正常 REST 聊天 ${runId}` }
+  })
+  const normalData = responseObject('REST 正常消息响应', normal, 201)
+  check('REST 正常消息发送成功', normalData?.blocked !== true && isObject(normalData?.message), `status=${normal.status}`)
+} else {
+  check('REST 违禁消息被拦截', false, '缺少已验证的会话')
+  check('REST 拦截后追加系统提示', false, '缺少已验证的会话')
+  check('REST 正常消息发送成功', false, '缺少已验证的会话')
+}
+
+// 5. 吐槽：创建、广场、点赞、共鸣、删除
+let complaintId = null
+if (aqingToken) {
+  const created = await api('/api/complaints', {
+    method: 'POST', token: aqingToken,
+    body: {
+      content: `冒烟吐槽 ${runId}`,
+      category: 'leader',
+      behaviorTags: ['meeting_bs'],
+      sentiment: 'tired'
+    }
+  })
+  const data = responseObject('创建吐槽响应', created, 201)
+  const valid = hasFields(data?.complaint, ['id', 'content', 'likeCount', 'resonanceCount'])
+  check('创建吐槽', valid, `status=${created.status}`)
+  if (valid) complaintId = data.complaint.id
+
+  if (complaintId) {
+    const feed = await api('/api/complaints/feed?sort=new', { token: aqingToken })
+    const complaints = responseArray('吐槽广场响应', feed, 'complaints')
+    check('吐槽出现在广场', complaints.some((complaint) => complaint?.id === complaintId))
+
+    const liked = await api(`/api/complaints/${complaintId}/like`, { method: 'POST', token: aqingToken })
+    const likeData = responseObject('吐槽点赞响应', liked)
+    check('点赞吐槽', likeData?.liked === true && Number.isFinite(likeData?.likeCount), `status=${liked.status}`)
+
+    const resonated = await api(`/api/complaints/${complaintId}/resonate`, { method: 'POST', token: aqingToken })
+    const resonanceData = responseObject('吐槽共鸣响应', resonated)
+    check('共鸣吐槽', resonanceData?.resonated === true && Number.isFinite(resonanceData?.resonanceCount), `status=${resonated.status}`)
+
+    const deleted = await api(`/api/complaints/${complaintId}`, { method: 'DELETE', token: aqingToken })
+    const deleteData = responseObject('删除吐槽响应', deleted)
+    check('删除吐槽', deleteData?.ok === true, `status=${deleted.status}`)
+    complaintId = null
   } else {
-    check('互换完成+评价', false, '无待开始的互换记录')
+    check('吐槽出现在广场', false, '创建响应缺少 complaint 对象')
+    check('点赞吐槽', false, '创建响应缺少 complaint id')
+    check('共鸣吐槽', false, '创建响应缺少 complaint id')
+    check('删除吐槽', false, '创建响应缺少 complaint id')
   }
+} else {
+  check('创建吐槽', false, '缺少 aqing token')
+  check('吐槽出现在广场', false, '缺少 aqing token')
+  check('点赞吐槽', false, '缺少 aqing token')
+  check('共鸣吐槽', false, '缺少 aqing token')
+  check('删除吐槽', false, '缺少 aqing token')
 }
 
-// 12. 曝光服务（方案 3.1 模拟开通）
-{
-  const { status, data } = await api('/api/me/exposure', {
-    method: 'PUT', token: aqing.token, body: { packageId: 'week' }
+// 6. 情绪：同日 upsert、今日和趋势
+if (aqingToken) {
+  const first = await api('/api/mood/checkin', {
+    method: 'POST', token: aqingToken,
+    body: { mood: '🙂', stressSources: ['meeting'], note: `第一次打卡 ${runId}` }
   })
-  check('开通曝光(周卡)', status === 200 && data.user.isExposureVip === true)
-  const del = await api('/api/me/exposure', { method: 'DELETE', token: aqing.token })
-  check('取消曝光', del.status === 200 && del.data.user.isExposureVip === false)
+  const firstData = responseObject('首次情绪打卡响应', first)
+  check('首次情绪打卡', firstData?.ok === true && typeof firstData?.date === 'string', `status=${first.status}`)
+
+  const secondNote = `同日更新 ${runId}`
+  const second = await api('/api/mood/checkin', {
+    method: 'POST', token: aqingToken,
+    body: { mood: '😄', stressSources: ['coworker'], note: secondNote }
+  })
+  const secondData = responseObject('同日情绪更新响应', second)
+  check('同日情绪打卡 upsert', secondData?.ok === true && secondData?.mood === '😄' && secondData?.note === secondNote,
+    `status=${second.status}`)
+
+  const today = await api('/api/mood/today', { token: aqingToken })
+  const todayData = responseObject('今日情绪响应', today)
+  check('今日情绪反映 upsert', todayData?.checked === true && todayData?.mood === '😄' && todayData?.note === secondNote,
+    `status=${today.status}`)
+
+  const trends = await api('/api/mood/trends?days=7', { token: aqingToken })
+  const trend = responseArray('情绪趋势响应', trends, 'trend')
+  check('情绪趋势包含今日更新', trend.some((item) => item?.date === todayData?.date && item?.mood === '😄'))
+} else {
+  check('首次情绪打卡', false, '缺少 aqing token')
+  check('同日情绪打卡 upsert', false, '缺少 aqing token')
+  check('今日情绪反映 upsert', false, '缺少 aqing token')
+  check('情绪趋势包含今日更新', false, '缺少 aqing token')
 }
 
-// 13. 技能增删（方案 2.3.1）
-{
-  const add = await api('/api/me/skills', {
-    method: 'POST', token: aqing.token,
-    body: { kind: 'want', skill: { skillName: '街舞', skillLevel: 'beginner', exchangeType: 'offline', availableTime: '周末' } }
+// 7. 同事、关系雷达、关系总结和清理
+let colleagueId = null
+if (aqingToken) {
+  const created = await api('/api/colleagues', {
+    method: 'POST', token: aqingToken,
+    body: { name: `冒烟同事 ${runId}`, position: '工程师', relation: '同组', attributeTags: ['techstar'] }
   })
-  check('添加技能', add.status === 201 && !!add.data.skill.id)
-  const del = await api(`/api/me/skills/want/${add.data.skill.id}`, { method: 'DELETE', token: aqing.token })
-  check('删除技能', del.status === 200)
-}
+  const data = responseObject('创建同事响应', created, 201)
+  const valid = hasFields(data?.colleague, ['id', 'name', 'attributeTags'])
+  check('创建同事', valid, `status=${created.status}`)
+  if (valid) colleagueId = data.colleague.id
 
-// 14. Socket.io 实时消息（双客户端）
-{
-  const s1 = createClient(BASE, { forceNew: true, auth: { token: aqing.token } })
-  const partner = linxiao?.user
-  let received = []
-  await new Promise((resolve) => s1.on('connect', resolve))
-  s1.on('chat:message', (m) => received.push(m))
-
-  const open = await api('/api/conversations/open', {
-    method: 'POST', token: aqing.token, body: { partnerId: partner.id }
-  })
-  console.log('  … socket: open 状态', open.status)
-  const convId = open.data.conversation?.id
-
-  // 第二个客户端：林晓
-  const lin = await api('/api/auth/login', { method: 'POST', body: { username: 'linxiao', password: '123456' } })
-  console.log('  … socket: 林晓登录', lin.status)
-  const s2 = createClient(BASE, { forceNew: true, auth: { token: lin.data.token } })
-  s2.on('connect_error', (e) => console.log('  … socket: s2 connect_error →', e.message))
-  let linReceived = []
-  await new Promise((resolve) => s2.on('connect', resolve))
-  s2.on('chat:message', (m) => linReceived.push(m))
-
-  // 阿青通过 socket 发合规消息
-  await new Promise((resolve) => {
-    s1.emit('chat:send', { conversationId: convId, text: '通过 Socket 发送的实时消息' }, (ack) => {
-      check('Socket 消息发送成功', ack?.ok === true)
-      resolve()
+  if (colleagueId) {
+    const scores = { cooperation: 81, expertise: 82, communication: 83, support: 84, trust: 85 }
+    const posted = await api(`/api/radar/${colleagueId}`, {
+      method: 'POST', token: aqingToken, body: { scores }
     })
-  })
-  await new Promise((r) => setTimeout(r, 500))
-  check('双方实时收到消息', received.some((m) => m.text === '通过 Socket 发送的实时消息')
-    && linReceived.some((m) => m.text === '通过 Socket 发送的实时消息'))
+    const postData = responseObject('关系雷达提交响应', posted)
+    check('提交关系雷达', postData?.ok === true && hasFields(postData?.scores, Object.keys(scores)), `status=${posted.status}`)
 
-  // 阿青通过 socket 发违禁消息 → blocked
-  await new Promise((resolve) => {
-    s1.emit('chat:send', { conversationId: convId, text: '私下转账给你' }, (ack) => {
-      check('Socket 违禁消息被拦截', ack?.blocked === true)
-      resolve()
-    })
-  })
-  await new Promise((r) => setTimeout(r, 500))
-  check('双方收到拦截系统提示', received.some((m) => m.text.includes('已被平台风控拦截')))
+    const fetched = await api(`/api/radar/${colleagueId}`, { token: aqingToken })
+    const getData = responseObject('关系雷达查询响应', fetched)
+    check('读取关系雷达', getData?.scored === true && getData?.scores?.trust === scores.trust, `status=${fetched.status}`)
 
+    const relationship = await api(`/api/ai/relationship/${colleagueId}`, { token: aqingToken })
+    const relationshipData = responseObject('关系总结响应', relationship)
+    check('关系总结文档形状', hasFields(relationshipData, [
+      'colleagueId', 'colleagueName', 'radar', 'healthScore', 'relationType',
+      'conflicts', 'topBehaviors', 'suggestions', 'disclaimer'
+    ]) && Array.isArray(relationshipData?.conflicts) && Array.isArray(relationshipData?.suggestions), `status=${relationship.status}`)
+
+    const deleted = await api(`/api/colleagues/${colleagueId}`, { method: 'DELETE', token: aqingToken })
+    const deleteData = responseObject('删除同事响应', deleted)
+    check('删除同事', deleteData?.ok === true, `status=${deleted.status}`)
+    colleagueId = null
+  } else {
+    check('提交关系雷达', false, '创建响应缺少 colleague id')
+    check('读取关系雷达', false, '创建响应缺少 colleague id')
+    check('关系总结文档形状', false, '创建响应缺少 colleague id')
+    check('删除同事', false, '创建响应缺少 colleague id')
+  }
+} else {
+  check('创建同事', false, '缺少 aqing token')
+  check('提交关系雷达', false, '缺少 aqing token')
+  check('读取关系雷达', false, '缺少 aqing token')
+  check('关系总结文档形状', false, '缺少 aqing token')
+  check('删除同事', false, '缺少 aqing token')
+}
+
+// 8. 首页统计和职场人格的文档形状
+if (aqingToken) {
+  const home = await api('/api/home/stats', { token: aqingToken })
+  const homeData = responseObject('首页统计响应', home)
+  check('首页统计文档形状', hasFields(homeData?.stats, [
+    'todayComplaints', 'myResonances', 'myLikes', 'avgColleagueScore',
+    'colleagueCount', 'healthScore', 'moodDays'
+  ]), `status=${home.status}`)
+
+  const personality = await api('/api/ai/personality', { token: aqingToken })
+  const personalityData = responseObject('职场人格响应', personality)
+  check('职场人格文档形状', hasFields(personalityData, ['personality', 'emoji', 'desc', 'stats', 'disclaimer']) &&
+    hasFields(personalityData?.stats, [
+      'totalComplaints', 'totalResonances', 'topTarget', 'topTheme', 'weakestPoint',
+      'emotionIndex', 'relationshipSensitivity', 'slackScore'
+    ]), `status=${personality.status}`)
+} else {
+  check('首页统计文档形状', false, '缺少 aqing token')
+  check('职场人格文档形状', false, '缺少 aqing token')
+}
+
+// 9. Socket.io 实时消息与风控
+if (aqingToken && linxiaoToken && conversationId) {
+  const s1 = createClient(BASE, { forceNew: true, auth: { token: aqingToken } })
+  const s2 = createClient(BASE, { forceNew: true, auth: { token: linxiaoToken } })
+  const received = []
+  const linReceived = []
+  s1.on('chat:message', (message) => received.push(message))
+  s2.on('chat:message', (message) => linReceived.push(message))
+
+  const [s1Connected, s2Connected] = await Promise.all([
+    connectSocket(s1, 'aqing'),
+    connectSocket(s2, 'linxiao')
+  ])
+
+  if (s1Connected && s2Connected) {
+    const socketText = `通过 Socket 发送的实时消息 ${runId}`
+    const normalAck = await socketSend(s1, { conversationId, text: socketText }, 'Socket 正常消息确认')
+    check('Socket 消息发送成功', normalAck?.ok === true, '收到确认')
+    await delay(300)
+    check('双方实时收到消息', received.some((message) => message?.text === socketText) &&
+      linReceived.some((message) => message?.text === socketText))
+
+    const blockedAck = await socketSend(s1, { conversationId, text: '私下转账给你' }, 'Socket 违禁消息确认')
+    check('Socket 违禁消息被拦截', blockedAck?.blocked === true, '收到确认')
+    await delay(300)
+    check('双方收到拦截系统提示', received.some((message) => message?.text?.includes('已被平台风控拦截')) &&
+      linReceived.some((message) => message?.text?.includes('已被平台风控拦截')))
+  } else {
+    check('Socket 消息发送成功', false, 'Socket 未连接')
+    check('双方实时收到消息', false, 'Socket 未连接')
+    check('Socket 违禁消息被拦截', false, 'Socket 未连接')
+    check('双方收到拦截系统提示', false, 'Socket 未连接')
+  }
   s1.close()
   s2.close()
+} else {
+  check('Socket 消息发送成功', false, '缺少已验证的账号或会话')
+  check('双方实时收到消息', false, '缺少已验证的账号或会话')
+  check('Socket 违禁消息被拦截', false, '缺少已验证的账号或会话')
+  check('双方收到拦截系统提示', false, '缺少已验证的账号或会话')
 }
 
-// 15. 注册新用户（手机号选填：不填直接注册；填写则强制一手机号一号 + 验证码）
+// 10. 注册：手机号选填、手机号唯一、用户名唯一
 {
-  // 15a. 不带手机号注册（新用户注册不再强制手机号）
-  const unameA = `smokeuser${Date.now()}`
+  const usernameA = `smokeuser${runId.replace(/\W/g, '')}a`
   const noPhone = await api('/api/auth/register', {
-    method: 'POST',
-    body: { username: unameA, password: '123456', nickname: '冒烟无手机' }
+    method: 'POST', body: { username: usernameA, password: '123456', nickname: '冒烟无手机' }
   })
-  check('不带手机号注册成功', noPhone.status === 201 && !!noPhone.data?.token)
+  const noPhoneData = responseObject('无手机号注册响应', noPhone, 201)
+  check('不带手机号注册成功', !!noPhoneData?.token, `status=${noPhone.status}`)
 
-  // 15b. 带手机号 + 验证码注册（接口保留，仍可用）
-  const uname = `smokeuser${Date.now() + 1}`
-  const randPhone = () => `13${String(Math.floor(1e9 + Math.random() * 9e9)).slice(-9)}`
-  const phoneA = randPhone()
-  const codeRes = await api('/api/auth/phone/send-code', { method: 'POST', body: { phone: phoneA } })
-  check('发送注册验证码（console 通道返回 devCode）', codeRes.status === 201 && !!codeRes.data?.devCode)
-  const { status, data } = await api('/api/auth/register', {
-    method: 'POST',
-    body: { username: uname, password: '123456', nickname: '冒烟测试', phone: phoneA, code: codeRes.data.devCode }
-  })
-  check('带手机号注册成功（含验证码）', status === 201 && !!data.token && data.user.phone === phoneA)
-  const dupPhone = await api('/api/auth/register', {
-    method: 'POST',
-    body: { username: `smokeuser${Date.now() + 2}`, password: '123456', nickname: '重复', phone: phoneA, code: codeRes.data.devCode }
-  })
-  check('同一手机号二次注册被拒绝', dupPhone.status === 409)
-  const phoneB = randPhone()
-  const codeB = await api('/api/auth/phone/send-code', { method: 'POST', body: { phone: phoneB } })
-  const dup = await api('/api/auth/register', {
-    method: 'POST',
-    body: { username: uname, password: '123456', nickname: '重复', phone: phoneB, code: codeB.data.devCode }
-  })
-  check('重复用户名被拒绝', dup.status === 409)
+  const usernameB = `smokeuser${runId.replace(/\W/g, '')}b`
+  const phone = `13${String(Math.floor(1e9 + Math.random() * 9e9)).slice(-9)}`
+  const codeResponse = await api('/api/auth/phone/send-code', { method: 'POST', body: { phone } })
+  const codeData = responseObject('注册验证码响应', codeResponse, 201)
+  const code = typeof codeData?.devCode === 'string' ? codeData.devCode : null
+  check('发送注册验证码', !!code, `status=${codeResponse.status}`)
+
+  if (code) {
+    const registered = await api('/api/auth/register', {
+      method: 'POST',
+      body: { username: usernameB, password: '123456', nickname: '冒烟测试', phone, code }
+    })
+    const registeredData = responseObject('手机号注册响应', registered, 201)
+    check('带手机号注册成功', !!registeredData?.token && registeredData?.user?.phone === phone, `status=${registered.status}`)
+
+    const duplicatePhone = await api('/api/auth/register', {
+      method: 'POST',
+      body: { username: `${usernameB}x`, password: '123456', nickname: '重复', phone, code }
+    })
+    check('同一手机号二次注册被拒绝', duplicatePhone.status === 409, `status=${duplicatePhone.status}`)
+
+    const phoneB = `13${String(Math.floor(1e9 + Math.random() * 9e9)).slice(-9)}`
+    const codeBResponse = await api('/api/auth/phone/send-code', { method: 'POST', body: { phone: phoneB } })
+    const codeBData = responseObject('重复用户名验证码响应', codeBResponse, 201)
+    const codeB = typeof codeBData?.devCode === 'string' ? codeBData.devCode : null
+    if (codeB) {
+      const duplicateUsername = await api('/api/auth/register', {
+        method: 'POST',
+        body: { username: usernameB, password: '123456', nickname: '重复', phone: phoneB, code: codeB }
+      })
+      check('重复用户名被拒绝', duplicateUsername.status === 409, `status=${duplicateUsername.status}`)
+    } else {
+      check('重复用户名被拒绝', false, '验证码响应缺少 devCode')
+    }
+  } else {
+    check('带手机号注册成功', false, '验证码响应缺少 devCode')
+    check('同一手机号二次注册被拒绝', false, '验证码响应缺少 devCode')
+    check('重复用户名被拒绝', false, '验证码响应缺少 devCode')
+  }
 }
 
 console.log(`\n══════ 结果：${passed} 通过 / ${failed} 失败 ══════`)
