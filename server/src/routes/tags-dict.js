@@ -1,8 +1,9 @@
 /**
  * 标签与字典常量（系统静态，不落数据库）
- * 同事类型 16 种 / 行为标签 14 种 / 情绪 6 种 / 压力源 10 种 / 人格模板 5 种
+ * 同事类型 16 种 / 行为标签 14 种 / 小能仔情绪 27 种 / 压力源 10 种 / 人格模板 5 种
  * AI 关键词词典用于 /api/ai/extract-tags 自动识别
  */
+import { MOODS as LITTLE_ENERGY_MOODS } from '../little-energy.js'
 
 export const COLLEAGUE_TYPES = [
   { id: 'fish',         label: '摸鱼型',       emoji: '🐟' },
@@ -40,14 +41,7 @@ export const BEHAVIOR_TAGS = [
   { id: 'weekend_job',  label: '周末安排工作' }
 ]
 
-export const MOODS = [
-  { id: 'happy',   emoji: '😄', label: '元气' },
-  { id: 'ok',      emoji: '🙂', label: '还行' },
-  { id: 'meh',     emoji: '😐', label: '一般' },
-  { id: 'tired',   emoji: '😮‍💨', label: '好累' },
-  { id: 'rage',    emoji: '😡', label: '想辞职' },
-  { id: 'doom',    emoji: '💀', label: '不想活了' }
-]
+export const MOODS = LITTLE_ENERGY_MOODS
 
 export const STRESS_SOURCES = [
   { id: 'boss',      label: '领导' },

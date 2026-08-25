@@ -3,6 +3,7 @@
  */
 import jwt from 'jsonwebtoken'
 import { config } from './config.js'
+import { normalizeOutfit } from './little-energy.js'
 
 export function signToken(userId) {
   return jwt.sign({ sub: String(userId) }, config.jwtSecret, { expiresIn: config.jwtExpires })
@@ -32,12 +33,15 @@ export function serializeUser(row, { includePhone = false } = {}) {
   // 曝光 VIP 过期校验：exposure_until 已过则视为普通用户（排序/展示一致）
   const vipActive = !!row.is_exposure_vip &&
     (!row.exposure_until || new Date(row.exposure_until).getTime() > Date.now())
+  let storedOutfit = null
+  try { storedOutfit = JSON.parse(row.little_energy_outfit || 'null') } catch { /* fall back to the default outfit */ }
   const user = {
     id: String(row.id),
     username: row.username,
     userName: row.nickname,
     avatarSymbol: row.avatar_symbol,
     avatarUrl: row.avatar_url || null,
+    littleEnergyOutfit: normalizeOutfit(storedOutfit),
     bio: row.bio,
     locationLabel: row.location_label,
     distanceKm: row.distance_km,

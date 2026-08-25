@@ -21,7 +21,7 @@ const OK = (name, cond, extra = '') => {
   // 2. 字典
   const dict = await M.fetchTags()
   App.state.dict = dict
-  OK('fetchTags', dict.colleagueTypes.length === 16 && dict.behaviorTags.length === 14 && dict.moods.length === 6 && dict.stressSources.length === 10,
+  OK('fetchTags', dict.colleagueTypes.length === 16 && dict.behaviorTags.length === 14 && dict.moods.length === 27 && dict.stressSources.length === 10,
     `types=${dict.colleagueTypes.length} tags=${dict.behaviorTags.length} moods=${dict.moods.length} stress=${dict.stressSources.length}`)
 
   // 3. AI 标签识别
@@ -56,16 +56,18 @@ const OK = (name, cond, extra = '') => {
   const mine = await M.fetchMineComplaints()
   OK('fetchMineComplaints', mine.complaints.some(c => String(c.id) === String(cid)), `mine=${mine.complaints.length}`)
 
-  // 7. 情绪打卡（mood 值为 emoji 字符串，与 views.js 快捷打卡一致）
+  // 7. 情绪打卡（稳定小能仔 ID，兼容旧 Emoji 输入）
   const today = await M.fetchMoodToday()
-  const ck = await M.checkinMood({ mood: '😮‍💨', stressSources: ['deadline', 'meeting'], note: 'win-app 测试打卡' })
-  OK('checkinMood(upsert)', ck.ok === true && ck.mood === '😮‍💨', `mood=${ck.mood} stress=${ck.stressSources.length}`)
-  const ck2 = await M.checkinMood({ mood: '😐', stressSources: ['deadline'] })
-  OK('checkinMood(re-upsert same day)', ck2.mood === '😐', 'mood=' + ck2.mood)
+  const ck = await M.checkinMood({ mood: 'xnz_tired', stressSources: ['deadline', 'meeting'], note: 'win-app 测试打卡' })
+  OK('checkinMood(upsert)', ck.ok === true && ck.mood === 'xnz_tired', `mood=${ck.mood} stress=${ck.stressSources.length}`)
+  const ck2 = await M.checkinMood({ mood: 'xnz_calm', stressSources: ['deadline'] })
+  OK('checkinMood(re-upsert same day)', ck2.mood === 'xnz_calm', 'mood=' + ck2.mood)
+  const legacyCk = await M.checkinMood({ mood: '😐', stressSources: ['deadline'] })
+  OK('checkinMood(legacy emoji normalized)', legacyCk.mood === 'xnz_calm', 'mood=' + legacyCk.mood)
   const t2 = await M.fetchMoodToday()
-  OK('fetchMoodToday(reflects upsert)', t2.checked === true && t2.mood === '😐', 'mood=' + t2.mood)
+  OK('fetchMoodToday(reflects upsert)', t2.checked === true && t2.mood === 'xnz_calm', 'mood=' + t2.mood)
   const trends = await M.fetchMoodTrends(30)
-  OK('fetchMoodTrends', Array.isArray(trends.trend) && trends.trend.length === 30 && trends.trend.some(d => d.mood === '😐'), `points=${trends.trend.length}`)
+  OK('fetchMoodTrends', Array.isArray(trends.trend) && trends.trend.length === 30 && trends.trend.some(d => d.mood === 'xnz_calm'), `points=${trends.trend.length}`)
   const summary = await M.fetchMoodSummary()
   OK('fetchMoodSummary', Array.isArray(summary.insights) && Array.isArray(summary.rankings),
     `totalDays=${summary.totalDays} topStress=${summary.rankings[0] && summary.rankings[0].id}`)

@@ -7,6 +7,13 @@
  */
 import { Router } from 'express'
 import { requireAuth } from '../middleware.js'
+import { MOODS, normalizeMood } from '../little-energy.js'
+
+const moodScores = new Map(MOODS.map((mood) => [mood.id, mood.score]))
+
+function isSupportedMood(value) {
+  return typeof value === 'string' && MOODS.some((mood) => mood.id === value || mood.legacyEmoji === value)
+}
 
 function todayDateStr() {
   const d = new Date()
@@ -27,7 +34,7 @@ export function moodRouter(db) {
     res.json({
       checked: true,
       date,
-      mood: row.mood,
+      mood: normalizeMood(row.mood),
       stressSources: row.stress_sources ? JSON.parse(row.stress_sources) : [],
       note: row.note,
       createdAt: row.created_at
@@ -36,8 +43,9 @@ export function moodRouter(db) {
 
   // ── 打卡（upsert） ──
   router.post('/mood/checkin', requireAuth, (req, res) => {
-    const mood = String(req.body?.mood || '').trim()
-    if (!mood) return res.status(400).json({ error: '请选择今日情绪' })
+    const rawMood = typeof req.body?.mood === 'string' ? req.body.mood.trim() : ''
+    if (!isSupportedMood(rawMood)) return res.status(400).json({ error: '请选择有效的今日情绪' })
+    const mood = normalizeMood(rawMood)
     const stressSources = Array.isArray(req.body?.stressSources) ? req.body.stressSources.slice(0, 10) : []
     const note = String(req.body?.note || '').slice(0, 500)
     const date = todayDateStr()
@@ -71,7 +79,7 @@ export function moodRouter(db) {
       d.setDate(d.getDate() - i)
       const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
       const r = map.get(ds)
-      trend.push(r ? { date: ds, mood: r.mood, stressSources: r.stress_sources ? JSON.parse(r.stress_sources) : [] } : { date: ds, mood: null, stressSources: [] })
+      trend.push(r ? { date: ds, mood: normalizeMood(r.mood), stressSources: r.stress_sources ? JSON.parse(r.stress_sources) : [] } : { date: ds, mood: null, stressSources: [] })
     }
     res.json({ days, trend })
   })
@@ -107,11 +115,10 @@ export function moodRouter(db) {
     const weekdayMood = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 0: [] }
     for (const r of rows) {
       const wd = new Date(r.checkin_date).getDay()
-      weekdayMood[wd].push(r.mood)
+      weekdayMood[wd].push(normalizeMood(r.mood))
     }
-    const badMoods = new Set(['😮‍💨', '😡', '💀'])
     const hotWeekdays = Object.entries(weekdayMood)
-      .map(([wd, moods]) => ({ wd: Number(wd), count: moods.filter((m) => badMoods.has(m)).length, total: moods.length }))
+      .map(([wd, moods]) => ({ wd: Number(wd), count: moods.filter((m) => moodScores.get(m) < 0).length, total: moods.length }))
       .filter((x) => x.total > 0)
       .sort((a, b) => (b.count / b.total) - (a.count / a.total))
       .slice(0, 2)

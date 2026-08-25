@@ -4,6 +4,7 @@
  */
 import { Router } from 'express'
 import { requireAuth, serializeUser } from '../middleware.js'
+import { normalizeOutfit } from '../little-energy.js'
 import { checkTextRisk } from '../risk.js'
 
 export function profileRouter(db) {
@@ -12,7 +13,11 @@ export function profileRouter(db) {
 
   // 更新资料（昵称 / 简介 / 位置 / 头像）
   router.put('/me/profile', (req, res) => {
-    const { nickname, bio, locationLabel, avatarUrl } = req.body || {}
+    const { nickname, bio, locationLabel, avatarUrl, littleEnergyOutfit } = req.body || {}
+    if (littleEnergyOutfit !== undefined &&
+      (!littleEnergyOutfit || typeof littleEnergyOutfit !== 'object' || Array.isArray(littleEnergyOutfit))) {
+      return res.status(400).json({ error: '小能仔穿搭必须是对象' })
+    }
     const riskText = [bio, nickname].filter((x) => x !== undefined).join(' ')
     if (riskText) {
       const risk = checkTextRisk(riskText)
@@ -20,8 +25,9 @@ export function profileRouter(db) {
     }
     db.run(
       `UPDATE users SET nickname = COALESCE(?, nickname), bio = COALESCE(?, bio), location_label = COALESCE(?, location_label),
-        avatar_url = COALESCE(?, avatar_url) WHERE id = ?`,
-      [nickname ?? null, bio ?? null, locationLabel ?? null, avatarUrl ?? null, req.userId]
+        avatar_url = COALESCE(?, avatar_url), little_energy_outfit = COALESCE(?, little_energy_outfit) WHERE id = ?`,
+      [nickname ?? null, bio ?? null, locationLabel ?? null, avatarUrl ?? null,
+        littleEnergyOutfit === undefined ? null : JSON.stringify(normalizeOutfit(littleEnergyOutfit)), req.userId]
     )
     const row = db.get('SELECT * FROM users WHERE id = ?', [req.userId])
     res.json({ user: serializeUser(row, { includePhone: true }) })
