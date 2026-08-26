@@ -219,6 +219,8 @@ struct ComplaintModel: Codable, Identifiable, Hashable {
     let userId: String
     let authorName: String
     let avatarSymbol: String
+    /// 服务端可选；匿名及旧响应保持 nil，由展示层使用确定性的默认穿搭。
+    let littleEnergyOutfit: LittleEnergyOutfit?
     let isAnonymous: Bool
     let content: String
     let colleagueId: String?

@@ -212,7 +212,11 @@ struct ComplaintCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
-                SymbolAvatar(symbol: complaint.avatarSymbol, size: 40)
+                LittleEnergyAvatarView(
+                    moodID: complaint.sentiment,
+                    outfit: ComplaintPresentation.outfit(for: complaint),
+                    size: 44
+                )
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
                         Text(complaint.authorName)

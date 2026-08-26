@@ -269,8 +269,6 @@ struct ColleagueEditView: View {
     @State private var avatarItem: PhotosPickerItem?
     @State private var isUploadingAvatar = false
 
-    private let symbols = ["👤", "👔", "💼", "🧑‍💼", "💻", "📣", "🧑‍💻", "👩‍💼", "🧑‍🔧", "🧑‍🏫"]
-
     init(editing: ColleagueModel? = nil) {
         self.editing = editing
     }
@@ -327,22 +325,9 @@ struct ColleagueEditView: View {
                             }
                         }
                     }
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 10) {
-                            ForEach(symbols, id: \.self) { s in
-                                Button {
-                                    avatarSymbol = s
-                                } label: {
-                                    Text(s)
-                                        .font(.system(size: 24))
-                                        .frame(width: 44, height: 44)
-                                        .background(Circle().fill(avatarSymbol == s ? Theme.primary.opacity(0.18) : Theme.inputBg))
-                                        .overlay(Circle().stroke(avatarSymbol == s ? Theme.primary : Theme.divider, lineWidth: 1.5))
-                                }
-                            }
-                        }
-                        .padding(.vertical, 4)
-                    }
+                    Text("未上传照片时固定显示无穿搭的黑化小能仔")
+                        .font(.caption)
+                        .foregroundStyle(Theme.textSecondary)
                     .onChange(of: avatarItem) { newItem in
                         guard let newItem else { return }
                         Task {

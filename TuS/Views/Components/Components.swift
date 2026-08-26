@@ -26,6 +26,22 @@ enum ChatEmojiPresentation {
     }
 }
 
+enum ComplaintPresentation {
+    static func outfit(for complaint: ComplaintModel) -> LittleEnergyOutfit {
+        complaint.isAnonymous ? .default : (complaint.littleEnergyOutfit ?? .default).normalized
+    }
+}
+
+enum LittleEnergyStateDecisions {
+    static func mood(previous: MoodCheckin?, saved: MoodCheckin?) -> MoodCheckin? {
+        saved ?? previous
+    }
+
+    static func profile(previous: UserModel, saved: UserModel?) -> UserModel {
+        saved ?? previous
+    }
+}
+
 struct OutfitDraft: Equatable {
     var topID: String
     var bottomID: String

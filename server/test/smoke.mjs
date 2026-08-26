@@ -191,6 +191,8 @@ if (aqingToken) {
       const feed = await api('/api/complaints/feed?sort=new', { token: aqingToken })
       const complaints = responseArray('吐槽广场响应', feed, 'complaints')
       check('吐槽出现在广场', complaints.some((complaint) => complaint?.id === complaintId))
+      const authoredComplaint = complaints.find((complaint) => complaint?.id === complaintId)
+      check('吐槽携带作者小能仔穿搭', authoredComplaint?.littleEnergyOutfit?.topId === 'top_tshirt')
 
       const liked = await api(`/api/complaints/${complaintId}/like`, { method: 'POST', token: aqingToken })
       const likeData = responseObject('吐槽点赞响应', liked)

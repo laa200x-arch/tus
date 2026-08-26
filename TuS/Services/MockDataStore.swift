@@ -680,6 +680,7 @@ final class MockDataStore: ObservableObject {
             userId: "local-me",
             authorName: isAnonymous ? "匿名用户" : currentUser.userName,
             avatarSymbol: isAnonymous ? "🎭" : currentUser.avatarSymbol,
+            littleEnergyOutfit: isAnonymous ? nil : currentUser.littleEnergyOutfit,
             isAnonymous: isAnonymous,
             content: content,
             colleagueId: colleagueId,
@@ -769,7 +770,7 @@ final class MockDataStore: ObservableObject {
             guard let checkin = try? await APIClient.shared.checkinMood(mood: mood, stressSources: stressSources, note: note) else {
                 return false
             }
-            moodToday = checkin
+            moodToday = LittleEnergyStateDecisions.mood(previous: moodToday, saved: checkin)
             moodCheckedToday = true
             if let trend = try? await APIClient.shared.fetchMoodTrends() {
                 moodTrend = trend
@@ -889,7 +890,7 @@ final class MockDataStore: ObservableObject {
     func updateProfile(nickname: String? = nil, bio: String? = nil, locationLabel: String? = nil, avatarUrl: String? = nil, littleEnergyOutfit: LittleEnergyOutfit? = nil) async throws {
         if isServerMode {
             let user = try await APIClient.shared.updateProfile(nickname: nickname, bio: bio, locationLabel: locationLabel, avatarUrl: avatarUrl, littleEnergyOutfit: littleEnergyOutfit)
-            currentUser = UserModel(server: user)
+            currentUser = LittleEnergyStateDecisions.profile(previous: currentUser, saved: UserModel(server: user))
             syncCurrentUserInAllUsers()
             return
         }
@@ -1117,6 +1118,7 @@ final class MockDataStore: ObservableObject {
                 userId: s.userId == nil ? "local-me" : "demo-user-\(index)",
                 authorName: s.authorName,
                 avatarSymbol: s.avatarSymbol,
+                littleEnergyOutfit: s.userId == nil ? currentUser.littleEnergyOutfit : .default,
                 isAnonymous: false,
                 content: s.content,
                 colleagueId: s.colleagueId?.uuidString,

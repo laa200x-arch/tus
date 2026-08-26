@@ -11,6 +11,7 @@
 import { Router } from 'express'
 import { requireAuth } from '../middleware.js'
 import { checkTextRisk } from '../risk.js'
+import { normalizeOutfit } from '../little-energy.js'
 
 export function complaintsRouter(db, io) {
   const router = Router()
@@ -47,6 +48,7 @@ export function complaintsRouter(db, io) {
       userId: String(row.user_id),
       authorName: row.is_anonymous ? '匿名用户' : row.author_name,
       avatarSymbol: row.is_anonymous ? '🎭' : (row.author_avatar || '👤'),
+      littleEnergyOutfit: row.is_anonymous ? null : normalizeOutfit(parseOutfit(row.author_outfit)),
       isAnonymous: !!row.is_anonymous,
       content: row.content,
       colleagueId: row.colleague_id ? String(row.colleague_id) : null,
@@ -64,6 +66,11 @@ export function complaintsRouter(db, io) {
       resonated,
       time: row.created_at
     }
+  }
+
+  const parseOutfit = (value) => {
+    if (!value) return null
+    try { return typeof value === 'string' ? JSON.parse(value) : value } catch { return null }
   }
 
   // ── Feed（设计稿分类 Tab：recommend 推荐 / new 最新 / anonymous 匿名 / colleague 我的同事 / mine 我的） ──
@@ -91,7 +98,7 @@ export function complaintsRouter(db, io) {
       args.push(req.userId)
     }
     const rows = db.all(`
-      SELECT c.*, u.nickname AS author_name, u.avatar_symbol AS author_avatar,
+      SELECT c.*, u.nickname AS author_name, u.avatar_symbol AS author_avatar, u.little_energy_outfit AS author_outfit,
              col.name AS colleague_name
       FROM complaints c
       JOIN users u ON u.id = c.user_id
@@ -109,7 +116,7 @@ export function complaintsRouter(db, io) {
   // ── 我的 ──
   router.get('/complaints/mine', requireAuth, (req, res) => {
     const rows = db.all(`
-      SELECT c.*, u.nickname AS author_name, u.avatar_symbol AS author_avatar,
+      SELECT c.*, u.nickname AS author_name, u.avatar_symbol AS author_avatar, u.little_energy_outfit AS author_outfit,
              col.name AS colleague_name
       FROM complaints c
       JOIN users u ON u.id = c.user_id
@@ -141,7 +148,7 @@ export function complaintsRouter(db, io) {
       [req.userId, content, colleagueId, category, JSON.stringify(behaviorTags), sentiment, isAnonymous, aiExtracted ? JSON.stringify(aiExtracted) : null, 0, now()]
     )
     const row = db.get(`
-      SELECT c.*, u.nickname AS author_name, u.avatar_symbol AS author_avatar,
+      SELECT c.*, u.nickname AS author_name, u.avatar_symbol AS author_avatar, u.little_energy_outfit AS author_outfit,
              col.name AS colleague_name
       FROM complaints c JOIN users u ON u.id = c.user_id
       LEFT JOIN colleagues col ON col.id = c.colleague_id
