@@ -112,8 +112,8 @@ git push -u origin main
 ### Windows 版本发布到 GitHub Releases
 
 ```bash
-node tools/release-win.mjs --tag win-v2.1.0 --name "职场那些事 Windows v2.1.0" \
-  --exe "win-app/dist/职场那些事 Setup 2.1.0.exe" --body "本次更新内容…"
+node tools/release-win.mjs --tag win-v2.1.1 --name "职场那些事 Windows v2.1.1" \
+  --exe "win-app/dist/职场那些事 Setup 2.1.1.exe" --body "本次更新内容…"
 ```
 
 - token 自动从 git 凭据管理器读取（或设置 `GH_TOKEN` 环境变量）

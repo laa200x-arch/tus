@@ -1,9 +1,17 @@
 'use strict'
 
 const assert = require('node:assert/strict')
+const fs = require('node:fs')
+const vm = require('node:vm')
 const L = require('./src/little-energy.js')
 
 async function main() {
+  const browser = vm.createContext({ console })
+  browser.globalThis = browser
+  vm.runInContext(fs.readFileSync('./src/little-energy.js', 'utf8'), browser, { filename: 'little-energy.js' })
+  vm.runInContext('function api() {}; const { MOODS } = globalThis.LittleEnergy', browser, { filename: 'following-browser-scripts.js' })
+  assert.equal(browser.LittleEnergy.MOODS.length, 27, 'browser scripts share only the exported LittleEnergy API without lexical collisions')
+
   const routed = []
   L.routeDataChange('home', {
     home: () => routed.push('home'),

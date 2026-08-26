@@ -1,3 +1,4 @@
+;(function (root) {
 'use strict'
 
 // IDs mirror shared/little-energy/catalog.json and the server contract.
@@ -134,4 +135,5 @@ const api = {
   personalityTitle, compatibleMoodPayload
 }
 if (typeof module !== 'undefined' && module.exports) module.exports = api
-if (typeof globalThis !== 'undefined') globalThis.LittleEnergy = api
+if (root) root.LittleEnergy = api
+})(typeof globalThis !== 'undefined' ? globalThis : this)

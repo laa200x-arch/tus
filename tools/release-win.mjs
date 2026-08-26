@@ -1,6 +1,6 @@
 /**
  * 发布 Windows 安装包到 GitHub Releases
- * 用法：node tools/release-win.mjs --tag win-v2.1.0 --name "职场那些事 Windows v2.1.0" --exe "win-app/dist/职场那些事 Setup 2.1.0.exe" --body "更新内容…"
+ * 用法：node tools/release-win.mjs --tag win-v2.1.1 --name "职场那些事 Windows v2.1.1" --exe "win-app/dist/职场那些事 Setup 2.1.1.exe" --body "更新内容…"
  * token 来源：环境变量 GH_TOKEN，或自动从 git credential manager 读取
  */
 import { spawnSync } from 'node:child_process'
