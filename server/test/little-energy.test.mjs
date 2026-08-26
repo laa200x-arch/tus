@@ -106,7 +106,7 @@ try {
     method: 'POST', token,
     body: {
       conversationId,
-      text: '客户端文本不应保存',
+      text: '',
       mediaType: 'little_energy_emoji',
       mediaUrl: 'xnz_happy'
     }
@@ -115,6 +115,13 @@ try {
   assert.equal(emojiMessage.data.message.mediaType, 'little_energy_emoji')
   assert.equal(emojiMessage.data.message.mediaUrl, 'xnz_happy')
   assert.equal(emojiMessage.data.message.text, '[小能仔·开心]')
+
+  const conversationsAfterEmoji = await api('/api/conversations', { token })
+  assert.equal(conversationsAfterEmoji.status, 200)
+  assert.equal(
+    conversationsAfterEmoji.data.conversations.find((conversation) => conversation.id === conversationId)?.lastMessageText,
+    '[小能仔·开心]'
+  )
 
   const invalidEmojiMessage = await api('/api/messages', {
     method: 'POST', token,

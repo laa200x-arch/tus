@@ -354,7 +354,7 @@ if (aqingToken && linxiaoToken && conversationId) {
 
     const emojiPayload = {
       conversationId,
-      text: '客户端文本不应保存',
+      text: '',
       mediaType: 'little_energy_emoji',
       mediaUrl: 'xnz_happy'
     }
@@ -375,6 +375,22 @@ if (aqingToken && linxiaoToken && conversationId) {
     const emojiReceived = await emojiReceipts
     check('双方实时收到相同小能仔 Emoji 消息', emojiReceived, emojiReceived ? '' : '等待接收超时')
 
+    const conversationsAfterEmoji = await api('/api/conversations', { token: aqingToken })
+    const conversationAfterEmoji = responseArray('Socket Emoji 后会话列表响应', conversationsAfterEmoji, 'conversations')
+      .find((conversation) => conversation?.id === String(conversationId))
+    check('Socket Emoji 更新会话末条文本', conversationAfterEmoji?.lastMessageText === '[小能仔·开心]')
+
+    const broadcastsBeforeInvalidEmoji = received.length + linReceived.length
+    const invalidEmojiAck = await socketSend(s1, {
+      conversationId,
+      text: '',
+      mediaType: 'little_energy_emoji',
+      mediaUrl: '../bad.png'
+    }, 'Socket 无效小能仔 Emoji 确认')
+    check('Socket 无效小能仔 Emoji 被拒绝', invalidEmojiAck?.ok === false && invalidEmojiAck?.status === 400)
+    await new Promise((resolve) => setTimeout(resolve, 150))
+    check('Socket 无效小能仔 Emoji 不广播', received.length + linReceived.length === broadcastsBeforeInvalidEmoji)
+
     const blockedReceipts = waitForMessages(
       received, linReceived, (message) => message?.text?.includes('已被平台风控拦截')
     )
@@ -387,6 +403,9 @@ if (aqingToken && linxiaoToken && conversationId) {
     check('双方实时收到消息', false, 'Socket 未连接')
     check('Socket 小能仔 Emoji 消息发送成功', false, 'Socket 未连接')
     check('双方实时收到相同小能仔 Emoji 消息', false, 'Socket 未连接')
+    check('Socket Emoji 更新会话末条文本', false, 'Socket 未连接')
+    check('Socket 无效小能仔 Emoji 被拒绝', false, 'Socket 未连接')
+    check('Socket 无效小能仔 Emoji 不广播', false, 'Socket 未连接')
     check('Socket 违禁消息被拦截', false, 'Socket 未连接')
     check('双方收到拦截系统提示', false, 'Socket 未连接')
   }
@@ -395,6 +414,11 @@ if (aqingToken && linxiaoToken && conversationId) {
 } else {
   check('Socket 消息发送成功', false, '缺少已验证的账号或会话')
   check('双方实时收到消息', false, '缺少已验证的账号或会话')
+  check('Socket 小能仔 Emoji 消息发送成功', false, '缺少已验证的账号或会话')
+  check('双方实时收到相同小能仔 Emoji 消息', false, '缺少已验证的账号或会话')
+  check('Socket Emoji 更新会话末条文本', false, '缺少已验证的账号或会话')
+  check('Socket 无效小能仔 Emoji 被拒绝', false, '缺少已验证的账号或会话')
+  check('Socket 无效小能仔 Emoji 不广播', false, '缺少已验证的账号或会话')
   check('Socket 违禁消息被拦截', false, '缺少已验证的账号或会话')
   check('双方收到拦截系统提示', false, '缺少已验证的账号或会话')
 }
