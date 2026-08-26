@@ -1204,6 +1204,10 @@ body {
 .little-energy-avatar.dark-colleague img { filter: drop-shadow(0 6px 12px rgba(20, 18, 38, .2)); }
 .little-energy-colleague-card { width: 64px; height: 64px; }
 .little-energy-mini { width: 28px; height: 28px; }
+.little-energy-feed-avatar { width: 40px; height: 40px; }
+.little-energy-comment-avatar { width: 30px; height: 30px; }
+.little-energy-saved-avatar { width: 48px; height: 48px; }
+.little-energy-colleague-preview { width: 100%; height: 100%; }
 .little-energy-sm { width: 56px; height: 56px; }
 .little-energy-home { width: 84px; height: 84px; }
 .little-energy-home-hero { width: 74px; height: 74px; }

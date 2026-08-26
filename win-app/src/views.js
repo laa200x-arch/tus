@@ -5,7 +5,7 @@
 'use strict'
 
 const LE = globalThis.LittleEnergy
-const { MOODS, OUTFIT_CATALOG, normalizeMood, normalizeOutfit, littleEnergyAvatarHtml, littleEnergyEmojiPayload, messageOutfit, applyMoodToday, routeDataChange, littleEnergyAssetSources, loadCanvasImage } = LE
+const { MOODS, OUTFIT_CATALOG, normalizeMood, normalizeOutfit, littleEnergyAvatarHtml, littleEnergyEmojiPayload, messageOutfit, applyMoodToday, routeDataChange, littleEnergyAssetSources, loadCanvasImage, userAvatarHtml, personalityTitle, compatibleMoodPayload } = LE
 function currentMoodId() { return normalizeMood(App.state.moodToday && App.state.moodToday.mood) }
 function currentOutfit() { return normalizeOutfit(App.state.user && App.state.user.littleEnergyOutfit) }
 function moodChoiceHtml(m, className = 'mood-choice') {
@@ -48,8 +48,7 @@ function fmtTime(iso) {
 }
 function mediaUrl(u) { return u ? App.SERVER + u : '' }
 function avatarHtml(user, cls = 'avatar') {
-  if (user && user.avatarUrl) return `<img class="${cls} avatar-img" src="${mediaUrl(user.avatarUrl)}" alt="">`
-  return `<div class="${cls}">${esc((user && user.avatarSymbol) || '👤')}</div>`
+  return userAvatarHtml(user, { className: cls, moodId: user && user.moodId })
 }
 /* 通用标签渲染（同事属性 / 主题 / 软件） */
 function tagsHtml(tags, cls = 'tag') {
@@ -151,7 +150,7 @@ function renderLogin() {
       App.state.savedAccounts.map((a) => `
         <div class="saved-account" data-username="${esc(a.username)}">
           <span class="saved-remove" data-remove="${esc(a.username)}" title="删除">✕</span>
-          <div class="saved-avatar">${esc(a.avatarSymbol || '👤')}</div>
+          <div class="saved-avatar">${avatarHtml(a, 'little-energy-saved-avatar')}</div>
           <div class="saved-name">${esc(a.nickname)}</div>
         </div>`).join('')
   } else {
@@ -162,8 +161,6 @@ function renderLogin() {
 /* ---------- 我的同事状态（原互换动态） ---------- */
 const STATUS_THEMES = ['开会', '甩锅', '需求变更', '摸鱼', '请假', '团建', '加班', '绩效', '画饼', '背锅', '跨部门', '甩锅大会']
 const STATUS_SOFTWARE = ['钉钉', '飞书', '企业微信', '微信', 'Excel', 'PPT', '邮件', '腾讯文档', 'OA系统', 'Zoom', 'Teams']
-const STATUS_MOODS = ['😀 愉悦', '😐 平淡', '😮‍💨 无语', '😤 烦躁', '😡 愤怒', '🤬 崩溃']
-
 async function renderStatus() {
   const v = document.getElementById('view')
   v.innerHTML = `
@@ -186,7 +183,7 @@ async function renderStatus() {
     }
     list.innerHTML = App.state.statuses.map((d) => `
       <div class="card feed-item">
-        ${avatarHtml({ avatarSymbol: d.avatarSymbol }, 'avatar avatar-sm')}
+        ${avatarHtml(d, 'avatar avatar-sm')}
         <div class="feed-body">
           <div class="feed-head">
             <span class="feed-author">${esc(d.authorName)}</span>
@@ -231,7 +228,7 @@ function showStatusCompose() {
       <div class="pet-chips" id="st-software">${STATUS_SOFTWARE.map((t) => `<button type="button" class="pet-chip" data-s="${esc(t)}">${esc(t)}</button>`).join('')}</div>
     </div>
     <div class="form-field"><label>心情</label>
-      <select id="st-mood">${STATUS_MOODS.map((m) => `<option value="${esc(m)}">${esc(m)}</option>`).join('')}</select>
+      <div class="little-energy-mood-grid" id="st-mood">${MOODS.map((m) => moodChoiceHtml(m, 'mood-choice')).join('')}</div>
     </div>
     <div class="card-sub" style="color:#f29e4d;margin-bottom:10px">⚠️ 吐槽请遵守社区规范，请勿人身攻击、泄露隐私</div>
     <div class="modal-actions">
@@ -239,6 +236,11 @@ function showStatusCompose() {
       <button class="btn btn-primary" id="st-submit">发布</button>
     </div>
   `, (box) => {
+    let selectedMood = MOODS[0].id
+    box.querySelectorAll('#st-mood .mood-choice').forEach((button) => button.addEventListener('click', () => {
+      selectedMood = button.dataset.mood
+      box.querySelectorAll('#st-mood .mood-choice').forEach((item) => item.classList.toggle('active', item === button))
+    }))
     const themeSel = new Set()
     box.querySelectorAll('#st-themes .pet-chip').forEach((c) => c.addEventListener('click', () => {
       c.classList.toggle('active'); const t = c.dataset.t
@@ -258,7 +260,7 @@ function showStatusCompose() {
           colleagueId: box.querySelector('#st-colleague').value || null,
           themeTags: [...themeSel],
           softwareTags: [...softSel],
-          mood: box.querySelector('#st-mood').value
+          mood: compatibleMoodPayload(selectedMood)
         })
         closeModal()
         toast('✅ 已记录')
@@ -433,7 +435,6 @@ function showColleagueForm(colleague) {
     attributeTags: colleague?.attributeTags || [],
     companyId: colleague?.companyId || '',
     notes: colleague?.notes || '',
-    avatarSymbol: colleague?.avatarSymbol || '👤',
     avatarUrl: colleague?.avatarUrl || '',
     quote: colleague?.quote || '',
     age: colleague?.age != null ? colleague.age : '',
@@ -461,9 +462,9 @@ function showColleagueForm(colleague) {
       <div class="pet-section">
         <div class="pet-section-head"><span class="pet-section-title">基本信息</span></div>
         <div class="pet-group">
-          <div class="pet-field"><label>头像（照片或符号）</label>
+          <div class="pet-field"><label>形象（照片或黑化小能仔）</label>
             <div class="row" style="gap:10px;align-items:center">
-              <div id="cf-avatar-preview" class="colleague-avatar-lg">${state.avatarUrl ? `<img src="${App.SERVER}${esc(state.avatarUrl)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">` : esc(state.avatarSymbol)}</div>
+              <div id="cf-avatar-preview" class="colleague-avatar-lg">${state.avatarUrl ? `<img src="${App.SERVER}${esc(state.avatarUrl)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">` : colleagueAvatarHtml(state, 'little-energy-colleague-preview')}</div>
               <div style="display:flex;flex-direction:column;gap:6px">
                 <button class="btn btn-outline btn-sm" id="cf-avatar-pick">🖼 选照片</button>
                 <input type="file" id="cf-avatar-file" accept="image/*" hidden>
@@ -543,7 +544,6 @@ function showColleagueForm(colleague) {
         const blob = await compressImage(file, 512)
         const url = await uploadMedia(await blob.arrayBuffer(), 'colleague-avatar.jpg', 'image/jpeg')
         state.avatarUrl = url
-        state.avatarSymbol = '👤'
         const pv = body.querySelector('#cf-avatar-preview')
         pv.innerHTML = `<img src="${App.SERVER}${esc(url)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`
         const clear = body.querySelector('#cf-avatar-clear')
@@ -554,8 +554,7 @@ function showColleagueForm(colleague) {
     const clearBtn = body.querySelector('#cf-avatar-clear')
     if (clearBtn) clearBtn.addEventListener('click', () => {
       state.avatarUrl = ''
-      state.avatarSymbol = '👤'
-      body.querySelector('#cf-avatar-preview').textContent = '👤'
+      body.querySelector('#cf-avatar-preview').innerHTML = colleagueAvatarHtml(state, 'little-energy-colleague-preview')
       clearBtn.style.display = 'none'
     })
     body.querySelector('#cf-age').addEventListener('input', (e) => { state.age = e.target.value })
@@ -589,7 +588,6 @@ function showColleagueForm(colleague) {
         attributeTags: state.attributeTags,
         companyId: state.companyId || null,
         notes: state.notes.trim(),
-        avatarSymbol: state.avatarSymbol,
         age: state.age === '' ? null : Number(state.age),
         weight: state.weight === '' ? null : Number(state.weight),
         personalityScore: state.personalityScore === '' ? null : Number(state.personalityScore),
@@ -1559,7 +1557,7 @@ async function renderHomePersona() {
   if (!nameEl) return
   try {
     const p = await getPersonality()
-    nameEl.textContent = (p.emoji || '') + ' ' + (p.personality || '')
+    nameEl.textContent = personalityTitle(p.personality)
     if (emojiEl) emojiEl.innerHTML = littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: currentOutfit(), className: 'little-energy-persona-mini' })
     const s = p.stats || {}
     idxEl.innerHTML = `
@@ -1779,7 +1777,7 @@ async function renderHomeAI() {
         <div class="row">
           <span class="home-ai-label">🧠 AI 今日洞察</span>
           <span class="spacer"></span>
-          <span class="personality-mini">${esc(personality.personality || '🐟 摸鱼哲学家')}</span>
+          <span class="personality-mini">${esc(personalityTitle(personality.personality) || '摸鱼哲学家')}</span>
         </div>
         <ul class="home-ai-list">${insights.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>
         <button class="btn btn-outline btn-sm" id="home-ai-more">查看完整 AI 洞察 →</button>
@@ -1881,7 +1879,7 @@ function complaintCardHtml(c) {
   return `
     <div class="card complaint-card" data-cid="${c.id}">
       <div class="row">
-        <div class="complaint-avatar">${esc(c.avatarSymbol || '🎭')}</div>
+        <div class="complaint-avatar">${avatarHtml(c, 'little-energy-feed-avatar')}</div>
         <div style="flex:1;min-width:0">
           <div class="feed-head">
             <span class="feed-author">${esc(c.authorName)}</span>
@@ -1958,7 +1956,7 @@ async function showCommentPanel(cid, card) {
         if (!items.length) { list.innerHTML = '<div class="empty">还没有评论，来抢沙发～</div>'; return }
         list.innerHTML = items.map((m) => `
           <div class="cmt-item">
-            <span class="cmt-avatar">${esc(m.avatarSymbol || '👤')}</span>
+            <span class="cmt-avatar">${avatarHtml(m, 'little-energy-comment-avatar')}</span>
             <div class="cmt-body">
               <div class="cmt-head"><span class="feed-author">${esc(m.authorName)}</span><span class="card-sub">${fmtTime(m.time)}</span></div>
               <div class="cmt-text">${esc(m.content)}</div>
@@ -2018,7 +2016,7 @@ async function showComplaintCompose() {
     </div>
     <div class="form-field">
       <label>情绪</label>
-      <div class="pet-chips" id="cmp-mood">${d.moods.map((m) => `<button type="button" class="pet-chip" data-emoji="${m.emoji}" data-id="${m.id}">${m.emoji} ${esc(m.label)}</button>`).join('')}</div>
+      <div class="little-energy-mood-grid" id="cmp-mood">${MOODS.map((m) => moodChoiceHtml(m, 'mood-choice')).join('')}</div>
     </div>
     <div class="form-row">
       <label class="row"><input type="checkbox" id="cmp-anon" /> <span>匿名发布</span></label>
@@ -2054,7 +2052,7 @@ async function showComplaintCompose() {
         }
         aiMood = r.sentiment
         if (r.sentiment) {
-          box.querySelectorAll('#cmp-mood .pet-chip').forEach((c) => c.classList.toggle('active', c.dataset.id === r.sentiment || c.dataset.emoji === r.sentiment))
+          box.querySelectorAll('#cmp-mood .mood-choice').forEach((c) => c.classList.toggle('active', c.dataset.mood === normalizeMood(r.sentiment)))
         }
         box.querySelector('#cmp-ai-hint').textContent = r.hasMatch
           ? `🤖 AI 已识别 ${[r.category && '类型', r.behaviorTags.length && r.behaviorTags.length + '个行为', r.sentiment && '情绪'].filter(Boolean).join(' / ')}`
@@ -2065,13 +2063,13 @@ async function showComplaintCompose() {
       const content = box.querySelector('#cmp-content').value.trim()
       if (!content) return toast('请填写吐槽内容')
       if (content.length > 1000) return toast('内容不能超过 1000 字')
-      const mood = box.querySelector('#cmp-mood .pet-chip.active')
+      const mood = box.querySelector('#cmp-mood .mood-choice.active')
       const payload = {
         content,
         category: box.querySelector('#cmp-category').value,
         colleagueId: box.querySelector('#cmp-colleague').value || null,
         behaviorTags: [...sel],
-        sentiment: mood ? (mood.dataset.emoji || mood.dataset.id) : null,
+        sentiment: mood ? compatibleMoodPayload(mood.dataset.mood) : null,
         isAnonymous: box.querySelector('#cmp-anon').checked,
         aiExtracted
       }
@@ -2443,7 +2441,7 @@ async function renderPersonalityCard(box) {
   box.innerHTML = `
     <div class="personality-card">
       ${littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: currentOutfit(), className: 'little-energy-personality' })}
-      <div class="personality-label-lg">${esc(r.personality || '🐟 摸鱼哲学家')}</div>
+      <div class="personality-label-lg">${esc(personalityTitle(r.personality) || '摸鱼哲学家')}</div>
       <div class="personality-desc">${esc(tpl.desc)}</div>
       <div class="personality-stats">
         <div class="personality-stat"><div class="personality-stat-num">${r.stats.totalComplaints}</div><div class="personality-stat-label">吐槽次数</div></div>
@@ -2517,7 +2515,7 @@ async function drawPersonalityShare(r, tpl) {
   const avatarLayers = await Promise.all(littleEnergyAssetSources(currentMoodId(), currentOutfit()).map((src) => loadCanvasImage(src)))
   avatarLayers.forEach((img) => ctx.drawImage(img, W / 2 - 90, 105, 180, 180))
   ctx.font = 'bold 38px "Microsoft YaHei", sans-serif'
-  ctx.fillText(r.personality || '🐟 摸鱼哲学家', W / 2, 315)
+  ctx.fillText(personalityTitle(r.personality) || '摸鱼哲学家', W / 2, 315)
   ctx.font = '19px "Microsoft YaHei", sans-serif'
   ctx.fillStyle = 'rgba(255,255,255,.92)'
   const descLines = wrapText(ctx, tpl.desc || '', W / 2, 365, W - 110)

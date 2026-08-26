@@ -7,6 +7,7 @@
 import { Router } from 'express'
 import { requireAuth, serializeUser } from '../middleware.js'
 import { checkTextRisk } from '../risk.js'
+import { normalizeMood, normalizeOutfit } from '../little-energy.js'
 
 export function socialRouter(db) {
   const router = Router()
@@ -18,6 +19,7 @@ export function socialRouter(db) {
     userId: String(row.user_id),
     authorName: row.author_name,
     avatarSymbol: row.author_avatar || '👤',
+    littleEnergyOutfit: normalizeOutfit(row.author_outfit ? JSON.parse(row.author_outfit) : null),
     content: row.content,
     colleagueName: row.colleague_name || null,
     themeTags: row.theme_tags ? JSON.parse(row.theme_tags) : [],
@@ -29,7 +31,7 @@ export function socialRouter(db) {
   // ── 列表 ──
   router.get('/statuses', (req, res) => {
     const rows = db.all(`
-      SELECT s.*, u.nickname AS author_name, u.avatar_symbol AS author_avatar,
+      SELECT s.*, u.nickname AS author_name, u.avatar_symbol AS author_avatar, u.little_energy_outfit AS author_outfit,
              c.name AS colleague_name
       FROM colleague_statuses s
       JOIN users u ON u.id = s.user_id
@@ -50,7 +52,7 @@ export function socialRouter(db) {
     const colleagueId = req.body?.colleagueId ? Number(req.body.colleagueId) : null
     const themeTags = Array.isArray(req.body?.themeTags) ? req.body.themeTags.slice(0, 20) : []
     const softwareTags = Array.isArray(req.body?.softwareTags) ? req.body.softwareTags.slice(0, 20) : []
-    const mood = req.body?.mood ? String(req.body.mood) : null
+    const mood = req.body?.mood ? normalizeMood(String(req.body.mood)) : null
 
     const r = db.run(
       `INSERT INTO colleague_statuses (user_id, colleague_id, content, theme_tags, software_tags, mood, created_at)
@@ -58,7 +60,7 @@ export function socialRouter(db) {
       [req.userId, colleagueId, content, JSON.stringify(themeTags), JSON.stringify(softwareTags), mood, now()]
     )
     const row = db.get(`
-      SELECT s.*, u.nickname AS author_name, u.avatar_symbol AS author_avatar,
+      SELECT s.*, u.nickname AS author_name, u.avatar_symbol AS author_avatar, u.little_energy_outfit AS author_outfit,
              c.name AS colleague_name
       FROM colleague_statuses s
       JOIN users u ON u.id = s.user_id

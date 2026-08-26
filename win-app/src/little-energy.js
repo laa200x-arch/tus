@@ -70,6 +70,21 @@ function littleEnergyEmojiPayload(id) {
   return mood ? { text: mood.fallbackText, mediaType: 'little_energy_emoji', mediaUrl: mood.id } : null
 }
 
+function compatibleMoodPayload(value) { return normalizeMood(value) }
+
+function userAvatarHtml(user, { className = '', moodId } = {}) {
+  const anonymous = Boolean(user && user.isAnonymous)
+  return littleEnergyAvatarHtml({
+    moodId: anonymous ? 'xnz_calm' : (moodId || (user && (user.moodId || user.mood))),
+    outfit: anonymous ? DEFAULT_OUTFIT : (user && user.littleEnergyOutfit),
+    className
+  })
+}
+
+function personalityTitle(value) {
+  return String(value || '').replace(/^[\p{Extended_Pictographic}\p{Emoji_Presentation}\uFE0F\u200D\s]+/u, '').trim()
+}
+
 function messageOutfit(message, partnerOutfit, currentUserOutfit) {
   if (message && message.senderIsMe) return normalizeOutfit(currentUserOutfit)
   return normalizeOutfit((message && message.senderOutfit) || partnerOutfit)
@@ -115,7 +130,8 @@ function loadCanvasImage(src, imageFactory = () => new Image()) {
 const api = {
   MOODS, OUTFIT_CATALOG, DEFAULT_OUTFIT, normalizeMood, normalizeOutfit,
   littleEnergyAvatarHtml, littleEnergyEmojiPayload, messageOutfit, applyMoodToday,
-  routeDataChange, littleEnergyAssetSources, loadCanvasImage
+  routeDataChange, littleEnergyAssetSources, loadCanvasImage, userAvatarHtml,
+  personalityTitle, compatibleMoodPayload
 }
 if (typeof module !== 'undefined' && module.exports) module.exports = api
 if (typeof globalThis !== 'undefined') globalThis.LittleEnergy = api

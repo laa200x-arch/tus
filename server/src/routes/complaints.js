@@ -11,7 +11,7 @@
 import { Router } from 'express'
 import { requireAuth } from '../middleware.js'
 import { checkTextRisk } from '../risk.js'
-import { normalizeOutfit } from '../little-energy.js'
+import { normalizeMood, normalizeOutfit } from '../little-energy.js'
 
 export function complaintsRouter(db, io) {
   const router = Router()
@@ -138,7 +138,7 @@ export function complaintsRouter(db, io) {
     const colleagueId = req.body?.colleagueId ? Number(req.body.colleagueId) : null
     const category = req.body?.category ? String(req.body.category).slice(0, 32) : null
     const behaviorTags = Array.isArray(req.body?.behaviorTags) ? req.body.behaviorTags.slice(0, 8) : []
-    const sentiment = req.body?.sentiment ? String(req.body.sentiment).slice(0, 16) : null
+    const sentiment = req.body?.sentiment ? normalizeMood(String(req.body.sentiment)) : null
     const isAnonymous = req.body?.isAnonymous ? 1 : 0
     const aiExtracted = req.body?.aiExtracted || null
 
@@ -234,7 +234,8 @@ export function complaintsRouter(db, io) {
     const id = Number(req.params.id)
     if (!db.get('SELECT 1 FROM complaints WHERE id = ?', [id])) return res.status(404).json({ error: '吐槽不存在' })
     const rows = db.all(`
-      SELECT cm.*, u.nickname AS author_name, u.avatar_symbol AS author_avatar
+      SELECT cm.*, u.nickname AS author_name, u.avatar_symbol AS author_avatar,
+             u.little_energy_outfit AS author_outfit
       FROM complaint_comments cm JOIN users u ON u.id = cm.user_id
       WHERE cm.complaint_id = ? ORDER BY cm.id ASC LIMIT 200`, [id])
     res.json({ comments: rows.map((r) => ({
@@ -243,6 +244,7 @@ export function complaintsRouter(db, io) {
       userId: String(r.user_id),
       authorName: r.author_name,
       avatarSymbol: r.author_avatar,
+      littleEnergyOutfit: normalizeOutfit(parseOutfit(r.author_outfit)),
       content: r.content,
       time: r.created_at
     })) })
@@ -261,13 +263,14 @@ export function complaintsRouter(db, io) {
       'INSERT INTO complaint_comments (complaint_id, user_id, content, created_at) VALUES (?,?,?,?)',
       [id, req.userId, content, now()]
     )
-    const me = db.get('SELECT nickname, avatar_symbol FROM users WHERE id = ?', [req.userId])
+    const me = db.get('SELECT nickname, avatar_symbol, little_energy_outfit FROM users WHERE id = ?', [req.userId])
     res.status(201).json({ comment: {
       id: String(r.lastInsertRowid),
       complaintId: String(id),
       userId: String(req.userId),
       authorName: me?.nickname || '我',
       avatarSymbol: me?.avatar_symbol || '👤',
+      littleEnergyOutfit: normalizeOutfit(parseOutfit(me?.little_energy_outfit)),
       content,
       time: now()
     } })

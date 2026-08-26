@@ -179,7 +179,7 @@ if (aqingToken) {
         content: `冒烟吐槽 ${runId}`,
         category: 'leader',
         behaviorTags: ['meeting_bs'],
-        sentiment: 'tired'
+        sentiment: '😡'
       }
     })
     const data = responseObject('创建吐槽响应', created, 201)
@@ -193,6 +193,16 @@ if (aqingToken) {
       check('吐槽出现在广场', complaints.some((complaint) => complaint?.id === complaintId))
       const authoredComplaint = complaints.find((complaint) => complaint?.id === complaintId)
       check('吐槽携带作者小能仔穿搭', authoredComplaint?.littleEnergyOutfit?.topId === 'top_tshirt')
+      check('吐槽情绪归一化为稳定 ID', authoredComplaint?.sentiment === 'xnz_angry')
+
+      const commentCreated = await api(`/api/complaints/${complaintId}/comments`, {
+        method: 'POST', token: aqingToken, body: { content: `冒烟评论 ${runId}` }
+      })
+      const commentData = responseObject('创建吐槽评论响应', commentCreated, 201)
+      check('评论携带作者小能仔穿搭', commentData?.comment?.littleEnergyOutfit?.topId === 'top_tshirt')
+      const commentListResponse = await api(`/api/complaints/${complaintId}/comments`, { token: aqingToken })
+      const commentList = responseArray('吐槽评论列表响应', commentListResponse, 'comments')
+      check('评论列表携带作者小能仔穿搭', commentList.some((comment) => comment?.littleEnergyOutfit?.topId === 'top_tshirt'))
 
       const liked = await api(`/api/complaints/${complaintId}/like`, { method: 'POST', token: aqingToken })
       const likeData = responseObject('吐槽点赞响应', liked)
