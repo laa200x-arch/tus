@@ -71,6 +71,17 @@ struct ServerUser: Decodable {
     let verification: UserVerification
     let isExposureVip: Bool
     let exposureUntil: String?
+    private let decodedLittleEnergyOutfit: LittleEnergyOutfit?
+
+    var littleEnergyOutfit: LittleEnergyOutfit {
+        decodedLittleEnergyOutfit?.normalized ?? .default
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, username, userName, avatarSymbol, avatarUrl, bio, locationLabel
+        case distanceKm, creditScore, verification, isExposureVip, exposureUntil
+        case decodedLittleEnergyOutfit = "littleEnergyOutfit"
+    }
 }
 
 struct ServerConversation: Decodable {
@@ -218,7 +229,8 @@ extension UserModel {
             creditScore: server.creditScore,
             verification: server.verification,
             isExposureVip: server.isExposureVip,
-            exposureUntil: server.exposureUntil.flatMap { APIClient.parseDate($0) }
+            exposureUntil: server.exposureUntil.flatMap { APIClient.parseDate($0) },
+            littleEnergyOutfit: server.littleEnergyOutfit
         )
     }
 }

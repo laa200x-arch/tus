@@ -49,7 +49,20 @@
 		A00000000000000000000028 /* ReceivedEvaluationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000129 /* ReceivedEvaluationsView.swift */; };
 		A00000000000000000000029 /* MiniAppsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000130 /* MiniAppsView.swift */; };
 		A00000000000000000000030 /* BookingHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000131 /* BookingHistoryView.swift */; };
+		B00000000000000000000001 /* LittleEnergyModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000101 /* LittleEnergyModels.swift */; };
+		B00000000000000000000002 /* LittleEnergyAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000102 /* LittleEnergyAvatarView.swift */; };
+		B00000000000000000000003 /* LittleEnergyModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000103 /* LittleEnergyModelsTests.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B00000000000000000000801 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A00000000000000000000501 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A00000000000000000000401;
+			remoteInfo = TuS;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		A00000000000000000000101 /* TuSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TuSApp.swift; sourceTree = "<group>"; };
@@ -95,9 +108,19 @@
 		A00000000000000000000124 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A00000000000000000000125 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A00000000000000000000126 /* TuS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TuS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B00000000000000000000101 /* LittleEnergyModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LittleEnergyModels.swift; sourceTree = "<group>"; };
+		B00000000000000000000102 /* LittleEnergyAvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LittleEnergyAvatarView.swift; sourceTree = "<group>"; };
+		B00000000000000000000103 /* LittleEnergyModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LittleEnergyModelsTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000104 /* TuSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TuSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		B00000000000000000000302 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A00000000000000000000302 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -114,6 +137,7 @@
 			children = (
 				A00000000000000000000202 /* TuS */,
 				A00000000000000000000203 /* Products */,
+				B00000000000000000000201 /* TuSTests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -136,6 +160,7 @@
 			isa = PBXGroup;
 			children = (
 				A00000000000000000000126 /* TuS.app */,
+				B00000000000000000000104 /* TuSTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -162,6 +187,7 @@
 		A00000000000000000000206 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000101 /* LittleEnergyModels.swift */,
 				A00000000000000000000104 /* SkillModel.swift */,
 				A00000000000000000000105 /* AgreementModel.swift */,
 				A00000000000000000000106 /* EvaluateModel.swift */,
@@ -233,6 +259,7 @@
 		A00000000000000000000210 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000102 /* LittleEnergyAvatarView.swift */,
 				A0000000000000000000010E /* Components.swift */,
 			);
 			path = Components;
@@ -294,6 +321,14 @@
 			path = Evaluate;
 			sourceTree = "<group>";
 		};
+		B00000000000000000000201 /* TuSTests */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000103 /* LittleEnergyModelsTests.swift */,
+			);
+			path = TuSTests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -317,6 +352,22 @@
 			productReference = A00000000000000000000126 /* TuS.app */;
 			productType = "com.apple.product-type.application";
 		};
+		B00000000000000000000401 /* TuSTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B00000000000000000000701 /* Build configuration list for PBXNativeTarget "TuSTests" */;
+			buildPhases = (
+				B00000000000000000000301 /* Sources */,
+				B00000000000000000000302 /* Frameworks */,
+			);
+			buildRules = ();
+			dependencies = (
+				B00000000000000000000802 /* PBXTargetDependency */,
+			);
+			name = TuSTests;
+			productName = TuSTests;
+			productReference = B00000000000000000000104 /* TuSTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -329,6 +380,10 @@
 				TargetAttributes = {
 					A00000000000000000000401 = {
 						CreatedOnToolsVersion = 15.0;
+					};
+					B00000000000000000000401 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = A00000000000000000000401;
 					};
 				};
 			};
@@ -350,6 +405,7 @@
 			projectRoot = "";
 			targets = (
 				A00000000000000000000401 /* TuS */,
+				B00000000000000000000401 /* TuSTests */,
 			);
 		};
 /* End PBXProject section */
@@ -366,10 +422,20 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		B00000000000000000000301 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B00000000000000000000003 /* LittleEnergyModelsTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A00000000000000000000301 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B00000000000000000000001 /* LittleEnergyModels.swift in Sources */,
+				B00000000000000000000002 /* LittleEnergyAvatarView.swift in Sources */,
 				A00000000000000000000001 /* TuSApp.swift in Sources */,
 				A00000000000000000000002 /* ContentView.swift in Sources */,
 				A00000000000000000000003 /* Theme.swift in Sources */,
@@ -414,6 +480,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B00000000000000000000802 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A00000000000000000000401 /* TuS */;
+			targetProxy = B00000000000000000000801 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCRemoteSwiftPackageReference section */
 		A00000000000000000000901 /* XCRemoteSwiftPackageReference "socket.io-client-swift" */ = {
@@ -601,6 +675,36 @@
 			};
 			name = Release;
 		};
+		B00000000000000000000601 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tus.tucao.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TuS.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TuS";
+			};
+			name = Debug;
+		};
+		B00000000000000000000602 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tus.tucao.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TuS.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TuS";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -618,6 +722,15 @@
 			buildConfigurations = (
 				A00000000000000000000603 /* Debug */,
 				A00000000000000000000604 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B00000000000000000000701 /* Build configuration list for PBXNativeTarget "TuSTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B00000000000000000000601 /* Debug */,
+				B00000000000000000000602 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

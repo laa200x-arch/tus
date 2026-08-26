@@ -338,12 +338,13 @@ final class APIClient {
     // MARK: - 档案
 
     /// 更新资料（支持昵称/简介/位置/自定义头像）
-    func updateProfile(nickname: String? = nil, bio: String? = nil, locationLabel: String? = nil, avatarUrl: String? = nil) async throws -> ServerUser {
+    func updateProfile(nickname: String? = nil, bio: String? = nil, locationLabel: String? = nil, avatarUrl: String? = nil, littleEnergyOutfit: LittleEnergyOutfit? = nil) async throws -> ServerUser {
         var body: [String: Any] = [:]
         if let nickname { body["nickname"] = nickname }
         if let bio { body["bio"] = bio }
         if let locationLabel { body["locationLabel"] = locationLabel }
         if let avatarUrl { body["avatarUrl"] = avatarUrl }
+        if let littleEnergyOutfit { body["littleEnergyOutfit"] = littleEnergyOutfit.apiDictionary }
         let response: UserResponse = try await request("/api/me/profile", method: "PUT", body: body)
         return response.user
     }

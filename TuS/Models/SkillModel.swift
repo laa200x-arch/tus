@@ -24,6 +24,7 @@ struct UserModel: Codable, Identifiable, Hashable {
     var verification: UserVerification
     var isExposureVip: Bool          // 保留字段（服务端兼容，UI 不再展示曝光）
     var exposureUntil: Date?
+    var littleEnergyOutfit: LittleEnergyOutfit
 
     init(
         id: UUID = UUID(),
@@ -36,7 +37,8 @@ struct UserModel: Codable, Identifiable, Hashable {
         creditScore: Double,
         verification: UserVerification,
         isExposureVip: Bool = false,
-        exposureUntil: Date? = nil
+        exposureUntil: Date? = nil,
+        littleEnergyOutfit: LittleEnergyOutfit = .default
     ) {
         self.id = id
         self.userName = userName
@@ -49,5 +51,6 @@ struct UserModel: Codable, Identifiable, Hashable {
         self.verification = verification
         self.isExposureVip = isExposureVip
         self.exposureUntil = exposureUntil
+        self.littleEnergyOutfit = littleEnergyOutfit.normalized
     }
 }

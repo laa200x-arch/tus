@@ -618,6 +618,8 @@ final class MockDataStore: ObservableObject {
     @Published var topics: [TopicItem] = []                  // 热搜榜
     @Published var moodCheckedToday: Bool = false            // 今日是否已打卡
     @Published var moodToday: MoodCheckin?                   // 今日打卡内容
+    /// 今日打卡是唯一数据源；旧 Emoji 与未知值在读取边界统一规范化。
+    var currentMoodID: String { LittleEnergyCatalog.normalizeMood(moodToday?.mood) }
     @Published var moodTrend: [MoodTrendPoint] = []          // 30 天情绪曲线
     @Published var moodSummary: MoodSummary?                 // 情绪 AI 总结
     @Published var personality: PersonalityProfile?          // 职场人格
@@ -884,9 +886,9 @@ final class MockDataStore: ObservableObject {
     }
 
     /// 更新个人资料（昵称/简介/位置/头像）
-    func updateProfile(nickname: String? = nil, bio: String? = nil, locationLabel: String? = nil, avatarUrl: String? = nil) async throws {
+    func updateProfile(nickname: String? = nil, bio: String? = nil, locationLabel: String? = nil, avatarUrl: String? = nil, littleEnergyOutfit: LittleEnergyOutfit? = nil) async throws {
         if isServerMode {
-            let user = try await APIClient.shared.updateProfile(nickname: nickname, bio: bio, locationLabel: locationLabel, avatarUrl: avatarUrl)
+            let user = try await APIClient.shared.updateProfile(nickname: nickname, bio: bio, locationLabel: locationLabel, avatarUrl: avatarUrl, littleEnergyOutfit: littleEnergyOutfit)
             currentUser = UserModel(server: user)
             syncCurrentUserInAllUsers()
             return
@@ -895,6 +897,7 @@ final class MockDataStore: ObservableObject {
         if let bio { currentUser.bio = bio }
         if let locationLabel { currentUser.locationLabel = locationLabel }
         if let avatarUrl { currentUser.avatarUrl = avatarUrl }
+        if let littleEnergyOutfit { currentUser.littleEnergyOutfit = littleEnergyOutfit.normalized }
         syncCurrentUserInAllUsers()
     }
 
