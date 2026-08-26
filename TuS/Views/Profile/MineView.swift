@@ -61,6 +61,11 @@ struct MineView: View {
     private var profileHeader: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 14) {
+                LittleEnergyAvatarView(
+                    moodID: store.currentMoodID,
+                    outfit: store.currentUser.littleEnergyOutfit,
+                    size: 82
+                )
                 ZStack(alignment: .bottomTrailing) {
                     AvatarView(user: store.currentUser, size: 62)
                     PhotosPicker(selection: $avatarItem, matching: .images) {

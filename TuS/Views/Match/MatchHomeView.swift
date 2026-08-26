@@ -64,17 +64,22 @@ struct StatusHomeView: View {
     }
 
     private var greetingCard: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .firstTextBaseline) {
+        HStack(spacing: 12) {
+            LittleEnergyAvatarView(
+                moodID: store.currentMoodID,
+                outfit: store.currentUser.littleEnergyOutfit,
+                size: 82
+            )
+            VStack(alignment: .leading, spacing: 6) {
                 Text("\(greeting)，\(store.currentUser.userName)")
                     .font(.title2)
                     .bold()
                     .foregroundStyle(Theme.textPrimary)
-                Spacer()
+                Text("今天也要好好上班（和好好吐槽）")
+                    .font(.caption)
+                    .foregroundStyle(Theme.textSecondary)
             }
-            Text("今天也要好好上班（和好好吐槽）")
-                .font(.caption)
-                .foregroundStyle(Theme.textSecondary)
+            Spacer()
         }
         .padding(.top, 4)
     }
@@ -137,8 +142,11 @@ struct StatusHomeView: View {
             }
             if store.moodCheckedToday, let checkin = store.moodToday {
                 HStack(spacing: 12) {
-                    Text(checkin.mood ?? "🙂")
-                        .font(.system(size: 34))
+                    LittleEnergyAvatarView(
+                        moodID: checkin.mood,
+                        outfit: store.currentUser.littleEnergyOutfit,
+                        size: 58
+                    )
                     VStack(alignment: .leading, spacing: 4) {
                         Text("今天已记录心情")
                             .font(.subheadline)
@@ -158,16 +166,12 @@ struct StatusHomeView: View {
                     .foregroundStyle(Theme.textSecondary)
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
-                        ForEach(store.tagDict.moods) { m in
+                        ForEach(MoodCheckinSelection.items) { m in
                             Button {
-                                quickCheckin(emoji: m.emoji)
+                                quickCheckin(moodID: m.id)
                             } label: {
-                                VStack(spacing: 4) {
-                                    Text(m.emoji).font(.title3)
-                                    Text(m.label).font(.caption2)
-                                        .foregroundStyle(Theme.textSecondary)
-                                }
-                                .frame(width: 62, height: 58)
+                                LittleEnergyMoodTile(mood: m, size: 40)
+                                .frame(width: 62, height: 66)
                                 .background(RoundedRectangle(cornerRadius: 14).fill(Theme.inputBg))
                             }
                             .buttonStyle(.plain)
@@ -189,9 +193,9 @@ struct StatusHomeView: View {
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.divider, lineWidth: 1))
     }
 
-    private func quickCheckin(emoji: String) {
+    private func quickCheckin(moodID: String) {
         Task {
-            await store.checkinMood(mood: emoji, stressSources: [], note: "")
+            await store.checkinMood(mood: moodID, stressSources: [], note: "")
         }
     }
 
@@ -238,8 +242,11 @@ struct StatusHomeView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 10) {
                 if let profile = store.personality {
-                    Text(profile.emoji)
-                        .font(.system(size: 32))
+                    LittleEnergyAvatarView(
+                        moodID: store.currentMoodID,
+                        outfit: store.currentUser.littleEnergyOutfit,
+                        size: 54
+                    )
                     VStack(alignment: .leading, spacing: 2) {
                         Text("你的职场人格：\(profile.personality)")
                             .font(.subheadline)
@@ -324,16 +331,12 @@ struct MoodCheckinView: View {
                 .font(.caption)
                 .foregroundStyle(Theme.textSecondary)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 72), spacing: 8)], spacing: 8) {
-                ForEach(store.tagDict.moods) { m in
-                    let active = mood == m.emoji
+                ForEach(MoodCheckinSelection.items) { m in
+                    let active = LittleEnergyCatalog.normalizeMood(mood) == m.id
                     Button {
-                        mood = m.emoji
+                        mood = m.id
                     } label: {
-                        VStack(spacing: 4) {
-                            Text(m.emoji).font(.title3)
-                            Text(m.label).font(.caption2)
-                                .foregroundStyle(active ? .white : Theme.textSecondary)
-                        }
+                        LittleEnergyMoodTile(mood: m, selected: active, size: 42)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 8)
                         .background(RoundedRectangle(cornerRadius: 12).fill(active ? Theme.primary : Theme.cardBg))

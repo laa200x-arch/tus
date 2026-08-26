@@ -1,5 +1,67 @@
 import SwiftUI
 
+enum MoodCheckinSelection {
+    static let items = LittleEnergyCatalog.moods
+}
+
+struct ChatEmojiPayload: Equatable {
+    let mediaType = "little_energy_emoji"
+    let mediaURL: String
+    let fallbackText: String
+
+    init(id: String) {
+        let mood = LittleEnergyCatalog.mood(for: id)
+        mediaURL = mood.id
+        fallbackText = mood.fallbackText
+    }
+}
+
+enum ChatEmojiPresentation {
+    static func outfit(
+        senderIsMe: Bool,
+        currentUser: LittleEnergyOutfit,
+        partner: LittleEnergyOutfit
+    ) -> LittleEnergyOutfit {
+        (senderIsMe ? currentUser : partner).normalized
+    }
+}
+
+struct OutfitDraft: Equatable {
+    var topID: String
+    var bottomID: String
+    var shoesID: String
+    var accessoryIDs: [String]
+
+    init(outfit: LittleEnergyOutfit) {
+        let value = outfit.normalized
+        topID = value.topId ?? LittleEnergyOutfit.default.topId!
+        bottomID = value.bottomId ?? LittleEnergyOutfit.default.bottomId!
+        shoesID = value.shoesId ?? LittleEnergyOutfit.default.shoesId!
+        accessoryIDs = value.accessoryIds
+    }
+
+    var outfit: LittleEnergyOutfit {
+        LittleEnergyOutfit(topId: topID, bottomId: bottomID, shoesId: shoesID, accessoryIds: accessoryIDs).normalized
+    }
+}
+
+struct LittleEnergyMoodTile: View {
+    let mood: LittleEnergyMood
+    var selected = false
+    var size: CGFloat = 46
+
+    var body: some View {
+        VStack(spacing: 3) {
+            LittleEnergyAvatarView(moodID: mood.id, size: size)
+            Text(mood.label)
+                .font(.caption2)
+                .foregroundStyle(selected ? .white : Theme.textSecondary)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+}
+
 /// 符号头像（仅含 SF Symbol 占位，用于同事档案 / 同事状态等无 UserModel 场景）
 struct SymbolAvatar: View {
     let symbol: String

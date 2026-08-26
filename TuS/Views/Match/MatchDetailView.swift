@@ -207,10 +207,18 @@ struct ComplaintComposeView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     optionChip("不指定", active: sentiment == nil) { sentiment = nil }
-                    ForEach(store.tagDict.moods) { m in
-                        optionChip("\(m.emoji) \(m.label)", active: sentiment == m.id) {
-                            sentiment = (sentiment == m.id) ? nil : m.id
+                    ForEach(MoodCheckinSelection.items) { mood in
+                        let active = LittleEnergyCatalog.normalizeMood(sentiment) == mood.id && sentiment != nil
+                        Button {
+                            sentiment = active ? nil : mood.id
+                        } label: {
+                            LittleEnergyMoodTile(mood: mood, selected: active, size: 34)
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 5)
+                                .background(Capsule().fill(active ? Theme.primary : Theme.cardBg))
+                                .overlay(Capsule().stroke(Theme.divider, lineWidth: active ? 0 : 1))
                         }
+                        .buttonStyle(.plain)
                     }
                 }
             }

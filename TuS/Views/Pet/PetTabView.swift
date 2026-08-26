@@ -142,7 +142,7 @@ struct ColleagueCardView: View {
                 .frame(width: 46, height: 46)
                 .clipShape(Circle())
             } else {
-                SymbolAvatar(symbol: colleague.avatarSymbol, size: 46)
+                LittleEnergyAvatarView(role: .darkColleague, size: 52)
             }
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
@@ -308,10 +308,7 @@ struct ColleagueEditView: View {
                                 .frame(width: 56, height: 56)
                                 .clipShape(Circle())
                             } else {
-                                Text(avatarSymbol.isEmpty ? "👤" : avatarSymbol)
-                                    .font(.system(size: 30))
-                                    .frame(width: 56, height: 56)
-                                    .background(Circle().fill(Theme.inputBg))
+                                LittleEnergyAvatarView(role: .darkColleague, size: 62)
                             }
                         }
                         VStack(alignment: .leading, spacing: 8) {

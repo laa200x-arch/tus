@@ -263,6 +263,7 @@ struct ChatDetailView: View {
     @State private var editorID = 0
     @State private var pickerItem: PhotosPickerItem?
     @State private var isUploading = false
+    @State private var showLittleEnergyEmoji = false
     @State private var playingItem: IdentifiableURL?
     @State private var viewingImageItem: IdentifiableURL?
     // 拍照
@@ -425,7 +426,34 @@ struct ChatDetailView: View {
 
     private func inputBar(_ conversation: Conversation) -> some View {
         VStack(spacing: 8) {
+            if showLittleEnergyEmoji {
+                ScrollView {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 64), spacing: 8)], spacing: 8) {
+                        ForEach(LittleEnergyCatalog.moods) { mood in
+                            Button {
+                                sendLittleEnergyEmoji(mood.id, conversation: conversation)
+                            } label: {
+                                LittleEnergyMoodTile(mood: mood, size: 46)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 4)
+                                    .background(RoundedRectangle(cornerRadius: 12).fill(Theme.inputBg))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.horizontal, 2)
+                }
+                .frame(maxHeight: 220)
+            }
             HStack(spacing: 8) {
+                Button {
+                    withAnimation { showLittleEnergyEmoji.toggle() }
+                    inputFocused = false
+                } label: {
+                    Image(systemName: "face.smiling.inverse")
+                        .font(.system(size: 19))
+                        .foregroundStyle(showLittleEnergyEmoji ? Theme.primaryDeep : Theme.primary)
+                }
                 Button {
                     sendLocation()
                 } label: {
@@ -520,10 +548,19 @@ struct ChatDetailView: View {
             } else {
                 VStack(alignment: message.senderIsMe ? .trailing : .leading, spacing: 6) {
                     if let mediaType = message.mediaType, let mediaUrl = message.mediaUrl {
-                        mediaBubble(mediaType: mediaType, mediaUrl: mediaUrl, text: message.text)
+                        mediaBubble(
+                            mediaType: mediaType,
+                            mediaUrl: mediaUrl,
+                            text: message.text,
+                            outfit: ChatEmojiPresentation.outfit(
+                                senderIsMe: message.senderIsMe,
+                                currentUser: store.currentUser.littleEnergyOutfit,
+                                partner: conversation?.partner.littleEnergyOutfit ?? .default
+                            )
+                        )
                     }
                     // 位置消息的文本已在卡片内展示，避免重复
-                    if !message.text.isEmpty && message.mediaType != "location" {
+                    if !message.text.isEmpty && message.mediaType != "location" && message.mediaType != "little_energy_emoji" {
                         Text(message.text)
                             .font(.subheadline)
                             .foregroundStyle(message.senderIsMe ? .white : Theme.textPrimary)
@@ -545,8 +582,22 @@ struct ChatDetailView: View {
 
     /// 媒体消息气泡（图片点击放大 / 视频点击播放 / 语音点击播放 / 位置卡片）
     @ViewBuilder
-    private func mediaBubble(mediaType: String, mediaUrl: String, text: String) -> some View {
-        if mediaType == "location" {
+    private func mediaBubble(
+        mediaType: String,
+        mediaUrl: String,
+        text: String,
+        outfit: LittleEnergyOutfit
+    ) -> some View {
+        if mediaType == "little_energy_emoji" {
+            let mood = LittleEnergyCatalog.mood(for: mediaUrl)
+            VStack(spacing: 4) {
+                LittleEnergyAvatarView(moodID: mood.id, outfit: outfit, size: 96)
+                Text(mood.fallbackText)
+                    .font(.caption2)
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            .accessibilityElement(children: .combine)
+        } else if mediaType == "location" {
             // 位置卡片：mediaUrl = "lat,lng"，点击用地图 App 打开
             let parts = mediaUrl.split(separator: ",").compactMap { Double($0.trimmingCharacters(in: .whitespaces)) }
             if parts.count == 2 {
@@ -653,6 +704,25 @@ struct ChatDetailView: View {
                     )
                 }
                 .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private func sendLittleEnergyEmoji(_ id: String, conversation: Conversation) {
+        let payload = ChatEmojiPayload(id: id)
+        showLittleEnergyEmoji = false
+        Task {
+            let result = await store.sendMediaMessage(
+                conversationID: conversation.id,
+                mediaType: payload.mediaType,
+                mediaUrl: payload.mediaURL,
+                text: payload.fallbackText
+            )
+            switch result {
+            case .blocked(let reason), .failed(let reason):
+                blockedBanner = reason
+            case .sent:
+                break
             }
         }
     }

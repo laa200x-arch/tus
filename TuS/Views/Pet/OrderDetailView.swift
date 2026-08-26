@@ -74,7 +74,7 @@ struct ColleagueDetailView: View {
                     .frame(width: 56, height: 56)
                     .clipShape(Circle())
                 } else {
-                    SymbolAvatar(symbol: colleague.avatarSymbol, size: 56)
+                    LittleEnergyAvatarView(role: .darkColleague, size: 64)
                 }
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {

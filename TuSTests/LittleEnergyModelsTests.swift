@@ -55,4 +55,37 @@ final class LittleEnergyModelsTests: XCTestCase {
         let user = try JSONDecoder().decode(ServerUser.self, from: data)
         XCTAssertEqual(user.littleEnergyOutfit, .default)
     }
+
+    func testMoodCheckinUsesAllCatalogEntries() {
+        XCTAssertEqual(MoodCheckinSelection.items.count, 27)
+        XCTAssertEqual(MoodCheckinSelection.items.map(\.id), LittleEnergyCatalog.moods.map(\.id))
+    }
+
+    func testChatEmojiPayloadUsesStableProtocol() {
+        let payload = ChatEmojiPayload(id: "xnz_happy")
+        XCTAssertEqual(payload.mediaType, "little_energy_emoji")
+        XCTAssertEqual(payload.mediaURL, "xnz_happy")
+        XCTAssertEqual(payload.fallbackText, "[小能仔·开心]")
+    }
+
+    func testOutfitDraftDoesNotMutateSavedValue() {
+        let saved = LittleEnergyOutfit.default
+        var draft = OutfitDraft(outfit: saved)
+        draft.topID = "top_hoodie"
+        XCTAssertEqual(saved, .default)
+        XCTAssertEqual(draft.outfit.topId, "top_hoodie")
+    }
+
+    func testChatEmojiUsesTheSendersOutfit() {
+        let mine = LittleEnergyOutfit(topId: "top_hoodie")
+        let theirs = LittleEnergyOutfit(topId: "top_jacket")
+        XCTAssertEqual(
+            ChatEmojiPresentation.outfit(senderIsMe: true, currentUser: mine, partner: theirs).topId,
+            "top_hoodie"
+        )
+        XCTAssertEqual(
+            ChatEmojiPresentation.outfit(senderIsMe: false, currentUser: mine, partner: theirs).topId,
+            "top_jacket"
+        )
+    }
 }

@@ -62,8 +62,11 @@ struct AITabView: View {
             }
             if let profile = store.personality {
                 HStack(spacing: 14) {
-                    Text(profile.emoji)
-                        .font(.system(size: 44))
+                    LittleEnergyAvatarView(
+                        moodID: store.currentMoodID,
+                        outfit: store.currentUser.littleEnergyOutfit,
+                        size: 64
+                    )
                     VStack(alignment: .leading, spacing: 4) {
                         Text(profile.personality)
                             .font(.title3)
@@ -263,7 +266,7 @@ struct AITabView: View {
                         AIRelationshipView(colleague: colleague)
                     } label: {
                         HStack(spacing: 10) {
-                            SymbolAvatar(symbol: colleague.avatarSymbol, size: 36)
+                            LittleEnergyAvatarView(role: .darkColleague, size: 42)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(colleague.name)
                                     .font(.subheadline)
@@ -370,7 +373,7 @@ struct AIRelationshipView: View {
     private func headerCard(_ summary: RelationshipSummary) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 12) {
-                SymbolAvatar(symbol: colleague.avatarSymbol, size: 48)
+                LittleEnergyAvatarView(role: .darkColleague, size: 54)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(summary.colleagueName)
                         .font(.title3)

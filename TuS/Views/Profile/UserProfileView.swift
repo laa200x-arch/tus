@@ -51,6 +51,11 @@ struct UserProfileView: View {
 
     private var profileCard: some View {
         HStack(spacing: 14) {
+            LittleEnergyAvatarView(
+                moodID: user.id == store.currentUser.id ? store.currentMoodID : LittleEnergyCatalog.defaultMoodID,
+                outfit: user.littleEnergyOutfit,
+                size: 76
+            )
             AvatarView(user: user, size: 64)
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 6) {
