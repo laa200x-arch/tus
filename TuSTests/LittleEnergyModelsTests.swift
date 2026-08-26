@@ -8,6 +8,7 @@ final class LittleEnergyModelsTests: XCTestCase {
         XCTAssertEqual(LittleEnergyCatalog.normalizeMood("😄"), "xnz_happy")
         XCTAssertEqual(LittleEnergyCatalog.normalizeMood("xnz_grateful"), "xnz_grateful")
         XCTAssertEqual(LittleEnergyCatalog.normalizeMood("unknown"), "xnz_happy")
+        XCTAssertEqual(LittleEnergyCatalog.normalizeMood(nil), "xnz_happy")
     }
 
     func testUnknownOutfitFallsBackToDefaults() {

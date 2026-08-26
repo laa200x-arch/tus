@@ -143,7 +143,7 @@ struct StatusHomeView: View {
             if store.moodCheckedToday, let checkin = store.moodToday {
                 HStack(spacing: 12) {
                     LittleEnergyAvatarView(
-                        moodID: checkin.mood,
+                        moodID: LittleEnergyCatalog.normalizeMood(checkin.mood),
                         outfit: store.currentUser.littleEnergyOutfit,
                         size: 58
                     )

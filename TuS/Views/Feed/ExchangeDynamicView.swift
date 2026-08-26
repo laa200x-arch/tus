@@ -213,7 +213,7 @@ struct ComplaintCardView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
                 LittleEnergyAvatarView(
-                    moodID: complaint.sentiment,
+                    moodID: LittleEnergyCatalog.normalizeMood(complaint.sentiment),
                     outfit: ComplaintPresentation.outfit(for: complaint),
                     size: 44
                 )
