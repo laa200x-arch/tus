@@ -141,15 +141,16 @@ function removeAccount(username) {
 
 /* ---------- 全量刷新 ---------- */
 async function refreshAll() {
-  const [users, convs, statuses, colleagues, companies] = await Promise.all([
+  const [users, convs, statuses, colleagues, companies, moodToday] = await Promise.all([
     api('/api/users'), api('/api/conversations'), api('/api/statuses'),
-    api('/api/colleagues'), api('/api/companies')
+    api('/api/colleagues'), api('/api/companies'), api('/api/mood/today')
   ])
   App.state.users = users.users
   App.state.conversations = convs.conversations
   App.state.statuses = statuses.statuses
   App.state.colleagues = colleagues.colleagues
   App.state.companies = companies.companies
+  App.state.moodToday = moodToday
 }
 
 /* ---------- 用户 ---------- */
@@ -323,7 +324,8 @@ function normalizeMessage(msg, isMe) {
     id: msg.id, senderIsMe: isMe, text: msg.text || '',
     mediaType: msg.mediaType || null, mediaUrl: msg.mediaUrl || null,
     orderId: msg.orderId || null,
-    time: msg.time, isSystemNote: !!msg.isSystemNote
+    time: msg.time, isSystemNote: !!msg.isSystemNote,
+    senderOutfit: msg.senderOutfit || msg.littleEnergyOutfit || null
   }
 }
 

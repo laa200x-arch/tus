@@ -1202,6 +1202,7 @@ body {
 .little-energy-avatar { position: relative; display: inline-block; width: 92px; height: 92px; flex: 0 0 auto; overflow: visible; vertical-align: middle; }
 .little-energy-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
 .little-energy-avatar.dark-colleague img { filter: drop-shadow(0 6px 12px rgba(20, 18, 38, .2)); }
+.little-energy-colleague-card { width: 64px; height: 64px; }
 .little-energy-mini { width: 28px; height: 28px; }
 .little-energy-sm { width: 56px; height: 56px; }
 .little-energy-home { width: 84px; height: 84px; }

@@ -70,6 +70,52 @@ function littleEnergyEmojiPayload(id) {
   return mood ? { text: mood.fallbackText, mediaType: 'little_energy_emoji', mediaUrl: mood.id } : null
 }
 
-const api = { MOODS, OUTFIT_CATALOG, DEFAULT_OUTFIT, normalizeMood, normalizeOutfit, littleEnergyAvatarHtml, littleEnergyEmojiPayload }
+function messageOutfit(message, partnerOutfit, currentUserOutfit) {
+  if (message && message.senderIsMe) return normalizeOutfit(currentUserOutfit)
+  return normalizeOutfit((message && message.senderOutfit) || partnerOutfit)
+}
+
+function applyMoodToday(state, today, { getElementById, renderAvatar, renderMoodCard } = {}) {
+  state.moodToday = today
+  const hero = getElementById && getElementById('home-little-energy')
+  if (hero && renderAvatar) hero.innerHTML = renderAvatar(normalizeMood(today && today.mood))
+  if (renderMoodCard) renderMoodCard()
+  return today
+}
+
+function routeDataChange(currentView, renderers = {}) {
+  if (currentView === 'status') return renderers.status && renderers.status()
+  if (currentView === 'colleague') return renderers.colleagues && renderers.colleagues()
+  if (currentView === 'home') return renderers.home && renderers.home()
+  if (currentView === 'mine') return renderers.mine && renderers.mine()
+}
+
+function littleEnergyAssetSources(moodId, outfit) {
+  const mood = moodById.get(normalizeMood(moodId))
+  const worn = normalizeOutfit(outfit)
+  return [
+    assetPath(`emotions/${mood.assetName}.png`),
+    assetPath(`outfits/tops/${worn.topId}.png`),
+    assetPath(`outfits/bottoms/${worn.bottomId}.png`),
+    assetPath(`outfits/shoes/${worn.shoesId}.png`),
+    ...worn.accessoryIds.map((id) => assetPath(`outfits/accessories/${id}.png`))
+  ]
+}
+
+function loadCanvasImage(src, imageFactory = () => new Image()) {
+  return new Promise((resolve, reject) => {
+    const img = imageFactory()
+    img.onload = () => resolve(img)
+    img.onerror = () => reject(new Error(`Unable to load Little Energy asset: ${src}`))
+    img.src = src
+    if (img.complete && img.naturalWidth > 0) resolve(img)
+  })
+}
+
+const api = {
+  MOODS, OUTFIT_CATALOG, DEFAULT_OUTFIT, normalizeMood, normalizeOutfit,
+  littleEnergyAvatarHtml, littleEnergyEmojiPayload, messageOutfit, applyMoodToday,
+  routeDataChange, littleEnergyAssetSources, loadCanvasImage
+}
 if (typeof module !== 'undefined' && module.exports) module.exports = api
 if (typeof globalThis !== 'undefined') globalThis.LittleEnergy = api

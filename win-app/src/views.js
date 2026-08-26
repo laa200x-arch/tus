@@ -5,7 +5,7 @@
 'use strict'
 
 const LE = globalThis.LittleEnergy
-const { MOODS, OUTFIT_CATALOG, normalizeMood, normalizeOutfit, littleEnergyAvatarHtml, littleEnergyEmojiPayload } = LE
+const { MOODS, OUTFIT_CATALOG, normalizeMood, normalizeOutfit, littleEnergyAvatarHtml, littleEnergyEmojiPayload, messageOutfit, applyMoodToday, routeDataChange, littleEnergyAssetSources, loadCanvasImage } = LE
 function currentMoodId() { return normalizeMood(App.state.moodToday && App.state.moodToday.mood) }
 function currentOutfit() { return normalizeOutfit(App.state.user && App.state.user.littleEnergyOutfit) }
 function moodChoiceHtml(m, className = 'mood-choice') {
@@ -983,7 +983,7 @@ function renderMessages(conv) {
   }
   msgs.innerHTML =
     (App.state.hasMore[conv.id] ? '<button class="load-earlier" id="load-earlier">↑ 加载更早消息</button>' : '') +
-    list.map((m) => messageHtml(m)).join('')
+    list.map((m) => messageHtml(m, conv)).join('')
   const btn = msgs.querySelector('#load-earlier')
   if (btn) btn.addEventListener('click', async () => {
     const list2 = (await loadMessages(conv.id, list[0].id)).messages
@@ -994,10 +994,10 @@ function renderMessages(conv) {
   msgs.scrollTop = msgs.scrollHeight
 }
 
-function messageHtml(m) {
+function messageHtml(m, conv) {
   if (m.isSystemNote) return `<div class="msg-note">${esc(m.text)}</div>`
   let media = ''
-  if (m.mediaType === 'little_energy_emoji' && m.mediaUrl) media = `<div class="little-energy-message">${littleEnergyAvatarHtml({ moodId: m.mediaUrl, outfit: currentOutfit(), className: 'little-energy-emoji' })}</div>`
+  if (m.mediaType === 'little_energy_emoji' && m.mediaUrl) media = `<div class="little-energy-message">${littleEnergyAvatarHtml({ moodId: m.mediaUrl, outfit: messageOutfit(m, conv && conv.partner && conv.partner.littleEnergyOutfit, currentOutfit()), className: 'little-energy-emoji' })}</div>`
   else if (m.mediaType === 'image' && m.mediaUrl) media = `<img class="msg-image" src="${mediaUrl(m.mediaUrl)}" data-fullscreen alt="">`
   else if (m.mediaType === 'video' && m.mediaUrl) media = `<div class="msg-media-card" data-video="${mediaUrl(m.mediaUrl)}">▶ 播放视频</div>`
   else if (m.mediaType === 'audio' && m.mediaUrl) media = `<div class="msg-media-card" data-audio="${mediaUrl(m.mediaUrl)}">🔊 语音消息</div>`
@@ -1398,10 +1398,9 @@ App.views = {
   onConversationUpdate: () => renderConvoList(),
   onNewMessage: showNewMessagePopup,
   onDataChanged: () => {
-    const cur = App.state.views.current
-    if (cur === 'status') renderStatus()
-    else if (cur === 'colleague' || cur === 'home') renderColleagues()
-    else if (cur === 'mine') renderMine()
+    routeDataChange(App.state.views.current, {
+      status: renderStatus, colleagues: renderColleagues, home: syncHomeMood, mine: renderMine
+    })
   }
 }
 App.views.current = 'home'
@@ -1704,6 +1703,10 @@ async function renderHomeMood() {
   const box = document.getElementById('home-mood')
   try {
     const today = App.state.moodToday || await fetchMoodToday()
+    applyMoodToday(App.state, today, {
+      getElementById: (id) => document.getElementById(id),
+      renderAvatar: (moodId) => littleEnergyAvatarHtml({ moodId, outfit: currentOutfit(), className: 'little-energy-home-hero' })
+    })
     if (today.checked) {
       box.innerHTML = `
         <div class="home-mood-checked">
@@ -1735,6 +1738,14 @@ async function renderHomeMood() {
   } catch (e) {
     box.innerHTML = '<div class="card-sub">今日打卡暂不可用</div>'
   }
+}
+
+function syncHomeMood() {
+  applyMoodToday(App.state, App.state.moodToday, {
+    getElementById: (id) => document.getElementById(id),
+    renderAvatar: (moodId) => littleEnergyAvatarHtml({ moodId, outfit: currentOutfit(), className: 'little-energy-home-hero' }),
+    renderMoodCard: renderHomeMood
+  })
 }
 
 async function loadHomeFeed(filter) {
@@ -2452,9 +2463,9 @@ async function renderPersonalityCard(box) {
       </div>
     </div>
   `
-  box.querySelector('#ps-share').addEventListener('click', () => {
+  box.querySelector('#ps-share').addEventListener('click', async () => {
     try {
-      const canvas = drawPersonalityShare(r, tpl)
+      const canvas = await drawPersonalityShare(r, tpl)
       const dataUrl = canvas.toDataURL('image/png')
       openModal(`
         <div class="modal-title">📤 职场人格分享卡</div>
@@ -2488,7 +2499,7 @@ async function renderPersonalityCard(box) {
 }
 
 // 绘制职场人格分享图（canvas）
-function drawPersonalityShare(r, tpl) {
+async function drawPersonalityShare(r, tpl) {
   const W = 600, H = 800
   const canvas = document.createElement('canvas')
   canvas.width = W; canvas.height = H
@@ -2503,8 +2514,8 @@ function drawPersonalityShare(r, tpl) {
   ctx.textAlign = 'center'; ctx.fillStyle = '#fff'
   ctx.font = 'bold 30px "Microsoft YaHei", sans-serif'
   ctx.fillText('我的职场人格', W / 2, 78)
-  ctx.font = '96px "Segoe UI Emoji", sans-serif'
-  ctx.fillText(tpl.emoji || '🐟', W / 2, 230)
+  const avatarLayers = await Promise.all(littleEnergyAssetSources(currentMoodId(), currentOutfit()).map((src) => loadCanvasImage(src)))
+  avatarLayers.forEach((img) => ctx.drawImage(img, W / 2 - 90, 105, 180, 180))
   ctx.font = 'bold 38px "Microsoft YaHei", sans-serif'
   ctx.fillText(r.personality || '🐟 摸鱼哲学家', W / 2, 315)
   ctx.font = '19px "Microsoft YaHei", sans-serif'
@@ -2623,7 +2634,7 @@ async function renderAIInterpersonal(box) {
     const avg = Math.round((r.cooperation + r.expertise + r.communication + r.support + r.trust) / 5)
     return `
       <div class="grid-card" data-cid="${c.id}">
-        <div class="grid-card-avatar">${esc(c.avatarSymbol || '👤')}</div>
+        <div class="grid-card-avatar">${littleEnergyAvatarHtml({ role: 'darkColleague', className: 'little-energy-colleague-card' })}</div>
         <div class="grid-card-name">${esc(c.name)}</div>
         <div class="grid-card-meta">${esc(c.position || '')}</div>
         <div class="grid-card-score">${avg}<span> / 100</span></div>
