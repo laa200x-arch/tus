@@ -1,6 +1,6 @@
 /**
  * 发布 Windows 安装包到 GitHub Releases
- * 用法：node tools/release-win.mjs --tag win-v1.1.0 --name "技遇 Windows v1.1.0" --exe "win-app/dist/技遇 Setup 1.0.0.exe" --body "更新内容…"
+ * 用法：node tools/release-win.mjs --tag win-v2.1.0 --name "职场那些事 Windows v2.1.0" --exe "win-app/dist/职场那些事 Setup 2.1.0.exe" --body "更新内容…"
  * token 来源：环境变量 GH_TOKEN，或自动从 git credential manager 读取
  */
 import { spawnSync } from 'node:child_process'
@@ -17,7 +17,7 @@ const opt = (key, def = '') => {
 const tag = opt('tag')
 const name = opt('name', tag)
 const exePath = resolve(opt('exe'))
-const body = opt('body', '技遇 Windows 桌面版更新')
+const body = opt('body', '职场那些事 Windows 桌面版更新')
 
 if (!tag) { console.error('缺少 --tag 参数'); process.exit(1) }
 if (!existsSync(exePath)) { console.error('安装包不存在:', exePath); process.exit(1) }
@@ -53,7 +53,7 @@ async function main() {
 
   // 2) 上传安装包附件（使用 ASCII 文件名，避免 GitHub 丢弃非 ASCII 字符）
   const uploadBase = release.upload_url.replace('{?name,label}', '')
-  const fileName = `TuS-Setup-${tag.replace(/^win-/, '')}.exe`
+  const fileName = `TuS-Setup-${tag.replace(/^win-v?/, '')}.exe`
   const up = await fetch(`${uploadBase}?name=${encodeURIComponent(fileName)}`, {
     method: 'POST',
     headers: { ...H, 'Content-Type': 'application/octet-stream' },

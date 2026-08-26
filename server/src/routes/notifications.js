@@ -78,7 +78,7 @@ export function notificationsRouter(db) {
 
     // ---- 系统 ----
     const system = [
-      { type: 'version', title: '✨ 职场那些事 v2.0', text: '职场关系操作系统：吐槽广场 / 品行系统 / 聊天分析 / AI 洞察 已上线。', action: '', actionView: '', time: now }
+      { type: 'version', title: '✨ 职场那些事 v2.1', text: '27 种小能仔情绪、全局状态同步、个人换装与聊天 Emoji 已上线。', action: '', actionView: '', time: now }
     ]
 
     res.json({ total: interaction.length + ai.length + system.length, interaction, ai, system })

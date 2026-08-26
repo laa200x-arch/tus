@@ -68,8 +68,8 @@ async function main() {
   // 版本检查（App 启动时轮询：仅当服务器 current 与客户端已提示版本不同时客户端才弹更新窗）
   app.get('/api/version', (req, res) => {
     res.json({
-      current: '2.0.0',
-      updateMessage: '职场那些事 v2.0.0 职场关系操作系统：吐槽广场 / 行为标签 / 情绪打卡 / 关系雷达 / AI 洞察 / 职场人格',
+      current: '2.1.0',
+      updateMessage: '职场那些事 v2.1.0：27 种小能仔情绪全局同步、个人换装与聊天小能仔 Emoji 已上线',
       downloadUrl: 'https://github.com/laa200x-arch/tus/releases'
     })
   })
