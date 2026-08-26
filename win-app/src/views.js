@@ -4,6 +4,14 @@
  * ============================================================ */
 'use strict'
 
+const LE = globalThis.LittleEnergy
+const { MOODS, OUTFIT_CATALOG, normalizeMood, normalizeOutfit, littleEnergyAvatarHtml, littleEnergyEmojiPayload } = LE
+function currentMoodId() { return normalizeMood(App.state.moodToday && App.state.moodToday.mood) }
+function currentOutfit() { return normalizeOutfit(App.state.user && App.state.user.littleEnergyOutfit) }
+function moodChoiceHtml(m, className = 'mood-choice') {
+  return `<button type="button" class="${className}" data-mood="${m.id}">${littleEnergyAvatarHtml({ moodId: m.id, outfit: currentOutfit(), className: 'little-energy-sm' })}<span>${esc(m.label)}</span></button>`
+}
+
 /* ---------- 工具 ---------- */
 function esc(s) {  return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
 }
@@ -24,17 +32,11 @@ function skeletonBox(rows = 2) {
 
 // 同事头像：有照片显示照片，否则显示符号
 function colleagueAvatarHtml(c, cls) {
-  if (c && c.avatarUrl) {
-    return `<div class="${cls}" style="overflow:hidden"><img src="${App.SERVER}${esc(c.avatarUrl)}" style="width:100%;height:100%;object-fit:cover"></div>`
-  }
-  return `<div class="${cls}">${esc((c && c.avatarSymbol) || '👤')}</div>`
+  return littleEnergyAvatarHtml({ role: 'darkColleague', className: cls })
 }
 // 小头像（chips 用）：照片 20px 圆图 / emoji
 function colleagueAvatarMini(c) {
-  if (c && c.avatarUrl) {
-    return `<img src="${App.SERVER}${esc(c.avatarUrl)}" style="width:20px;height:20px;border-radius:50%;object-fit:cover">`
-  }
-  return `<span>${esc((c && c.avatarSymbol) || '👤')}</span>`
+  return littleEnergyAvatarHtml({ role: 'darkColleague', className: 'little-energy-mini' })
 }
 
 
@@ -673,6 +675,7 @@ function renderMine() {
       <div>
         <div class="card">
           <div class="profile-head">
+            ${littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: currentOutfit(), className: 'little-energy-profile' })}
             <div class="profile-avatar-wrap">
               ${avatarHtml(u, 'avatar avatar-xl')}
               <button class="avatar-cam" id="change-avatar" title="更换头像">📷</button>
@@ -743,6 +746,7 @@ function renderMine() {
 /* 编辑资料（账号信息，不含技能/互换） */
 function showProfileEditor() {
   const u = App.state.user
+  const draft = normalizeOutfit(u.littleEnergyOutfit)
   openModal(`
     <div class="modal-title">编辑资料</div>
     <div class="row" style="align-items:center;gap:12px;margin-bottom:14px">
@@ -755,8 +759,29 @@ function showProfileEditor() {
       <div class="form-field"><label>所在城市</label><input id="pe-location" value="${esc(u.locationLabel || '')}" placeholder="如：广州·天河"></div>
     </div>
     <div class="form-field"><label>简介</label><textarea id="pe-bio" rows="2" placeholder="介绍一下自己吧">${esc(u.bio || '')}</textarea></div>
+    <div class="outfit-editor">
+      <div class="card-title">小能仔换装</div>
+      <div id="pe-outfit-preview">${littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: draft, className: 'little-energy-preview' })}</div>
+      ${[['tops','上衣'],['bottoms','下装'],['shoes','鞋子'],['accessories','配饰']].map(([group, label]) => `<div class="outfit-group"><label>${label}</label><div class="outfit-grid" data-group="${group}">${group === 'accessories' ? '<button type="button" class="outfit-item" data-id="">无配饰</button>' : ''}${OUTFIT_CATALOG[group].map((id) => `<button type="button" class="outfit-item" data-id="${id}"><img src="../assets/little-energy/outfits/${group}/${id}.png" alt=""><span>${id.replace(/^[^_]+_/, '')}</span></button>`).join('')}</div></div>`).join('')}
+    </div>
     <div class="modal-actions"><button class="btn btn-outline" data-close>取消</button><button class="btn btn-primary" id="pe-save">💾 保存</button></div>
   `, (box) => {
+    const redrawOutfit = () => {
+      box.querySelector('#pe-outfit-preview').innerHTML = littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: draft, className: 'little-energy-preview' })
+      box.querySelectorAll('.outfit-grid').forEach((grid) => grid.querySelectorAll('.outfit-item').forEach((item) => {
+        const group = grid.dataset.group
+        const active = group === 'accessories' ? (item.dataset.id ? draft.accessoryIds.includes(item.dataset.id) : !draft.accessoryIds.length) : draft[{ tops: 'topId', bottoms: 'bottomId', shoes: 'shoesId' }[group]] === item.dataset.id
+        item.classList.toggle('active', active)
+      }))
+    }
+    box.querySelectorAll('.outfit-item').forEach((item) => item.addEventListener('click', () => {
+      const group = item.closest('.outfit-grid').dataset.group
+      const id = item.dataset.id
+      if (group === 'accessories') draft.accessoryIds = id ? (draft.accessoryIds.includes(id) ? draft.accessoryIds.filter((x) => x !== id) : [...draft.accessoryIds, id]) : []
+      else draft[{ tops: 'topId', bottoms: 'bottomId', shoes: 'shoesId' }[group]] = id
+      redrawOutfit()
+    }))
+    redrawOutfit()
     const af = box.querySelector('#pe-avatar-file')
     box.querySelector('#pe-avatar').addEventListener('click', () => af.click())
     af.addEventListener('change', async (e) => {
@@ -775,7 +800,7 @@ function showProfileEditor() {
       const nickname = box.querySelector('#pe-nickname').value.trim()
       if (!nickname) return toast('昵称不能为空')
       try {
-        await updateProfile({ nickname, bio: box.querySelector('#pe-bio').value.trim(), locationLabel: box.querySelector('#pe-location').value.trim() })
+        await updateProfile({ nickname, bio: box.querySelector('#pe-bio').value.trim(), locationLabel: box.querySelector('#pe-location').value.trim(), littleEnergyOutfit: normalizeOutfit(draft) })
         toast('✅ 资料已保存'); closeModal(); renderMine()
       } catch (e) { toast(e.message) }
     })
@@ -972,7 +997,8 @@ function renderMessages(conv) {
 function messageHtml(m) {
   if (m.isSystemNote) return `<div class="msg-note">${esc(m.text)}</div>`
   let media = ''
-  if (m.mediaType === 'image' && m.mediaUrl) media = `<img class="msg-image" src="${mediaUrl(m.mediaUrl)}" data-fullscreen alt="">`
+  if (m.mediaType === 'little_energy_emoji' && m.mediaUrl) media = `<div class="little-energy-message">${littleEnergyAvatarHtml({ moodId: m.mediaUrl, outfit: currentOutfit(), className: 'little-energy-emoji' })}</div>`
+  else if (m.mediaType === 'image' && m.mediaUrl) media = `<img class="msg-image" src="${mediaUrl(m.mediaUrl)}" data-fullscreen alt="">`
   else if (m.mediaType === 'video' && m.mediaUrl) media = `<div class="msg-media-card" data-video="${mediaUrl(m.mediaUrl)}">▶ 播放视频</div>`
   else if (m.mediaType === 'audio' && m.mediaUrl) media = `<div class="msg-media-card" data-audio="${mediaUrl(m.mediaUrl)}">🔊 语音消息</div>`
   else if (m.mediaType === 'location' && m.mediaUrl) {
@@ -986,7 +1012,7 @@ function messageHtml(m) {
       <span class="location-arrow">↗</span>
     </div>`
   }
-  const bubble = media + (m.text ? `<div>${esc(m.text)}</div>` : '')
+  const bubble = media + (m.text && m.mediaType !== 'little_energy_emoji' ? `<div>${esc(m.text)}</div>` : '')
   return `<div class="msg ${m.senderIsMe ? 'me' : 'them'}"><div class="msg-bubble">${bubble}</div></div>`
 }
 
@@ -1000,10 +1026,12 @@ function buildChatInput(conv) {
       <button class="icon-btn" id="ci-video" title="发送视频">🎬</button>
       <button class="icon-btn" id="ci-camera" title="拍照发送">📷</button>
       <button class="icon-btn" id="ci-voice" title="语音消息">🎤</button>
+      <button class="icon-btn" id="ci-little-energy" title="小能仔 Emoji">小能仔</button>
       <input type="file" id="ci-image-file" accept="image/*" hidden>
       <input type="file" id="ci-video-file" accept="video/*" hidden>
       <span id="ci-recording" class="recording-indicator hidden"><span class="recording-dot"></span>录音中…</span>
     </div>
+    <div id="ci-emoji-panel" class="little-energy-emoji-panel hidden">${MOODS.map((m) => moodChoiceHtml(m, 'emoji-choice')).join('')}</div>
     <textarea id="ci-text" placeholder="发送消息" rows="1"></textarea>
     <button class="btn btn-primary" id="ci-send" disabled>发送</button>`
 }
@@ -1060,6 +1088,20 @@ function bindChatInput(conv) {
   })
   document.getElementById('ci-camera').addEventListener('click', () => startCamera(conv))
   document.getElementById('ci-voice').addEventListener('click', () => toggleVoice(conv, recording))
+  const emojiPanel = document.getElementById('ci-emoji-panel')
+  document.getElementById('ci-little-energy').addEventListener('click', () => emojiPanel.classList.toggle('hidden'))
+  emojiPanel.querySelectorAll('.emoji-choice').forEach((button) => button.addEventListener('click', async () => {
+    const payload = littleEnergyEmojiPayload(button.dataset.mood)
+    if (!payload) return
+    try {
+      const r = await sendMessageRest(conv.id, payload.text, payload.mediaType, payload.mediaUrl)
+      if (r.blocked) return showBlocked(r.warning)
+      emojiPanel.classList.add('hidden')
+      const list = (await loadMessages(conv.id)).messages
+      App.state.messages[conv.id] = list.map((m) => normalizeMessage(m, m.senderIsMe))
+      renderMessages(conv)
+    } catch (err) { toast('发送失败：' + err.message) }
+  }))
 
   async function send() {
     const content = text.value.trim()
@@ -1389,7 +1431,7 @@ async function renderHome() {
       <!-- 打招呼 + 搜索框 -->
       <div class="home-hero">
         <div class="home-greet">
-          <span class="home-emoji">👋</span>
+          <span id="home-little-energy">${littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: currentOutfit(), className: 'little-energy-home-hero' })}</span>
           <span class="home-greet-text">${greet}，${esc(u.userName || '打工人')}！今天想吐槽点什么？</span>
         </div>
         <div class="home-search" id="home-search">
@@ -1403,7 +1445,6 @@ async function renderHome() {
         <div class="home-main">
           <!-- 今日状态卡（打卡 + 一行小统计） -->
           <div class="card home-status-card">
-            <div class="home-status-emoji" id="home-status-emoji">⏰</div>
             <div style="flex:1;min-width:0">
               <div id="home-mood">加载中…</div>
               <div class="home-status-meta">
@@ -1417,7 +1458,7 @@ async function renderHome() {
 
           <!-- 我的职场人格 -->
           <div class="card home-persona" style="margin-top:12px" id="home-persona-card">
-            <div class="home-persona-emoji" id="hp-emoji">🧠</div>
+            <div class="home-persona-emoji" id="hp-emoji">${littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: currentOutfit(), className: 'little-energy-persona-mini' })}</div>
             <div style="flex:1;min-width:0">
               <div class="home-persona-name" id="hp-name">职场人格加载中…</div>
               <div class="home-persona-idx" id="hp-idx"></div>
@@ -1520,7 +1561,7 @@ async function renderHomePersona() {
   try {
     const p = await getPersonality()
     nameEl.textContent = (p.emoji || '') + ' ' + (p.personality || '')
-    if (emojiEl) emojiEl.textContent = p.emoji || '🧠'
+    if (emojiEl) emojiEl.innerHTML = littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: currentOutfit(), className: 'little-energy-persona-mini' })
     const s = p.stats || {}
     idxEl.innerHTML = `
       <span>情绪指数 <b>${s.emotionIndex ?? '—'}</b></span>
@@ -1662,11 +1703,11 @@ async function renderSearch(q) {
 async function renderHomeMood() {
   const box = document.getElementById('home-mood')
   try {
-    const today = await fetchMoodToday()
+    const today = App.state.moodToday || await fetchMoodToday()
     if (today.checked) {
       box.innerHTML = `
         <div class="home-mood-checked">
-          <span class="home-mood-emoji-big">${today.mood}</span>
+          ${littleEnergyAvatarHtml({ moodId: today.mood, outfit: currentOutfit(), className: 'little-energy-home' })}
           <div style="flex:1">
             <div class="home-mood-title">今日已打卡 · ${esc(today.date)}</div>
             <div class="card-sub">${today.stressSources.map((s) => `#${esc(s)}`).join(' ')}</div>
@@ -1677,21 +1718,16 @@ async function renderHomeMood() {
       box.innerHTML = `
         <div class="home-mood-entry">
           <div class="home-mood-title">⏰ 今天上班感觉怎么样？</div>
-          <div class="home-mood-quick">
-            <button class="mood-quick" data-mood="😄">😄 元气</button>
-            <button class="mood-quick" data-mood="🙂">🙂 还行</button>
-            <button class="mood-quick" data-mood="😐">😐 一般</button>
-            <button class="mood-quick" data-mood="😮‍💨">😮‍💨 好累</button>
-            <button class="mood-quick" data-mood="😡">😡 想辞职</button>
-            <button class="mood-quick" data-mood="💀">💀 不想活了</button>
-          </div>
+          <div class="home-mood-quick mood-grid">${MOODS.map((m) => moodChoiceHtml(m, 'mood-quick')).join('')}</div>
         </div>`
     }
     box.querySelectorAll('.mood-quick').forEach((b) => b.addEventListener('click', async () => {
       try {
         await checkinMood({ mood: b.dataset.mood, stressSources: [], note: '' })
         toast('✅ 已打卡')
-        loadHome()
+        const hero = document.getElementById('home-little-energy')
+        if (hero) hero.innerHTML = littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: currentOutfit(), className: 'little-energy-home-hero' })
+        renderHomeMood()
       } catch (e) { toast('打卡失败：' + e.message) }
     }))
     const editBtn = box.querySelector('#mood-edit')
@@ -2395,7 +2431,7 @@ async function renderPersonalityCard(box) {
   const tpl = getDict().personalityTemplates.find((t) => t.label === r.personality) || r
   box.innerHTML = `
     <div class="personality-card">
-      <div class="personality-emoji-lg">${tpl.emoji}</div>
+      ${littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: currentOutfit(), className: 'little-energy-personality' })}
       <div class="personality-label-lg">${esc(r.personality || '🐟 摸鱼哲学家')}</div>
       <div class="personality-desc">${esc(tpl.desc)}</div>
       <div class="personality-stats">
@@ -2527,9 +2563,7 @@ async function renderMoodTrends(box) {
     <div class="card">
       <div class="row"><span class="section-title" style="margin:0;flex:1">📈 最近 30 天情绪</span></div>
       ${moodChartSvg(trends.trend)}
-      <div class="mood-legend">
-        ${Object.entries({ '😄': '#ff8a80', '🙂': '#ffd180', '😐': '#ffe57f', '😮‍💨': '#b39ddb', '😡': '#f48fb1', '💀': '#90a4ae' }).map(([e, c]) => `<span><span style="display:inline-block;width:10px;height:10px;background:${c};border-radius:2px;margin-right:4px"></span>${e}</span>`).join(' · ')}
-      </div>
+      <div class="mood-legend">情绪分值：积极 +3 · 平稳 0 · 低落 −3</div>
     </div>
     ${summary.insights && summary.insights.length ? `
       <div class="card" style="margin-top:12px">
@@ -2543,10 +2577,15 @@ async function renderMoodTrends(box) {
 function moodChartSvg(trend) {
   const days = trend.length
   const W = 600, H = 160, pad = 30
-  // 6 个 mood 映射到 6 个 y 坐标（高到低：元气 > 还行 > 一般 > 好累 > 想辞职 > 不想活）
-  const moodY = { '😄': 0, '🙂': 0.2, '😐': 0.4, '😮‍💨': 0.6, '😡': 0.8, '💀': 1 }
-  const moodToY = (m) => moodY[m] !== undefined ? moodY[m] : null
-  const colorOf = (m) => ({ '😄': '#ff8a80', '🙂': '#ffd180', '😐': '#ffe57f', '😮‍💨': '#b39ddb', '😡': '#f48fb1', '💀': '#90a4ae' })[m] || '#cfd8dc'
+  const moodToY = (value) => {
+    const mood = MOODS.find((item) => item.id === normalizeMood(value))
+    return mood ? (3 - mood.score) / 6 : null
+  }
+  const colorOf = (value) => {
+    const mood = MOODS.find((item) => item.id === normalizeMood(value))
+    if (!mood) return '#cfd8dc'
+    return mood.score > 1 ? '#7c4dff' : mood.score >= 0 ? '#75c9b7' : mood.score >= -1 ? '#ffd166' : '#ef769f'
+  }
   let pts = []
   const points = trend.map((d, i) => {
     const x = pad + (W - 2 * pad) * (i / Math.max(1, days - 1))
@@ -2732,14 +2771,14 @@ async function renderCompanyEco(box) {
 async function renderMoodCheckin() {
   await ensureDict()
   const d = getDict()
-  let initial = { mood: '🙂', stressSources: [], note: '' }
+  let initial = { mood: currentMoodId(), stressSources: [], note: '' }
   try { const r = await fetchMoodToday(); if (r.checked) initial = { mood: r.mood, stressSources: r.stressSources, note: r.note } } catch (e) {}
   const sources = new Set(initial.stressSources)
   openModal(`
-    <div class="modal-title">${initial.mood === '🙂' && !initial.note ? '⏰ 今天上班感觉怎么样？' : '✏️ 编辑今日情绪'}</div>
+    <div class="modal-title">${!App.state.moodToday?.checked && !initial.note ? '⏰ 今天上班感觉怎么样？' : '✏️ 编辑今日情绪'}</div>
     <div class="form-field">
       <label>情绪</label>
-      <div class="pet-chips" id="mc-mood">${d.moods.map((m) => `<button type="button" class="pet-chip" data-id="${m.id}" data-emoji="${m.emoji}">${m.emoji} ${esc(m.label)}</button>`).join('')}</div>
+      <div class="mood-grid" id="mc-mood">${MOODS.map((m) => moodChoiceHtml(m)).join('')}</div>
     </div>
     <div class="form-field">
       <label>今天发生了什么？（可多选）</label>
@@ -2755,17 +2794,17 @@ async function renderMoodCheckin() {
     </div>
   `, (box) => {
     let chosenMood = null
-    box.querySelectorAll('#mc-mood .pet-chip').forEach((c) => c.addEventListener('click', () => {
-      chosenMood = c.dataset.emoji
-      box.querySelectorAll('#mc-mood .pet-chip').forEach((x) => x.classList.toggle('active', x === c))
+    box.querySelectorAll('#mc-mood .mood-choice').forEach((c) => c.addEventListener('click', () => {
+      chosenMood = c.dataset.mood
+      box.querySelectorAll('#mc-mood .mood-choice').forEach((x) => x.classList.toggle('active', x === c))
     }))
     box.querySelectorAll('#mc-sources .pet-chip').forEach((c) => c.addEventListener('click', () => {
       c.classList.toggle('active')
       if (c.classList.contains('active')) sources.add(c.dataset.id); else sources.delete(c.dataset.id)
     }))
     // 初始化默认选中
-    box.querySelectorAll('#mc-mood .pet-chip').forEach((c) => {
-      if (c.dataset.emoji === initial.mood || c.dataset.id === initial.mood) { c.classList.add('active'); chosenMood = c.dataset.emoji }
+    box.querySelectorAll('#mc-mood .mood-choice').forEach((c) => {
+      if (c.dataset.mood === normalizeMood(initial.mood)) { c.classList.add('active'); chosenMood = c.dataset.mood }
     })
     initial.stressSources.forEach((id) => {
       const c = box.querySelector(`#mc-sources .pet-chip[data-id="${id}"]`)

@@ -1,0 +1,75 @@
+'use strict'
+
+// IDs mirror shared/little-energy/catalog.json and the server contract.
+const MOOD_ROWS = [
+  ['xnz_happy', '开心', '😄', 3], ['xnz_joyful', '快乐', null, 3],
+  ['xnz_calm', '平静', '😐', 1], ['xnz_excited', '兴奋', null, 3],
+  ['xnz_proud', '自豪', null, 3], ['xnz_love', '爱心', null, 3],
+  ['xnz_grateful', '感激', null, 3], ['xnz_expectant', '期待', null, 2],
+  ['xnz_surprised', '惊讶', null, 0], ['xnz_worried', '担忧', null, -1],
+  ['xnz_anxious', '焦虑', null, -2], ['xnz_tired', '疲惫', '😮‍💨', -2],
+  ['xnz_stressed', '压力大', null, -3], ['xnz_sad', '难过', '💀', -3],
+  ['xnz_disappointed', '失望', null, -2], ['xnz_lonely', '孤独', null, -3],
+  ['xnz_irritated', '烦躁', null, -2], ['xnz_angry', '愤怒', '😡', -3],
+  ['xnz_jealous', '嫉妒', null, -2], ['xnz_embarrassed', '尴尬', null, -1],
+  ['xnz_guilty', '愧疚', null, -2], ['xnz_confused', '困惑', null, -1],
+  ['xnz_shocked', '震惊', null, -1], ['xnz_determined', '坚定', null, 2],
+  ['xnz_motivated', '斗志', null, 3], ['xnz_composed', '从容', '🙂', 1],
+  ['xnz_sleepy', '困倦', null, -2]
+]
+
+const MOODS = Object.freeze(MOOD_ROWS.map(([id, label, legacyEmoji, score]) => Object.freeze({
+  id, label, legacyEmoji, score, assetName: id, fallbackText: `[小能仔·${label}]`
+})))
+const OUTFIT_CATALOG = Object.freeze({
+  tops: Object.freeze(['top_tshirt', 'top_hoodie', 'top_shirt', 'top_sweater', 'top_jacket']),
+  bottoms: Object.freeze(['bottom_slacks', 'bottom_jeans', 'bottom_cargo', 'bottom_shorts', 'bottom_skirt']),
+  shoes: Object.freeze(['shoes_sneakers', 'shoes_canvas', 'shoes_leather', 'shoes_boots', 'shoes_casual']),
+  accessories: Object.freeze(['accessory_glasses', 'accessory_hat', 'accessory_headphones', 'accessory_watch', 'accessory_necklace', 'accessory_ring', 'accessory_bracelet', 'accessory_backpack', 'accessory_tote_bag', 'accessory_crossbody_bag', 'accessory_belt', 'accessory_hairclip'])
+})
+const DEFAULT_OUTFIT = Object.freeze({ topId: 'top_tshirt', bottomId: 'bottom_slacks', shoesId: 'shoes_sneakers', accessoryIds: Object.freeze([]) })
+const moodById = new Map(MOODS.map((m) => [m.id, m]))
+const legacyMoodIds = new Map(MOODS.filter((m) => m.legacyEmoji).map((m) => [m.legacyEmoji, m.id]))
+
+function normalizeMood(value) {
+  return moodById.has(value) ? value : (legacyMoodIds.get(value) || DEFAULT_MOOD_ID)
+}
+const DEFAULT_MOOD_ID = 'xnz_happy'
+
+function normalizeOutfit(value) {
+  const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {}
+  const valid = (group, id, fallback) => OUTFIT_CATALOG[group].includes(id) ? id : fallback
+  return {
+    topId: valid('tops', source.topId, DEFAULT_OUTFIT.topId),
+    bottomId: valid('bottoms', source.bottomId, DEFAULT_OUTFIT.bottomId),
+    shoesId: valid('shoes', source.shoesId, DEFAULT_OUTFIT.shoesId),
+    accessoryIds: [...new Set(Array.isArray(source.accessoryIds) ? source.accessoryIds : [])]
+      .filter((id) => OUTFIT_CATALOG.accessories.includes(id))
+  }
+}
+
+function assetPath(path) { return `../assets/little-energy/${path}` }
+function littleEnergyAvatarHtml({ moodId, outfit, role = 'user', className = '' } = {}) {
+  if (role === 'darkColleague') {
+    return `<div class="little-energy-avatar dark-colleague ${className}" aria-label="被吐槽同事小能仔"><img src="${assetPath('colleague/dark-colleague.png')}" alt=""></div>`
+  }
+  const mood = moodById.get(normalizeMood(moodId))
+  const worn = normalizeOutfit(outfit)
+  const layers = [
+    ['emotion', `emotions/${mood.assetName}.png`],
+    ['top', `outfits/tops/${worn.topId}.png`],
+    ['bottom', `outfits/bottoms/${worn.bottomId}.png`],
+    ['shoes', `outfits/shoes/${worn.shoesId}.png`],
+    ...worn.accessoryIds.map((id) => ['accessory', `outfits/accessories/${id}.png`])
+  ]
+  return `<div class="little-energy-avatar ${className}" data-mood="${mood.id}" aria-label="小能仔·${mood.label}">${layers.map(([kind, src]) => `<img class="little-energy-layer layer-${kind}" src="${assetPath(src)}" alt="">`).join('')}</div>`
+}
+
+function littleEnergyEmojiPayload(id) {
+  const mood = moodById.get(id)
+  return mood ? { text: mood.fallbackText, mediaType: 'little_energy_emoji', mediaUrl: mood.id } : null
+}
+
+const api = { MOODS, OUTFIT_CATALOG, DEFAULT_OUTFIT, normalizeMood, normalizeOutfit, littleEnergyAvatarHtml, littleEnergyEmojiPayload }
+if (typeof module !== 'undefined' && module.exports) module.exports = api
+if (typeof globalThis !== 'undefined') globalThis.LittleEnergy = api

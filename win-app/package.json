@@ -24,7 +24,8 @@
     "files": [
       "main.js",
       "preload.js",
-      "src/**/*"
+      "src/**/*",
+      "assets/**/*"
     ],
     "win": {
       "target": "portable",

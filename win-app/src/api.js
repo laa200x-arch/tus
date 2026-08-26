@@ -157,12 +157,13 @@ async function fetchUser(id) {
   const data = await api('/api/users/' + id)
   return data.user
 }
-async function updateProfile({ nickname, bio, locationLabel, avatarUrl } = {}) {
+async function updateProfile({ nickname, bio, locationLabel, avatarUrl, littleEnergyOutfit } = {}) {
   const body = {}
   if (nickname !== undefined) body.nickname = nickname
   if (bio !== undefined) body.bio = bio
   if (locationLabel !== undefined) body.locationLabel = locationLabel
   if (avatarUrl !== undefined) body.avatarUrl = avatarUrl
+  if (littleEnergyOutfit !== undefined) body.littleEnergyOutfit = littleEnergyOutfit
   const data = await api('/api/me/profile', { method: 'PUT', body })
   App.state.user = data.user
   const acc = App.state.savedAccounts.find((a) => a.username === data.user.username)
@@ -374,10 +375,15 @@ async function toggleResonateComplaint(id) {
 
 /* ---------- 情绪打卡 ---------- */
 async function fetchMoodToday() {
-  return api('/api/mood/today')
+  const data = await api('/api/mood/today')
+  App.state.moodToday = data
+  return data
 }
 async function checkinMood(payload) {
-  return api('/api/mood/checkin', { method: 'POST', body: payload })
+  const data = await api('/api/mood/checkin', { method: 'POST', body: payload })
+  App.state.moodToday = data
+  if (App.state.views && App.state.views.onDataChanged) App.state.views.onDataChanged()
+  return data
 }
 async function fetchMoodTrends(days = 30) {
   return api('/api/mood/trends', { query: { days } })
