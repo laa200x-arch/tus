@@ -1,6 +1,6 @@
 {
   "name": "tus-win",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "职场那些事 - 按同事属性/公司属性/主题/软件四维记录职场观察的 Windows 桌面版（与 iOS 端共用服务器）",
   "main": "main.js",
   "scripts": {
