@@ -89,6 +89,23 @@ async function validateCanonicalFiles(manifest, filter) {
       assert.ok(stats.channels[3].min === 0, `${item.name} has no transparent pixel`)
       assert.ok(stats.channels[3].max > 0, `${item.name} has no visible pixel`)
     }
+    if (item.method === 'library') {
+      const { data, info } = await image.ensureAlpha().raw().toBuffer({ resolveWithObject: true })
+      let minX = info.width
+      let minY = info.height
+      let maxX = -1
+      let maxY = -1
+      for (let y = 0; y < info.height; y += 1) {
+        for (let x = 0; x < info.width; x += 1) {
+          if (data[(y * info.width + x) * info.channels + 3] === 0) continue
+          minX = Math.min(minX, x)
+          minY = Math.min(minY, y)
+          maxX = Math.max(maxX, x)
+          maxY = Math.max(maxY, y)
+        }
+      }
+      assert.ok(minX >= 28 && minY >= 28 && maxX <= 227 && maxY <= 227, `${item.name} exceeds 28px safety margin`)
+    }
   }
   return entries.length
 }
