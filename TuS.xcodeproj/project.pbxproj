@@ -49,11 +49,18 @@
 		A00000000000000000000028 /* ReceivedEvaluationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000129 /* ReceivedEvaluationsView.swift */; };
 		A00000000000000000000029 /* MiniAppsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000130 /* MiniAppsView.swift */; };
 		A00000000000000000000030 /* BookingHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000131 /* BookingHistoryView.swift */; };
+		A0000000000000000000002A /* HomeOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000132 /* HomeOverviewView.swift */; };
+		A0000000000000000000002B /* HomeHeroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000133 /* HomeHeroView.swift */; };
+		A0000000000000000000002C /* HomeStatsGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000134 /* HomeStatsGrid.swift */; };
+		A0000000000000000000002D /* HomeMoodCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000135 /* HomeMoodCard.swift */; };
+		A0000000000000000000002E /* HomeComplaintCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000136 /* HomeComplaintCard.swift */; };
+		A0000000000000000000002F /* HomePersonalityCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000137 /* HomePersonalityCard.swift */; };
 		B00000000000000000000001 /* LittleEnergyModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000101 /* LittleEnergyModels.swift */; };
 		B00000000000000000000002 /* LittleEnergyAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000102 /* LittleEnergyAvatarView.swift */; };
 		B00000000000000000000003 /* LittleEnergyModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000103 /* LittleEnergyModelsTests.swift */; };
 		B00000000000000000000004 /* HomeOverviewDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000105 /* HomeOverviewDecodingTests.swift */; };
 		B00000000000000000000005 /* HomeOverviewStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000106 /* HomeOverviewStoreTests.swift */; };
+		B00000000000000000000006 /* HomeNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000107 /* HomeNavigationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -100,6 +107,12 @@
 		A00000000000000000000129 /* ReceivedEvaluationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceivedEvaluationsView.swift; sourceTree = "<group>"; };
 		A00000000000000000000130 /* MiniAppsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiniAppsView.swift; sourceTree = "<group>"; };
 		A00000000000000000000131 /* BookingHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookingHistoryView.swift; sourceTree = "<group>"; };
+		A00000000000000000000132 /* HomeOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeOverviewView.swift; sourceTree = "<group>"; };
+		A00000000000000000000133 /* HomeHeroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeHeroView.swift; sourceTree = "<group>"; };
+		A00000000000000000000134 /* HomeStatsGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeStatsGrid.swift; sourceTree = "<group>"; };
+		A00000000000000000000135 /* HomeMoodCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeMoodCard.swift; sourceTree = "<group>"; };
+		A00000000000000000000136 /* HomeComplaintCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeComplaintCard.swift; sourceTree = "<group>"; };
+		A00000000000000000000137 /* HomePersonalityCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomePersonalityCard.swift; sourceTree = "<group>"; };
 		A0000000000000000000011E /* MatchMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchMapView.swift; sourceTree = "<group>"; };
 		A0000000000000000000011F /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		A00000000000000000000120 /* UserProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileView.swift; sourceTree = "<group>"; };
@@ -116,6 +129,7 @@
 		B00000000000000000000104 /* TuSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TuSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B00000000000000000000105 /* HomeOverviewDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeOverviewDecodingTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000106 /* HomeOverviewStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeOverviewStoreTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000107 /* HomeNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeNavigationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -236,8 +250,22 @@
 				A00000000000000000000216 /* Evaluate */,
 				A00000000000000000000218 /* Pet */,
 				A00000000000000000000217 /* Auth */,
+				A00000000000000000000219 /* Home */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000219 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000132 /* HomeOverviewView.swift */,
+				A00000000000000000000133 /* HomeHeroView.swift */,
+				A00000000000000000000134 /* HomeStatsGrid.swift */,
+				A00000000000000000000135 /* HomeMoodCard.swift */,
+				A00000000000000000000136 /* HomeComplaintCard.swift */,
+				A00000000000000000000137 /* HomePersonalityCard.swift */,
+			);
+			path = Home;
 			sourceTree = "<group>";
 		};
 		A00000000000000000000218 /* Pet */ = {
@@ -331,6 +359,7 @@
 				B00000000000000000000103 /* LittleEnergyModelsTests.swift */,
 				B00000000000000000000105 /* HomeOverviewDecodingTests.swift */,
 				B00000000000000000000106 /* HomeOverviewStoreTests.swift */,
+				B00000000000000000000107 /* HomeNavigationTests.swift */,
 			);
 			path = TuSTests;
 			sourceTree = "<group>";
@@ -435,6 +464,7 @@
 				B00000000000000000000003 /* LittleEnergyModelsTests.swift in Sources */,
 				B00000000000000000000004 /* HomeOverviewDecodingTests.swift in Sources */,
 				B00000000000000000000005 /* HomeOverviewStoreTests.swift in Sources */,
+				B00000000000000000000006 /* HomeNavigationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -484,6 +514,12 @@
 				A00000000000000000000025 /* PetTabView.swift in Sources */,
 				A00000000000000000000026 /* OrderDetailView.swift in Sources */,
 				A00000000000000000000030 /* BookingHistoryView.swift in Sources */,
+				A0000000000000000000002A /* HomeOverviewView.swift in Sources */,
+				A0000000000000000000002B /* HomeHeroView.swift in Sources */,
+				A0000000000000000000002C /* HomeStatsGrid.swift in Sources */,
+				A0000000000000000000002D /* HomeMoodCard.swift in Sources */,
+				A0000000000000000000002E /* HomeComplaintCard.swift in Sources */,
+				A0000000000000000000002F /* HomePersonalityCard.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

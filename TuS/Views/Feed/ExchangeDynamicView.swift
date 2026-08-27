@@ -3,7 +3,7 @@ import SwiftUI
 /// 吐槽广场（Tab）：feed（热点/最新）+ 我的吐槽 + 热搜榜
 struct ComplaintTabView: View {
     @EnvironmentObject private var store: MockDataStore
-    @State private var mode: Mode = .hot
+    @State private var mode: Mode
     @State private var showCompose = false
 
     enum Mode: String, CaseIterable, Identifiable {
@@ -11,6 +11,11 @@ struct ComplaintTabView: View {
         case new = "最新"
         case mine = "我的"
         var id: String { rawValue }
+    }
+
+    /// 支持从首页统计卡直达「我的吐槽」
+    init(initialMode: Mode = .hot) {
+        _mode = State(initialValue: initialMode)
     }
 
     /// 当前展示列表

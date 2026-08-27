@@ -28,6 +28,55 @@ enum Theme {
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
+
+    // MARK: - 首页重构视觉体系（参考图：深藏青标题 / 柔和紫蓝光晕 / 半透明白卡 / 紫色 CTA）
+
+    /// 深藏青标题（参考图标题色）
+    static let homeNavy = Color(red: 0.07, green: 0.10, blue: 0.20)        // #121A33
+    /// 柔和紫罗兰背景光晕
+    static let homeGlowLavender = Color(red: 0.91, green: 0.90, blue: 0.99) // #E8E6FD
+    /// 柔和淡蓝背景光晕
+    static let homeGlowBlue = Color(red: 0.87, green: 0.93, blue: 0.99)    // #DEEDFC
+    /// 半透明白卡（参考图卡片质感）
+    static let homeCardTranslucent = Color.white.opacity(0.86)
+
+    /// 首页背景：浅紫到淡蓝的柔和渐变 + 顶部 Hero 光晕
+    static let homeBackground = LinearGradient(
+        colors: [homeGlowLavender, Color.white, homeGlowBlue],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+}
+
+/// 首页布局常量（参考图视觉契约：20 页边距 / 24 圆角 / 18 间距 / 18 阴影）
+enum HomeMetrics {
+    static let pageHorizontal: CGFloat = 20
+    static let cardRadius: CGFloat = 24
+    static let sectionGap: CGFloat = 18
+    static let cardShadowRadius: CGFloat = 18
+    static let minTapTarget: CGFloat = 44
+}
+
+/// 首页卡片样式：半透明白底 + 24 圆角 + 克制阴影
+struct HomeCardStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: HomeMetrics.cardRadius, style: .continuous)
+                    .fill(Theme.homeCardTranslucent)
+            )
+            .shadow(
+                color: Theme.primary.opacity(0.10),
+                radius: HomeMetrics.cardShadowRadius,
+                x: 0,
+                y: 8
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: HomeMetrics.cardRadius, style: .continuous)
+                    .stroke(Color.white.opacity(0.6), lineWidth: 1)
+            )
+    }
 }
 
 /// 通用时间格式

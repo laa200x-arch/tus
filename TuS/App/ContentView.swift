@@ -1,10 +1,46 @@
 import SwiftUI
 
-/// 应用主框架：5 大 Tab（首页 / 吐槽 / AI / 消息 / 我的）
-/// 职场关系操作系统 v3：「更多」并入「我的」（设置 / AI 洞察 / 同事档案），AI 洞察上移为中间 Tab
+/// 应用主框架：5 项导航（首页 / 广场 / 中间发布 / 消息 / 我的）
+/// 中间发布按钮打开现有吐槽发布 Sheet，不是可选中页面；原 AI Tab 移除，
+/// AI 洞察通过首页人格卡与「我的」现有入口访问。
+enum HomeTab: Int, CaseIterable, Identifiable {
+    case home = 0
+    case plaza = 1
+    case compose = 2
+    case messages = 3
+    case mine = 4
+
+    var id: Int { rawValue }
+
+    var title: String {
+        switch self {
+        case .home: return "首页"
+        case .plaza: return "广场"
+        case .compose: return ""
+        case .messages: return "消息"
+        case .mine: return "我的"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .home: return "house"
+        case .plaza: return "flame"
+        case .compose: return "plus.circle.fill"
+        case .messages: return "message"
+        case .mine: return "person"
+        }
+    }
+
+    /// 中间发布动作不是可选中的 Tab 页
+    var isComposeAction: Bool { self == .compose }
+}
+
 struct ContentView: View {
     @EnvironmentObject private var store: MockDataStore
-    @State private var tabIndex = 0
+    @State private var tabIndex: HomeTab = .home
+    @State private var lastRealTab: HomeTab = .home
+    @State private var showCompose = false
     @State private var updateInfo: ServerVersion?
     @AppStorage("jiyu.syncHistory") private var syncHistory = true
     @AppStorage("jiyu.syncHistoryChosen") private var syncChosen = false
@@ -13,47 +49,60 @@ struct ContentView: View {
     var body: some View {
         TabView(selection: $tabIndex) {
             NavigationStack {
-                StatusHomeView()
+                HomeOverviewView()
             }
             .tabItem {
-                Label("首页", systemImage: "house")
+                Label(HomeTab.home.title, systemImage: HomeTab.home.icon)
             }
-            .tag(0)
+            .tag(HomeTab.home)
 
             NavigationStack {
                 ComplaintTabView()
             }
             .tabItem {
-                Label("吐槽", systemImage: "flame")
+                Label(HomeTab.plaza.title, systemImage: HomeTab.plaza.icon)
             }
-            .tag(1)
+            .tag(HomeTab.plaza)
 
-            NavigationStack {
-                AITabView()
-            }
-            .tabItem {
-                Label("AI", systemImage: "sparkles")
-            }
-            .tag(2)
+            // 中间发布按钮：选中即弹出吐槽发布 Sheet，并回到上一个真实 Tab
+            Color.clear
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .contentShape(Rectangle())
+                .tabItem {
+                    Image(systemName: HomeTab.compose.icon)
+                }
+                .accessibilityLabel("发吐槽")
+                .tag(HomeTab.compose)
 
             NavigationStack {
                 MessageView()
             }
             .tabItem {
-                Label("消息", systemImage: "message")
+                Label(HomeTab.messages.title, systemImage: HomeTab.messages.icon)
             }
             .badge(store.unreadTotal > 0 ? store.unreadTotal : 0)
-            .tag(3)
+            .tag(HomeTab.messages)
 
             NavigationStack {
                 MineView()
             }
             .tabItem {
-                Label("我的", systemImage: "person")
+                Label(HomeTab.mine.title, systemImage: HomeTab.mine.icon)
             }
-            .tag(4)
+            .tag(HomeTab.mine)
         }
         .tint(Theme.primary)
+        .onChange(of: tabIndex) { newValue in
+            if newValue == .compose {
+                showCompose = true
+                tabIndex = lastRealTab
+            } else {
+                lastRealTab = newValue
+            }
+        }
+        .sheet(isPresented: $showCompose) {
+            ComplaintComposeView()
+        }
         .task {
             await checkForUpdate()
             // 首次登录后询问聊天记录同步方式（之后可在「我的 → 设置」修改）
