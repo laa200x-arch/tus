@@ -4,9 +4,18 @@
  */
 import { Router } from 'express'
 import { requireAuth } from '../middleware.js'
+import { buildHomeOverview } from '../services/home-overview.js'
 
 export function homeRouter(db) {
   const router = Router()
+
+  router.get('/home/overview', requireAuth, (req, res, next) => {
+    try {
+      res.json({ ...buildHomeOverview(db, req.userId) })
+    } catch (error) {
+      next(error)
+    }
+  })
 
   router.get('/home/stats', requireAuth, (req, res) => {
     const uid = req.userId

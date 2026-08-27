@@ -319,8 +319,27 @@ if (aqingToken) {
   check('删除同事', false, '缺少 aqing token')
 }
 
-// 8. 首页统计和职场人格的文档形状
+// 8. 首页 overview、旧统计和职场人格的文档形状
+{
+  const overview = await api('/api/home/overview')
+  check('首页 overview 未认证被拒绝', overview.status === 401, `status=${overview.status}`)
+}
+
 if (aqingToken) {
+  const overview = await api('/api/home/overview', { token: aqingToken })
+  const overviewData = responseObject('首页 overview 响应', overview)
+  check('首页 overview 完整响应', hasFields(overviewData, [
+    'serverTime', 'greetingPeriod', 'user', 'stats', 'moodToday', 'quickMoods',
+    'latestComplaints', 'personality', 'colleagueSummary'
+  ]) && hasFields(overviewData?.user, ['id', 'userName', 'littleEnergyOutfit']) &&
+    hasFields(overviewData?.stats, [
+      'moodCheckedToday', 'plazaComplaintCount', 'myComplaintCount',
+      'colleagueCount', 'unreadMessageCount'
+    ]) && Array.isArray(overviewData?.quickMoods) && overviewData.quickMoods.length === 5 &&
+    overviewData.quickMoods.every((mood) => hasFields(mood, ['id', 'label', 'assetName'])) &&
+    Array.isArray(overviewData?.latestComplaints) &&
+    hasFields(overviewData?.colleagueSummary, ['count', 'averageScore', 'healthScore']), `status=${overview.status}`)
+
   const home = await api('/api/home/stats', { token: aqingToken })
   const homeData = responseObject('首页统计响应', home)
   check('首页统计文档形状', hasFields(homeData?.stats, [
@@ -336,6 +355,7 @@ if (aqingToken) {
       'emotionIndex', 'relationshipSensitivity', 'slackScore'
     ]), `status=${personality.status}`)
 } else {
+  check('首页 overview 完整响应', false, '缺少 aqing token')
   check('首页统计文档形状', false, '缺少 aqing token')
   check('职场人格文档形状', false, '缺少 aqing token')
 }
