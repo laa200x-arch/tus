@@ -178,7 +178,7 @@ function assertOverviewKeys(overview) {
     assert.deepEqual(overview.latestComplaints, [
       {
         id: '2',
-        userId: '2',
+        userId: null,
         authorName: '匿名用户',
         avatarSymbol: '🎭',
         littleEnergyOutfit: null,

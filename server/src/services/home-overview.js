@@ -100,7 +100,7 @@ export function buildHomeOverview(db, userId, now = new Date()) {
     LIMIT 3
   `).map((row) => ({
     id: String(row.id),
-    userId: String(row.user_id),
+    userId: row.is_anonymous ? null : String(row.user_id),
     authorName: row.is_anonymous ? '匿名用户' : row.author_name,
     avatarSymbol: row.is_anonymous ? '🎭' : (row.author_avatar || '👤'),
     littleEnergyOutfit: row.is_anonymous ? null : normalizeOutfit(parseOutfit(row.author_outfit)),
