@@ -166,7 +166,23 @@ struct HomeOverview: Decodable, Equatable {
 struct HomeOverviewUser: Decodable, Equatable {
     let id: String
     let userName: String
-    let littleEnergyOutfit: LittleEnergyOutfit
+    let littleEnergyOutfit: HomeOverviewOutfit
+}
+
+struct HomeOverviewOutfit: Decodable, Equatable {
+    let topId: String
+    let bottomId: String
+    let shoesId: String
+    let accessoryIds: [String]
+
+    var asLittleEnergyOutfit: LittleEnergyOutfit {
+        LittleEnergyOutfit(
+            topId: topId,
+            bottomId: bottomId,
+            shoesId: shoesId,
+            accessoryIds: accessoryIds
+        )
+    }
 }
 
 struct HomeOverviewStats: Decodable, Equatable {

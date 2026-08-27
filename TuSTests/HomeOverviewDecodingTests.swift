@@ -43,6 +43,11 @@ final class HomeOverviewDecodingTests: XCTestCase {
         XCTAssertEqual(complaint.commentCount, 2)
         XCTAssertEqual(complaint.time, APIClient.parseDate("2026-08-27T11:00:00Z"))
 
+        let anonymousComplaint = try XCTUnwrap(overview.latestComplaints.last)
+        XCTAssertNil(anonymousComplaint.userId)
+        XCTAssertNil(anonymousComplaint.littleEnergyOutfit)
+        XCTAssertTrue(anonymousComplaint.isAnonymous)
+
         XCTAssertEqual(overview.personality?.name, "执行者")
         XCTAssertEqual(overview.personality?.totalComplaints, 12)
         XCTAssertEqual(overview.personality?.summary, "完整报告在 AI 洞察中查看")
@@ -66,6 +71,26 @@ final class HomeOverviewDecodingTests: XCTestCase {
         XCTAssertEqual(overview.colleagueSummary.count, 0)
         XCTAssertNil(overview.colleagueSummary.averageScore)
         XCTAssertNil(overview.colleagueSummary.healthScore)
+    }
+
+    func testRejectsOverviewUserOutfitMissingRequiredTopID() {
+        XCTAssertThrowsError(
+            try APIClient.decoder.decode(HomeOverview.self, from: Data(overviewMissingUserOutfitTopIDJSON.utf8))
+        )
+    }
+
+    func testConvertsStrictOverviewOutfitToLittleEnergyOutfit() throws {
+        let overview = try APIClient.decoder.decode(HomeOverview.self, from: Data(completeOverviewJSON.utf8))
+
+        XCTAssertEqual(
+            overview.user.littleEnergyOutfit.asLittleEnergyOutfit,
+            LittleEnergyOutfit(
+                topId: "top_hoodie",
+                bottomId: "bottom_jeans",
+                shoesId: "shoes_canvas",
+                accessoryIds: ["accessory_hat"]
+            )
+        )
     }
 
     private let completeOverviewJSON = """
@@ -121,6 +146,20 @@ final class HomeOverviewDecodingTests: XCTestCase {
           "resonanceCount": 3,
           "commentCount": 2,
           "time": "2026-08-27T11:00:00Z"
+        },
+        {
+          "id": "102",
+          "userId": null,
+          "authorName": "匿名用户",
+          "avatarSymbol": "🎭",
+          "littleEnergyOutfit": null,
+          "isAnonymous": true,
+          "content": "不想开会",
+          "sentiment": null,
+          "likeCount": 0,
+          "resonanceCount": 0,
+          "commentCount": 0,
+          "time": "2026-08-27T10:00:00Z"
         }
       ],
       "personality": {
@@ -165,6 +204,38 @@ final class HomeOverviewDecodingTests: XCTestCase {
         { "id": "xnz_tired", "label": "好累", "assetName": "xnz_tired" },
         { "id": "xnz_angry", "label": "想辞职", "assetName": "xnz_angry" }
       ],
+      "latestComplaints": [],
+      "personality": null,
+      "colleagueSummary": {
+        "count": 0,
+        "averageScore": null,
+        "healthScore": null
+      }
+    }
+    """
+
+    private let overviewMissingUserOutfitTopIDJSON = """
+    {
+      "serverTime": "2026-08-27T08:00:00Z",
+      "greetingPeriod": "morning",
+      "user": {
+        "id": "42",
+        "userName": "小王",
+        "littleEnergyOutfit": {
+          "bottomId": "bottom_slacks",
+          "shoesId": "shoes_sneakers",
+          "accessoryIds": []
+        }
+      },
+      "stats": {
+        "moodCheckedToday": false,
+        "plazaComplaintCount": 0,
+        "myComplaintCount": 0,
+        "colleagueCount": 0,
+        "unreadMessageCount": 0
+      },
+      "moodToday": null,
+      "quickMoods": [],
       "latestComplaints": [],
       "personality": null,
       "colleagueSummary": {
