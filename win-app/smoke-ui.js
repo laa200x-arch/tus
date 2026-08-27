@@ -12,12 +12,15 @@ app.whenReady().then(async () => {
   w.webContents.on('render-process-gone', (e, d) => errors.push('render-gone: ' + d.reason))
 
   try {
-    await w.loadFile(path.join(__dirname, 'src', 'index.html'))
+    // 支持 TUS_SERVER 环境变量指向本地服务器；默认生产地址
+    const server = process.env.TUS_SERVER || 'http://43.157.17.88:8020'
+    await w.loadFile(path.join(__dirname, 'src', 'index.html'), server && server !== 'http://43.157.17.88:8020' ? { query: { server } } : {})
     // 真实登录：fetch 拿 token → 写入 localStorage → reload 触发 autoLogin
     const loginOk = await w.webContents.executeJavaScript(`
       (async () => {
         try {
-          const r = await fetch('http://43.157.17.88:8020/api/auth/login', {
+          const base = new URLSearchParams(location.search).get('server') || 'http://43.157.17.88:8020'
+          const r = await fetch(base + '/api/auth/login', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: 'aqing', password: '123456' })
           })
@@ -35,7 +38,21 @@ app.whenReady().then(async () => {
     if (loginOk !== true) { console.log('SMOKE_RESULT: FAIL login'); app.exit(1); return }
 
     await w.webContents.executeJavaScript(`location.reload()`)
-    await new Promise((r) => setTimeout(r, 3500)) // 等 autoLogin + 首页加载
+    // 等待 autoLogin 完成（成功进入首页 或 回登录页），避免竞态
+    const entered = await w.webContents.executeJavaScript(`
+      (async () => {
+        for (let i = 0; i < 40; i++) {
+          await new Promise((r) => setTimeout(r, 250))
+          try {
+            if (typeof App !== 'undefined' && App.state && App.state.user) return 'USER'
+            if (typeof App !== 'undefined' && App.state && !App.state.token && !document.getElementById('login-page').classList.contains('hidden')) return 'LOGIN'
+          } catch (e) { /* ignore */ }
+        }
+        return 'TIMEOUT'
+      })()
+    `)
+    console.log('AFTER_RELOAD:', entered)
+    await new Promise((r) => setTimeout(r, 1500)) // 等首页数据填充
 
     // 依次切换各 Tab，每个等 1.2s
     const tabs = ['home', 'complaint', 'colleague', 'ai', 'company', 'mine']
@@ -70,15 +87,26 @@ app.whenReady().then(async () => {
       })()
     `)
     console.log('V3_DETAIL', JSON.stringify(detail))
-    // v3 验证：首页新布局（职场人格卡 + 同事关系）
+    // v3 验证：首页重构 Dashboard（Hero / 四统计卡 / 情绪卡 / 最新吐槽 / 人格 / 同事概况）
     const home = await w.webContents.executeJavaScript(`
       (async () => {
         try {
           switchView('home')
-          await new Promise((r) => setTimeout(r, 2000))
+          await new Promise((r) => setTimeout(r, 2500))
           const v = document.getElementById('view')
           const html = v ? v.innerHTML : ''
-          return { hasPersona: html.includes('我的职场人格'), hasColleagues: html.includes('我的同事关系'), hasStatus: html.includes('今日状态') }
+          return {
+            hasHero: html.includes('home-dash-hero'),
+            statCount: v ? v.querySelectorAll('.home-dash-stat').length : 0,
+            hasMood: html.includes('home-dash-mood'),
+            hasComplaint: html.includes('home-dash-complaint'),
+            hasPersonality: html.includes('home-dash-personality'),
+            hasColleagueSummary: html.includes('home-dash-colleague-summary'),
+            hasQuickLinks: html.includes('home-dash-quicklinks'),
+            noBlockingSpinner: !html.includes('home-loading-full') && !html.includes('loading-overlay'),
+            hasSettled: ['loaded', 'failed'].includes(App.state.homeOverviewPhase),
+            len: html.length
+          }
         } catch (err) { return { err: err.message } }
       })()
     `)
@@ -136,7 +164,10 @@ app.whenReady().then(async () => {
     console.log('V3_FORM', JSON.stringify(form))
     const errCount = errors.length
     console.log('CONSOLE_ERRORS:', errCount, errCount ? errors.slice(0, 5).join(' || ') : '')
-    console.log('SMOKE_RESULT:', results.every((r) => r && !r.err && r.htmlLen > 0) && detail && !detail.err && detail.hasPersona && errCount === 0 ? 'PASS' : 'FAIL')
+    const homeOk = home && !home.err && home.hasHero && home.statCount === 4 && home.hasMood &&
+      home.hasComplaint && home.hasPersonality && home.hasColleagueSummary &&
+      home.noBlockingSpinner && home.hasSettled
+    console.log('SMOKE_RESULT:', results.every((r) => r && !r.err && r.htmlLen > 0) && detail && !detail.err && detail.hasPersona && homeOk && errCount === 0 ? 'PASS' : 'FAIL')
   } catch (e) {
     console.log('SMOKE_EXEC_ERR:', e.message)
     console.log('SMOKE_RESULT: FAIL')

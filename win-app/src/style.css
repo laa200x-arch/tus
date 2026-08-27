@@ -1230,3 +1230,112 @@ body {
 .little-energy-emoji-panel { position: absolute; left: 8px; right: 8px; bottom: 64px; z-index: 5; max-height: 330px; overflow: auto; display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; padding: 10px; border-radius: 16px; background: #fff; box-shadow: 0 10px 32px rgba(45,36,56,.2); }
 .little-energy-emoji-panel.hidden { display: none; }
 .little-energy-message { min-width: 112px; min-height: 112px; }
+
+/* ============================================================
+ * 首页重构（桌面 Dashboard · 参考图视觉系统）
+ * 柔和紫蓝画布 / 半透明白卡 / 深藏青标题 / 紫色强调 / 大圆角低阴影
+ * ============================================================ */
+.home-dash { padding: 18px 22px 60px; }
+
+/* ── Hero：问候 + 搜索 + 右侧小能仔 ── */
+.home-dash-hero {
+  position: relative; display: flex; align-items: center; gap: 22px;
+  padding: 26px 30px; border-radius: 24px; overflow: hidden;
+  background: linear-gradient(135deg, #ece9fd 0%, #ffffff 48%, #ddebfc 100%);
+  box-shadow: 0 8px 18px rgba(108, 92, 231, 0.10);
+}
+.home-dash-hero::before {
+  content: ''; position: absolute; right: -70px; top: -70px; width: 240px; height: 240px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(124, 77, 255, 0.18), rgba(124, 77, 255, 0) 70%);
+}
+.home-dash-hero-text { position: relative; flex: 1; min-width: 0; }
+.home-dash-greet { font-size: 28px; font-weight: 800; color: #121a33; letter-spacing: -0.5px; line-height: 1.25; }
+.home-dash-sub { margin-top: 6px; color: #6b7280; font-size: 14px; }
+.home-dash-search {
+  display: flex; align-items: center; gap: 8px; margin-top: 16px; max-width: 360px;
+  height: 42px; padding: 0 16px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88); border: 1px solid var(--divider);
+}
+.home-dash-search input { flex: 1; border: none; background: transparent; outline: none; font-size: 14px; color: #1f2937; min-width: 0; }
+.home-dash-hero-avatar { position: relative; flex-shrink: 0; }
+.little-energy-dash-hero { width: 132px; height: 132px; filter: drop-shadow(0 12px 20px rgba(108, 92, 231, 0.28)); }
+
+/* ── 四张等宽统计卡 ── */
+.home-dash-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 16px; }
+.home-dash-stat {
+  display: flex; align-items: center; gap: 12px; text-align: left;
+  background: rgba(255, 255, 255, 0.86); border: 1px solid rgba(238, 240, 246, 0.9);
+  border-radius: 24px; padding: 16px; cursor: pointer;
+  box-shadow: 0 8px 18px rgba(108, 92, 231, 0.10);
+  transition: transform .15s, box-shadow .15s; font-family: inherit; color: inherit;
+}
+.home-dash-stat:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(108, 92, 231, 0.16); }
+.home-dash-stat-emoji {
+  width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 22px;
+}
+.home-dash-stat-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.home-dash-stat-label { font-size: 12px; color: #6b7280; white-space: nowrap; }
+.home-dash-stat-num { font-size: 20px; font-weight: 800; color: #121a33; white-space: nowrap; }
+
+/* ── 主区域两栏：minmax(0,2fr) minmax(280px,1fr) ── */
+.home-main-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap: 16px; margin-top: 16px; align-items: start; }
+.home-col-left, .home-col-right { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+.home-dash-card {
+  background: rgba(255, 255, 255, 0.86); border: 1px solid rgba(238, 240, 246, 0.9);
+  border-radius: 24px; padding: 18px; box-shadow: 0 8px 18px rgba(108, 92, 231, 0.10);
+}
+.home-dash-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.home-dash-card-title { font-size: 15px; font-weight: 700; color: #121a33; }
+.home-dash-card-arrow { color: var(--primary); font-weight: 700; }
+.home-dash-link {
+  border: none; background: none; color: var(--primary); font-size: 13px; font-weight: 600;
+  cursor: pointer; padding: 6px 8px; border-radius: 8px; font-family: inherit;
+}
+.home-dash-link:hover { background: var(--primary-soft); }
+
+.home-dash-state { display: flex; align-items: center; gap: 12px; margin-top: 14px; font-size: 13px; }
+.home-dash-retry {
+  border: none; background: var(--primary); color: #fff; font-size: 13px; font-weight: 600;
+  padding: 8px 20px; border-radius: 999px; cursor: pointer; font-family: inherit;
+}
+.home-dash-retry:hover { background: var(--primary-deep); }
+
+/* ── 情绪卡 + 五个快捷情绪 ── */
+.home-dash-mood-sub { color: #6b7280; font-size: 13px; margin-bottom: 12px; }
+.home-dash-mood-quick { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+.home-dash-mood-tile {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 12px 4px; background: rgba(255, 255, 255, 0.72); border: 1px solid var(--divider);
+  border-radius: 14px; cursor: pointer; font-family: inherit; font-size: 12px; color: #4b5563;
+  transition: border-color .15s, background .15s;
+}
+.home-dash-mood-tile:hover { border-color: #c9b6f2; background: #ffffff; }
+.little-energy-mood-tile { width: 46px; height: 46px; }
+
+/* ── 人格卡 / 同事概况 / 快捷入口 ── */
+.home-dash-personality, .home-dash-colleague-summary { cursor: pointer; }
+.home-dash-personality:hover, .home-dash-colleague-summary:hover { border-color: #c9b6f2; }
+.home-dash-personality-name { font-size: 17px; font-weight: 800; color: #121a33; }
+.home-dash-personality-meta { margin: 4px 0; color: var(--primary); font-size: 13px; font-weight: 600; }
+.home-dash-cs-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.home-dash-cs-item {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 12px 4px; background: var(--primary-soft); border-radius: 14px;
+}
+.home-dash-cs-item b { font-size: 20px; font-weight: 800; color: #121a33; }
+.home-dash-cs-item span { font-size: 11px; color: #6b7280; }
+.home-dash-ql-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.home-dash-ql {
+  border: 1px solid var(--divider); background: rgba(255, 255, 255, 0.72);
+  border-radius: 14px; padding: 12px 8px; font-size: 13px; color: #4b5563;
+  cursor: pointer; font-family: inherit; text-align: center;
+}
+.home-dash-ql:hover { border-color: #c9b6f2; color: var(--primary); }
+
+/* ── 窄屏：两栏降为单栏（保留桌面侧栏导航，不引入手机底部 Tab）── */
+@media (max-width: 1000px) {
+  .home-main-grid { grid-template-columns: 1fr; }
+  .home-dash-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

@@ -13,8 +13,10 @@ const storage = globalThis.localStorage || {
 }
 
 const App = {
-  // 测试可用 TUS_SERVER 环境变量覆盖（浏览器内 process 不存在，自动回退默认生产地址）
-  SERVER: (typeof process !== 'undefined' && process.env && process.env.TUS_SERVER) || 'http://43.157.17.88:8020',
+  // 测试可用 TUS_SERVER 环境变量或 ?server= 查询参数覆盖（浏览器内 process 不存在，自动回退默认生产地址）
+  SERVER: (typeof process !== 'undefined' && process.env && process.env.TUS_SERVER)
+    || (typeof location !== 'undefined' && new URLSearchParams(location.search).get('server'))
+    || 'http://43.157.17.88:8020',
   state: {
     token: storage.getItem('jiyu.token') || null,
     user: null,              // 当前用户（服务端格式）

@@ -1417,194 +1417,307 @@ async function ensureDict() {
 function getDict() { return App.state.dict || { colleagueTypes: [], behaviorTags: [], moods: [], stressSources: [], personalityTemplates: [] } }
 function findById(arr, id) { return (arr || []).find((x) => x.id === id || String(x.id) === String(id)) }
 
-/* ---------- 入口：首页（今日状态 + 数据 + feed + AI 洞察 + 打卡） ---------- */
+/* ============================================================
+ * 首页（桌面 Dashboard）
+ * 参考图视觉系统平移：Hero + 四等宽统计卡 + 主区域两栏
+ * 单一数据源：App.state.homeOverview（/api/home/overview），未就绪时回退本地状态
+ * ============================================================ */
+
+const HOME_QUICK_MOOD_FALLBACK = [
+  { id: 'xnz_motivated', label: '元气', assetName: 'xnz_motivated' },
+  { id: 'xnz_composed', label: '还行', assetName: 'xnz_composed' },
+  { id: 'xnz_calm', label: '一般', assetName: 'xnz_calm' },
+  { id: 'xnz_tired', label: '好累', assetName: 'xnz_tired' },
+  { id: 'xnz_angry', label: '想辞职', assetName: 'xnz_angry' }
+]
+
+function homeGreeting() {
+  const period = App.state.homeOverview && App.state.homeOverview.greetingPeriod
+  if (period === 'morning') return '早上好'
+  if (period === 'afternoon') return '下午好'
+  if (period === 'evening') return '晚上好'
+  const hour = new Date().getHours()
+  return hour < 6 ? '深夜好' : hour < 12 ? '早上好' : hour < 14 ? '中午好' : hour < 18 ? '下午好' : '晚上好'
+}
+
+function homeStatsData() {
+  const s = App.state.homeOverview && App.state.homeOverview.stats
+  return {
+    moodCheckedToday: s ? s.moodCheckedToday : !!(App.state.moodToday && App.state.moodToday.checked),
+    plaza: s ? s.plazaComplaintCount : (App.state.complaints || []).length,
+    mine: s ? s.myComplaintCount : (App.state.myComplaints || []).length,
+    colleagues: s ? s.colleagueCount : (App.state.colleagues || []).length
+  }
+}
+
+function homeQuickMoods(overview) {
+  const moods = overview && overview.quickMoods
+  return moods && moods.length === 5 ? moods : HOME_QUICK_MOOD_FALLBACK
+}
+
+/* ---------- 首页区块渲染（各接受 overview 数据，返回确定性 HTML） ---------- */
+
+function renderHomeHero(overview = App.state.homeOverview) {
+  const u = App.state.user || {}
+  const userName = (overview && overview.user && overview.user.userName) || u.userName || '打工人'
+  return `
+    <div class="home-dash-hero">
+      <div class="home-dash-hero-text">
+        <div class="home-dash-greet">${esc(homeGreeting())}，${esc(userName)}！</div>
+        <div class="home-dash-sub">今天也要好好上班（和好好吐槽）</div>
+        <div class="home-dash-search">
+          <span class="home-search-icon">🔍</span>
+          <input id="home-search-input" placeholder="搜索吐槽、同事或公司…" />
+        </div>
+      </div>
+      <div class="home-dash-hero-avatar" id="home-little-energy">${littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: currentOutfit(), className: 'little-energy-dash-hero' })}</div>
+    </div>`
+}
+
+function renderHomeStats(overview = App.state.homeOverview) {
+  const d = homeStatsData()
+  const checked = d.moodCheckedToday
+  return `
+    <div class="home-dash-stats" id="home-dash-stats">
+      ${homeStatCard('💗', '今日打卡', checked ? '已打卡' : '未打卡', checked ? 'var(--success)' : 'var(--warning)', 'checkin')}
+      ${homeStatCard('🔥', '广场吐槽', String(d.plaza), 'var(--secondary)', 'plaza')}
+      ${homeStatCard('💬', '我的吐槽', String(d.mine), 'var(--primary)', 'mine')}
+      ${homeStatCard('👥', '同事档案', String(d.colleagues), 'var(--primary-deep)', 'colleague')}
+    </div>`
+}
+
+function homeStatCard(emoji, title, value, color, nav) {
+  return `<button class="home-dash-stat" data-nav="${nav}" type="button">
+    <span class="home-dash-stat-emoji" style="background:${color}1f">${emoji}</span>
+    <span class="home-dash-stat-body">
+      <span class="home-dash-stat-label">${esc(title)}</span>
+      <span class="home-dash-stat-num">${esc(value)}</span>
+    </span>
+  </button>`
+}
+
+function renderHomeMood(overview = App.state.homeOverview) {
+  const today = App.state.moodToday
+  const checked = !!(today && today.checked)
+  const moods = homeQuickMoods(overview)
+  return `
+    <div class="home-dash-card home-dash-mood" id="home-mood">
+      <div class="home-dash-card-head">
+        <span class="home-dash-card-title">今日情绪打卡</span>
+        <span class="spacer"></span>
+        ${checked ? `<button class="home-dash-link" id="mood-edit" type="button">修改</button>` : ''}
+      </div>
+      ${checked ? `
+        <div class="home-mood-checked">
+          ${littleEnergyAvatarHtml({ moodId: normalizeMood(today.mood), outfit: currentOutfit(), className: 'little-energy-home' })}
+          <div style="flex:1">
+            <div class="home-mood-title">今天已打卡 · ${esc(today.date || '')}</div>
+            <div class="card-sub">${(today.stressSources || []).map((s) => '#' + esc(s)).join(' ')}</div>
+          </div>
+        </div>` : `
+        <div class="home-dash-mood-sub">选一个今天的心情，坚持记录，AI 会生成你的职场情绪画像</div>
+        <div class="home-dash-mood-quick">
+          ${moods.map((m) => `<button class="home-dash-mood-tile" data-mood="${esc(m.id)}" type="button">
+            ${littleEnergyAvatarHtml({ moodId: m.id, outfit: currentOutfit(), className: 'little-energy-mood-tile' })}
+            <span>${esc(m.label)}</span>
+          </button>`).join('')}
+        </div>
+        <button class="home-dash-link" id="mood-full" type="button">完整打卡（含压力源/备注）→</button>`}
+    </div>`
+}
+
+/// overview 最新吐槽摘要 → 吐槽卡片所需形状（保留点赞/共鸣/评论既有能力）
+function complaintFromSummary(s) {
+  return {
+    id: s.id, userId: s.userId, authorName: s.authorName, avatarSymbol: s.avatarSymbol,
+    littleEnergyOutfit: s.littleEnergyOutfit, isAnonymous: s.isAnonymous,
+    content: s.content, colleagueName: undefined, category: undefined,
+    behaviorTags: [], sentiment: s.sentiment, likeCount: s.likeCount,
+    resonanceCount: s.resonanceCount, commentCount: s.commentCount,
+    resonanceRate: 0, liked: false, resonated: false, time: s.time
+  }
+}
+
+function renderHomeComplaint(overview = App.state.homeOverview) {
+  const summary = overview && overview.latestComplaints && overview.latestComplaints[0]
+  const fallback = !summary && App.state.complaints && App.state.complaints[0]
+  const body = summary
+    ? complaintCardHtml(complaintFromSummary(summary))
+    : fallback
+      ? complaintCardHtml(fallback)
+      : '<div class="empty" style="padding:26px 0">广场还很安静，发第一条吐槽吧</div>'
+  return `
+    <div class="home-dash-card home-dash-complaint" id="home-complaint">
+      <div class="home-dash-card-head">
+        <span class="home-dash-card-title">最新吐槽</span>
+        <span class="spacer"></span>
+        <button class="home-dash-link" data-nav="plaza" type="button">进入广场 →</button>
+      </div>
+      <div id="home-complaint-body">${body}</div>
+    </div>`
+}
+
+function renderHomePersonality(overview = App.state.homeOverview) {
+  const p = overview && overview.personality
+  return `
+    <div class="home-dash-card home-dash-personality" data-nav="ai">
+      <div class="home-dash-card-head">
+        <span class="home-dash-card-title">职场人格</span>
+        <span class="spacer"></span>
+        <span class="home-dash-card-arrow">→</span>
+      </div>
+      ${p ? `
+        <div class="home-dash-personality-name">${esc(personalityTitle(p.name))}</div>
+        <div class="home-dash-personality-meta">已累计 ${p.totalComplaints ?? 0} 条吐槽记录</div>
+        <div class="card-sub">${esc(p.summary || '完整报告在 AI 洞察中查看')}</div>` : `
+        <div class="card-sub">吐槽几条后，AI 会为你生成职场人格画像</div>`}
+    </div>`
+}
+
+function renderHomeColleagueSummary(overview = App.state.homeOverview) {
+  const cs = overview && overview.colleagueSummary
+  const count = cs ? cs.count : (App.state.colleagues || []).length
+  const avg = cs && cs.averageScore != null ? Number(cs.averageScore).toFixed(1) : '—'
+  const health = cs && cs.healthScore != null ? String(cs.healthScore) : '—'
+  return `
+    <div class="home-dash-card home-dash-colleague-summary" data-nav="colleague">
+      <div class="home-dash-card-head">
+        <span class="home-dash-card-title">同事概况</span>
+        <span class="spacer"></span>
+        <span class="home-dash-card-arrow">→</span>
+      </div>
+      <div class="home-dash-cs-row">
+        <div class="home-dash-cs-item"><b>${count}</b><span>同事档案</span></div>
+        <div class="home-dash-cs-item"><b>${avg}</b><span>平均分</span></div>
+        <div class="home-dash-cs-item"><b>${health}</b><span>关系健康</span></div>
+      </div>
+    </div>`
+}
+
+function renderHomeQuickLinks() {
+  return `
+    <div class="home-dash-card home-dash-quicklinks">
+      <div class="home-dash-card-head"><span class="home-dash-card-title">快捷入口</span></div>
+      <div class="home-dash-ql-grid">
+        <button class="home-dash-ql" data-nav="mine" type="button">💬 我的吐槽</button>
+        <button class="home-dash-ql" data-nav="colleague" type="button">👥 同事档案</button>
+        <button class="home-dash-ql" data-nav="ai" type="button">🧠 AI 洞察</button>
+        <button class="home-dash-ql" data-nav="messages" type="button">💬 消息中心</button>
+      </div>
+    </div>`
+}
+
+function renderHomeStateBanner() {
+  const phase = App.state.homeOverviewPhase
+  const has = !!App.state.homeOverview
+  if (phase === 'failed' && !has) {
+    return `<div class="home-dash-state" id="home-state">
+      <span style="color:var(--warning)">⚠️ 首页概览暂时不可用，已展示本地内容</span>
+      <button class="home-dash-retry" id="home-retry" type="button">重试</button>
+    </div>`
+  }
+  if (phase === 'loading' && !has) {
+    return `<div class="home-dash-state" id="home-state" style="color:var(--text-2)">正在加载首页数据…</div>`
+  }
+  return '<div id="home-state"></div>'
+}
+
+/* ---------- 入口：首页 ---------- */
 async function renderHome() {
   const v = document.getElementById('view')
   const u = App.state.user || {}
-  const hour = new Date().getHours()
-  const greet = hour < 6 ? '深夜好' : hour < 12 ? '早安' : hour < 14 ? '中午好' : hour < 18 ? '下午好' : '晚上好'
+  const overview = App.state.homeOverview
   v.innerHTML = `
-    <div class="home-wrap">
-      <!-- 打招呼 + 搜索框 -->
-      <div class="home-hero">
-        <div class="home-greet">
-          <span id="home-little-energy">${littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: currentOutfit(), className: 'little-energy-home-hero' })}</span>
-          <span class="home-greet-text">${greet}，${esc(u.userName || '打工人')}！今天想吐槽点什么？</span>
+    <div class="home-dash">
+      ${renderHomeHero(overview)}
+      ${renderHomeStateBanner()}
+      ${renderHomeStats(overview)}
+      <div class="home-main-grid">
+        <div class="home-col-left">
+          ${renderHomeMood(overview)}
+          ${renderHomeComplaint(overview)}
         </div>
-        <div class="home-search" id="home-search">
-          <span class="home-search-icon">🔍</span>
-          <input id="home-search-input" placeholder="搜索同事、公司、话题…" />
-        </div>
-      </div>
-
-      <div class="home-grid">
-        <!-- 左：主内容（v3 精简：状态 → 人格 → AI发现 → 热帖 → 同事关系） -->
-        <div class="home-main">
-          <!-- 今日状态卡（打卡 + 一行小统计） -->
-          <div class="card home-status-card">
-            <div style="flex:1;min-width:0">
-              <div id="home-mood">加载中…</div>
-              <div class="home-status-meta">
-                <span>今日吐槽 <b id="hs-complaints">—</b></span>
-                <span>共鸣点赞 <b id="hs-resonance">—</b></span>
-                <span>同事评分 <b id="hs-score">—</b></span>
-                <span>关系健康 <b id="hs-health">—</b></span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 我的职场人格 -->
-          <div class="card home-persona" style="margin-top:12px" id="home-persona-card">
-            <div class="home-persona-emoji" id="hp-emoji">${littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: currentOutfit(), className: 'little-energy-persona-mini' })}</div>
-            <div style="flex:1;min-width:0">
-              <div class="home-persona-name" id="hp-name">职场人格加载中…</div>
-              <div class="home-persona-idx" id="hp-idx"></div>
-            </div>
-            <button class="btn btn-outline btn-sm" id="hp-more">查看详情 →</button>
-          </div>
-
-          <!-- AI 发现 -->
-          <div class="home-ai" id="home-ai" style="margin-top:12px">加载中…</div>
-
-          <!-- 热门吐槽 -->
-          <div class="row" style="margin: 14px 0 12px">
-            <span class="section-title" style="margin:0;flex:1">🔥 热门吐槽</span>
-            <div class="home-tabs" id="home-tabs" style="margin:0">
-              <button class="active" data-filter="recommend">推荐</button>
-              <button data-filter="new">最新</button>
-              <button data-filter="anonymous">匿名</button>
-              <button data-filter="colleague">我的同事</button>
-            </div>
-            <button class="btn btn-outline btn-sm" id="home-more" style="margin-left:10px">进入广场 →</button>
-          </div>
-          <div class="home-feed" id="home-feed">加载中…</div>
-
-          <!-- 我的同事关系 -->
-          <div class="card" style="margin-top:14px">
-            <div class="row"><span class="section-title" style="margin:0;flex:1">👥 我的同事关系</span><button class="btn btn-outline btn-sm" id="home-colleague-more">管理同事 →</button></div>
-            <div id="home-colleagues" style="margin-top:10px">加载中…</div>
-          </div>
-        </div>
-
-        <!-- 右：侧栏（职场关系雷达 + 今日热榜 TOP3） -->
-        <aside class="home-aside">
-          <div class="home-aside-card">
-            <div class="home-aside-title">📡 职场关系雷达</div>
-            <div id="home-radar" class="home-radar">加载中…</div>
+        <aside class="home-col-right">
+          ${renderHomePersonality(overview)}
+          ${renderHomeColleagueSummary(overview)}
+          ${renderHomeQuickLinks()}
+          <div class="home-dash-card home-radar-card">
+            <div class="home-dash-card-head"><span class="home-dash-card-title">📡 职场关系雷达</span></div>
+            <div id="home-radar" class="home-radar"><div class="empty">加载中…</div></div>
             <div class="card-sub" style="text-align:center;margin-top:6px">基于你的同事打分</div>
           </div>
-          <div class="home-aside-card">
-            <div class="home-aside-title">🔥 今日热榜 TOP 3</div>
-            <div id="home-top3" class="home-top3">加载中…</div>
+          <div class="home-dash-card home-top-card">
+            <div class="home-dash-card-head"><span class="home-dash-card-title">🔥 今日热榜 TOP 3</span></div>
+            <div id="home-top3" class="home-top3"><div class="empty">加载中…</div></div>
           </div>
         </aside>
       </div>
     </div>
   `
   bindHome()
+  await loadHome()
 }
 
 function bindHome() {
   const v = document.getElementById('view')
-  v.querySelector('#home-more').addEventListener('click', () => switchView('complaint'))
-  const cm = v.querySelector('#home-colleague-more')
-  if (cm) cm.addEventListener('click', () => switchView('colleague'))
-  const hp = v.querySelector('#hp-more')
-  if (hp) hp.addEventListener('click', () => switchView('ai'))
-  // Tab 切换（推荐/最新/匿名/我的同事）
-  v.querySelectorAll('#home-tabs button').forEach((b) => b.addEventListener('click', () => {
-    v.querySelectorAll('#home-tabs button').forEach((x) => x.classList.toggle('active', x === b))
-    loadHomeFeed(b.dataset.filter)
-  }))
   // 搜索框（接入后端全局搜索）
   const s = v.querySelector('#home-search-input')
-  s.addEventListener('keydown', (e) => {
+  if (s) s.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && s.value.trim()) renderSearch(s.value.trim())
   })
-  loadHome()
+  // 委托处理所有 data-nav 导航（统计卡 / 快捷入口 / 模块卡）
+  v.addEventListener('click', (e) => {
+    const navEl = e.target.closest('[data-nav]')
+    if (!navEl) return
+    const nav = navEl.dataset.nav
+    if (nav === 'checkin') renderMoodCheckin()
+    else if (nav === 'plaza') switchView('complaint')
+    else if (nav === 'mine') renderComplaint({ mode: 'mine' })
+    else if (nav === 'colleague') switchView('colleague')
+    else if (nav === 'ai') switchView('ai')
+    else if (nav === 'messages') openMessageDrawer()
+  })
 }
 
 async function loadHome() {
-  // 首屏单一聚合请求：一次 /api/home/overview 喂饱统计 / 打卡 / 人格 / 同事概况等模块
+  // 首屏单一聚合请求：一次 /api/home/overview 喂饱统计 / 打卡 / 人格 / 吐槽 / 同事概况
   await refreshHomeOverview()
-
-  // 数据（今日状态卡内嵌小统计；聚合快照优先，未就绪时保持占位）
-  const hs = App.state.homeOverview && App.state.homeOverview.stats
-  if (hs) {
-    const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text }
-    setText('hs-complaints', hs.plazaComplaintCount != null ? hs.plazaComplaintCount : '—')
-    setText('hs-resonance', hs.myComplaintCount != null ? hs.myComplaintCount : '—')
-    setText('hs-score', '—')
-    setText('hs-health', '—')
-  }
-
-  // 今日打卡（overview 已同步进 moodToday）
-  renderHomeMood()
-  // 职场人格卡（overview 摘要优先）
-  renderHomePersona()
-  // AI 发现
-  renderHomeAI()
-  // feed（推荐）——二级内容，仍按需加载但不阻塞首屏
-  loadHomeFeed('recommend')
-  // 我的同事关系
-  renderHomeColleagues()
-  // 右侧栏：雷达 + 热榜 TOP3（二级模块，延迟非阻塞）
+  // 无论成功失败都渲染模块（overview 或本地回退），绝不让首屏停留在骨架
+  applyHomeModules()
+  // 二级模块：延迟非阻塞
   renderHomeRadar()
   renderHomeTop3()
 }
 
-// v3 首页：我的职场人格卡（聚合快照摘要优先，缺省回退完整人格接口）
-async function renderHomePersona() {
-  const nameEl = document.getElementById('hp-name')
-  const idxEl = document.getElementById('hp-idx')
-  const emojiEl = document.getElementById('hp-emoji')
-  if (!nameEl) return
-  const summary = App.state.homeOverview && App.state.homeOverview.personality
-  if (summary && summary.name) {
-    nameEl.textContent = personalityTitle(summary.name)
-    if (emojiEl) emojiEl.innerHTML = littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: currentOutfit(), className: 'little-energy-persona-mini' })
-    idxEl.innerHTML = `
-      <span>吐槽 <b>${summary.totalComplaints ?? 0}</b></span>
-      <span>${esc(summary.summary || '')}</span>`
-    return
+/// 用最新状态重填各首页模块容器（并重建模块内事件）
+function applyHomeModules() {
+  const v = document.getElementById('view')
+  if (!v) return
+  const overview = App.state.homeOverview
+  const setSlot = (id, html) => {
+    const el = v.querySelector('#' + id)
+    if (el) el.outerHTML = html
   }
-  try {
-    const p = await getPersonality()
-    nameEl.textContent = personalityTitle(p.personality)
-    if (emojiEl) emojiEl.innerHTML = littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: currentOutfit(), className: 'little-energy-persona-mini' })
-    const s = p.stats || {}
-    idxEl.innerHTML = `
-      <span>情绪指数 <b>${s.emotionIndex ?? '—'}</b></span>
-      <span>关系敏感 <b>${s.relationshipSensitivity ?? '—'}</b></span>
-      <span>摸鱼能力 <b>${s.slackScore ?? '—'}</b></span>
-      <span>吐槽 <b>${s.totalComplaints ?? 0}</b> · 共鸣 <b>${s.totalResonances ?? 0}</b></span>`
-  } catch (e) {
-    nameEl.textContent = '职场人格加载失败'
-  }
+  setSlot('home-dash-stats', renderHomeStats(overview))
+  setSlot('home-state', renderHomeStateBanner())
+  setSlot('home-mood', renderHomeMood(overview))
+  setSlot('home-complaint', renderHomeComplaint(overview))
+  applyHomeMood()
+  applyHomeComplaint()
+  bindHomeRetry()
 }
 
-// v3 首页：我的同事关系（横向 chips）
-async function renderHomeColleagues() {
-  const box = document.getElementById('home-colleagues')
-  if (!box) return
-  try {
-    const cols = (App.state.colleagues || []).slice(0, 8)
-    if (!cols.length) {
-      box.innerHTML = '<div class="empty">还没有同事档案，去「同事」添加第一位吧</div>'
-      return
-    }
-    box.innerHTML = `<div class="home-colleague-row">${cols.map((c) => `
-      <div class="home-colleague-chip" data-cid="${c.id}" title="${esc(c.position || '')}${c.workplaceType ? ' · ' + esc(c.workplaceType) : ''}">
-        ${colleagueAvatarMini(c)}<span>${esc(c.name)}</span>
-        ${c.riskLevel ? `<span class="tag" style="font-size:10px;padding:0 6px">${esc(c.riskLevel)}</span>` : ''}
-      </div>`).join('')}</div>`
-    box.querySelectorAll('.home-colleague-chip').forEach((el) => el.addEventListener('click', () => {
-      renderColleagueDetail(el.dataset.cid)
-    }))
-  } catch (e) {
-    box.innerHTML = '<div class="empty">同事加载失败</div>'
-  }
+function bindHomeRetry() {
+  const v = document.getElementById('view')
+  const btn = v && v.querySelector('#home-retry')
+  if (btn) btn.addEventListener('click', () => {
+    refreshHomeOverview({ force: true }).then(() => applyHomeModules())
+  })
 }
+
+// v3 首页：我的职场人格卡（已被 renderHomePersonality 区块替代）
+
+// v3 首页：我的同事关系（已被 renderHomeColleagueSummary 区块替代）
 
 async function renderHomeRadar() {
   const box = document.getElementById('home-radar')
@@ -1710,96 +1823,43 @@ async function renderSearch(q) {
   }
 }
 
-async function renderHomeMood() {
+/// 刷新情绪卡容器并绑定快捷打卡（渲染逻辑在 renderHomeMood，这里是更新与交互）
+function applyHomeMood() {
   const box = document.getElementById('home-mood')
-  try {
-    const today = App.state.moodToday || await fetchMoodToday()
-    applyMoodToday(App.state, today, {
-      getElementById: (id) => document.getElementById(id),
-      renderAvatar: (moodId) => littleEnergyAvatarHtml({ moodId, outfit: currentOutfit(), className: 'little-energy-home-hero' })
-    })
-    if (today.checked) {
-      box.innerHTML = `
-        <div class="home-mood-checked">
-          ${littleEnergyAvatarHtml({ moodId: today.mood, outfit: currentOutfit(), className: 'little-energy-home' })}
-          <div style="flex:1">
-            <div class="home-mood-title">今日已打卡 · ${esc(today.date)}</div>
-            <div class="card-sub">${today.stressSources.map((s) => `#${esc(s)}`).join(' ')}</div>
-          </div>
-          <button class="btn btn-outline btn-sm" id="mood-edit">编辑</button>
-        </div>`
-    } else {
-      box.innerHTML = `
-        <div class="home-mood-entry">
-          <div class="home-mood-title">⏰ 今天上班感觉怎么样？</div>
-          <div class="home-mood-quick mood-grid">${MOODS.map((m) => moodChoiceHtml(m, 'mood-quick')).join('')}</div>
-        </div>`
-    }
-    box.querySelectorAll('.mood-quick').forEach((b) => b.addEventListener('click', async () => {
-      try {
-        await checkinMood({ mood: b.dataset.mood, stressSources: [], note: '' })
-        toast('✅ 已打卡')
-        const hero = document.getElementById('home-little-energy')
-        if (hero) hero.innerHTML = littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: currentOutfit(), className: 'little-energy-home-hero' })
-        renderHomeMood()
-      } catch (e) { toast('打卡失败：' + e.message) }
-    }))
-    const editBtn = box.querySelector('#mood-edit')
-    if (editBtn) editBtn.addEventListener('click', () => renderMoodCheckin())
-  } catch (e) {
-    box.innerHTML = '<div class="card-sub">今日打卡暂不可用</div>'
-  }
+  if (!box) return
+  applyMoodToday(App.state, App.state.moodToday, {
+    getElementById: (id) => document.getElementById(id),
+    renderAvatar: (moodId) => littleEnergyAvatarHtml({ moodId, outfit: currentOutfit(), className: 'little-energy-dash-hero' })
+  })
+  box.querySelectorAll('.home-dash-mood-tile').forEach((b) => b.addEventListener('click', async () => {
+    try {
+      await checkinMood({ mood: b.dataset.mood, stressSources: [], note: '' })
+      toast('✅ 已打卡')
+      applyHomeMood()
+    } catch (e) { toast('打卡失败：' + e.message) }
+  }))
+  const full = box.querySelector('#mood-full')
+  if (full) full.addEventListener('click', () => renderMoodCheckin())
+  const edit = box.querySelector('#mood-edit')
+  if (edit) edit.addEventListener('click', () => renderMoodCheckin())
 }
 
 function syncHomeMood() {
   applyMoodToday(App.state, App.state.moodToday, {
     getElementById: (id) => document.getElementById(id),
-    renderAvatar: (moodId) => littleEnergyAvatarHtml({ moodId, outfit: currentOutfit(), className: 'little-energy-home-hero' }),
-    renderMoodCard: renderHomeMood
+    renderAvatar: (moodId) => littleEnergyAvatarHtml({ moodId, outfit: currentOutfit(), className: 'little-energy-dash-hero' }),
+    renderMoodCard: applyHomeMood
   })
 }
 
-async function loadHomeFeed(filter) {
-  const box = document.getElementById('home-feed')
-  box.innerHTML = skeletonFeed(3)
-  try {
-    const sort = filter === 'new' ? 'new' : 'hot'
-    const data = await fetchFeedComplaints(sort, filter)
-    const list = (data.complaints || []).slice(0, 5)
-    if (!list.length) {
-      box.innerHTML = '<div class="empty">还没有吐槽，去发布一条吧</div>'
-      return
-    }
-    box.innerHTML = list.map((c) => complaintCardHtml(c)).join('')
-    bindComplaintCardActions(box)
-  } catch (e) {
-    box.innerHTML = '<div class="empty">加载失败</div>'
-  }
+/// 刷新最新吐槽容器并绑定卡片交互（点赞/共鸣/评论/分享）
+function applyHomeComplaint() {
+  const box = document.getElementById('home-complaint-body')
+  if (!box) return
+  bindComplaintCardActions(box)
 }
 
-async function renderHomeAI() {
-  const box = document.getElementById('home-ai')
-  box.innerHTML = skeletonBox(2)
-  try {
-    const [summary, personality] = await Promise.all([fetchMoodSummary(), getPersonality()])
-    const insights = []
-    if (summary.insights && summary.insights.length) insights.push(...summary.insights.slice(0, 2))
-    if (!insights.length) insights.push('坚持每天打卡，AI 会告诉你最真实的职场画像。')
-    box.innerHTML = `
-      <div class="home-ai-card">
-        <div class="row">
-          <span class="home-ai-label">🧠 AI 今日洞察</span>
-          <span class="spacer"></span>
-          <span class="personality-mini">${esc(personalityTitle(personality.personality) || '摸鱼哲学家')}</span>
-        </div>
-        <ul class="home-ai-list">${insights.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>
-        <button class="btn btn-outline btn-sm" id="home-ai-more">查看完整 AI 洞察 →</button>
-      </div>`
-    box.querySelector('#home-ai-more').addEventListener('click', () => switchView('ai'))
-  } catch (e) {
-    box.innerHTML = '<div class="empty">AI 洞察生成中</div>'
-  }
-}
+// 旧首页 feed / AI 发现模块已由最新吐槽卡 + 快捷入口替代
 
 /* ---------- 吐槽广场 ---------- */
 async function renderComplaint(opts = {}) {
@@ -2092,7 +2152,7 @@ async function showComplaintCompose() {
         closeModal()
         if (App.state.views.current === 'complaint' || App.state.views.current === 'home') {
           if (App.state.views.current === 'complaint') renderComplaint({ mode: 'feed' })
-          else loadHomeFeed('hot')
+          else { await refreshHomeOverview({ force: true }); switchView('home') }
         }
       } catch (err) { toast('发布失败：' + err.message) }
     })
