@@ -53,6 +53,7 @@
 		B00000000000000000000002 /* LittleEnergyAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000102 /* LittleEnergyAvatarView.swift */; };
 		B00000000000000000000003 /* LittleEnergyModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000103 /* LittleEnergyModelsTests.swift */; };
 		B00000000000000000000004 /* HomeOverviewDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000105 /* HomeOverviewDecodingTests.swift */; };
+		B00000000000000000000005 /* HomeOverviewStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000106 /* HomeOverviewStoreTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -114,6 +115,7 @@
 		B00000000000000000000103 /* LittleEnergyModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LittleEnergyModelsTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000104 /* TuSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TuSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B00000000000000000000105 /* HomeOverviewDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeOverviewDecodingTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000106 /* HomeOverviewStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeOverviewStoreTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -328,6 +330,7 @@
 			children = (
 				B00000000000000000000103 /* LittleEnergyModelsTests.swift */,
 				B00000000000000000000105 /* HomeOverviewDecodingTests.swift */,
+				B00000000000000000000106 /* HomeOverviewStoreTests.swift */,
 			);
 			path = TuSTests;
 			sourceTree = "<group>";
@@ -431,6 +434,7 @@
 			files = (
 				B00000000000000000000003 /* LittleEnergyModelsTests.swift in Sources */,
 				B00000000000000000000004 /* HomeOverviewDecodingTests.swift in Sources */,
+				B00000000000000000000005 /* HomeOverviewStoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

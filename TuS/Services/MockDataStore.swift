@@ -7,6 +7,42 @@ enum MessageSendResult: Equatable {
     case failed(warning: String)
 }
 
+enum HomeOverviewPhase: Equatable {
+    case idle
+    case loading
+    case loaded
+    case failed(message: String)
+}
+
+/// Keeps only the newest overview response eligible to mutate UI state.
+@MainActor
+private final class HomeOverviewRequestCoordinator {
+    enum Result {
+        case loaded(HomeOverview)
+        case failed(String)
+        case stale
+    }
+
+    private var newestRequestID = 0
+
+    func load(using loader: () async throws -> HomeOverview) async -> Result {
+        newestRequestID += 1
+        let requestID = newestRequestID
+
+        do {
+            let overview = try await loader()
+            return requestID == newestRequestID ? .loaded(overview) : .stale
+        } catch {
+            let message = (error as? LocalizedError)?.errorDescription ?? "首页概览加载失败，请重试"
+            return requestID == newestRequestID ? .failed(message) : .stale
+        }
+    }
+
+    func invalidatePendingRequests() {
+        newestRequestID += 1
+    }
+}
+
 /// 全局数据层（方案 4.2 数据层）
 /// 双模式：
 ///   - 服务端模式（登录后）：数据来自 Node.js + Express 后端（APIClient），
@@ -15,6 +51,8 @@ enum MessageSendResult: Equatable {
 @MainActor
 final class MockDataStore: ObservableObject {
     static let shared = MockDataStore()
+
+    typealias HomeOverviewLoader = () async throws -> HomeOverview
 
     // MARK: - 发布数据
 
@@ -27,6 +65,10 @@ final class MockDataStore: ObservableObject {
     @Published var colleagues: [ColleagueModel] = []   // 同事档案（同事属性）
     @Published var companies: [CompanyModel] = []      // 公司属性
 
+    /// 首页的服务端聚合状态；各个首页计数均从此快照读取，避免本地重复计数。
+    @Published var homeOverview: HomeOverview?
+    @Published var homeOverviewPhase: HomeOverviewPhase = .idle
+
     /// 当前打开中的会话（用于实时消息未读计数）
     var activeConversationID: UUID?
 
@@ -38,11 +80,15 @@ final class MockDataStore: ObservableObject {
     /// 会话是否还有更早消息（分页加载）
     @Published private var hasMoreByConversation: [UUID: Bool] = [:]
 
+    private let homeOverviewLoader: HomeOverviewLoader
+    private let homeOverviewRequestCoordinator = HomeOverviewRequestCoordinator()
+
     var isServerMode: Bool { serverUserID != nil }
 
     // MARK: - 初始化
 
-    private init() {
+    init(homeOverviewLoader: @escaping HomeOverviewLoader = { try await APIClient.shared.fetchHomeOverview() }) {
+        self.homeOverviewLoader = homeOverviewLoader
         currentUser = Self.makeCurrentUser()
         allUsers = Self.makeOtherUsers()
         conversations = []
@@ -59,6 +105,7 @@ final class MockDataStore: ObservableObject {
             // 登录失败：清除可能残留的旧 token，避免重启后"误自动登录"
             TokenStore.token = nil
             serverUserID = nil
+            resetHomeOverview()
             throw error
         }
     }
@@ -70,6 +117,7 @@ final class MockDataStore: ObservableObject {
         } catch {
             TokenStore.token = nil
             serverUserID = nil
+            resetHomeOverview()
             throw error
         }
     }
@@ -85,6 +133,10 @@ final class MockDataStore: ObservableObject {
             if error == .unauthorized {
                 TokenStore.token = nil
             }
+            resetHomeOverview()
+            throw error
+        } catch {
+            resetHomeOverview()
             throw error
         }
     }
@@ -102,6 +154,7 @@ final class MockDataStore: ObservableObject {
         } catch let error as APIError {
             serverUserID = nil
             RealtimeClient.shared.disconnect()
+            resetHomeOverview()
             if error == .unauthorized {
                 // token 真失效：清除
                 TokenStore.token = nil
@@ -110,11 +163,13 @@ final class MockDataStore: ObservableObject {
         } catch {
             serverUserID = nil
             RealtimeClient.shared.disconnect()
+            resetHomeOverview()
             return false
         }
     }
 
     private func activateServerSession(_ user: ServerUser) async throws {
+        resetHomeOverview()
         serverUserID = user.id
         currentUser = UserModel(server: user)
         // 保存账号到本机（切换账号时免输密码，手动删除前一直保留）
@@ -158,6 +213,7 @@ final class MockDataStore: ObservableObject {
         moodSummary = nil
         personality = nil
         radarByColleague = [:]
+        resetHomeOverview()
         seedData()
     }
 
@@ -178,6 +234,54 @@ final class MockDataStore: ObservableObject {
         await refreshComplaints()
         await refreshMood()
         await loadRadarBatch()
+        // 首页概览是可选聚合请求：它自行保留缓存并绝不让登录/刷新失败。
+        await loadHomeOverview(force: true)
+    }
+
+    /// 加载首页的单一服务端快照；非强制调用复用已有内容，错误时保留缓存供重试。
+    func loadHomeOverview(force: Bool = false) async {
+        guard force || homeOverview == nil else { return }
+        guard homeOverviewPhase != .loading || force else { return }
+
+        homeOverviewPhase = .loading
+        switch await homeOverviewRequestCoordinator.load(using: homeOverviewLoader) {
+        case .loaded(let overview):
+            reconcileHomeOverview(overview)
+            homeOverviewPhase = .loaded
+        case .failed(let message):
+            homeOverviewPhase = .failed(message: message)
+        case .stale:
+            break
+        }
+    }
+
+    /// Applies the aggregate response to the existing mood and current-user state owners.
+    func reconcileHomeOverview(_ overview: HomeOverview) {
+        homeOverview = overview
+        moodCheckedToday = overview.stats.moodCheckedToday
+        moodToday = overview.moodToday.map {
+            MoodCheckin(
+                date: $0.date,
+                mood: LittleEnergyCatalog.normalizeMood($0.mood),
+                stressSources: $0.stressSources,
+                note: $0.note,
+                createdAt: nil
+            )
+        }
+        currentUser.littleEnergyOutfit = overview.user.littleEnergyOutfit.asLittleEnergyOutfit.normalized
+        syncCurrentUserInAllUsers()
+    }
+
+    /// Refreshes aggregate counters after a successful mutation without replacing immediate local updates.
+    func refreshHomeAfterMutation() async {
+        guard isServerMode else { return }
+        await loadHomeOverview(force: true)
+    }
+
+    private func resetHomeOverview() {
+        homeOverviewRequestCoordinator.invalidatePendingRequests()
+        homeOverview = nil
+        homeOverviewPhase = .idle
     }
 
     /// 拉取指定用户最新资料并同步本地快照（动态资料页/匹配详情打开时调用）
@@ -667,6 +771,7 @@ final class MockDataStore: ObservableObject {
                 )
                 feedComplaints.insert(model, at: 0)
                 myComplaints.insert(model, at: 0)
+                await refreshHomeAfterMutation()
                 return .sent
             } catch {
                 return .blocked(warning: (error as? LocalizedError)?.errorDescription ?? "发布失败，请重试")
@@ -775,6 +880,7 @@ final class MockDataStore: ObservableObject {
             if let trend = try? await APIClient.shared.fetchMoodTrends() {
                 moodTrend = trend
             }
+            await refreshHomeAfterMutation()
             return true
         }
         // 演示模式：本地记录
@@ -892,6 +998,7 @@ final class MockDataStore: ObservableObject {
             let user = try await APIClient.shared.updateProfile(nickname: nickname, bio: bio, locationLabel: locationLabel, avatarUrl: avatarUrl, littleEnergyOutfit: littleEnergyOutfit)
             currentUser = LittleEnergyStateDecisions.profile(previous: currentUser, saved: UserModel(server: user))
             syncCurrentUserInAllUsers()
+            await refreshHomeAfterMutation()
             return
         }
         if let nickname { currentUser.userName = nickname }
