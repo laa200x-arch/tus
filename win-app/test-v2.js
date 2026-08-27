@@ -3,7 +3,8 @@
 const path = require('path')
 const M = require(path.join(__dirname, 'src', 'api.js'))
 const App = M.App
-App.SERVER = 'http://43.157.17.88:8020'
+// 本地验证可用 TUS_SERVER 指向本地服务器；默认走生产地址
+App.SERVER = process.env.TUS_SERVER || 'http://43.157.17.88:8020'
 
 const OK = (name, cond, extra = '') => {
   console.log((cond ? 'PASS' : 'FAIL') + ' | ' + name + (extra ? ' | ' + extra : ''))

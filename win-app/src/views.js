@@ -1525,36 +1525,49 @@ function bindHome() {
 }
 
 async function loadHome() {
-  // 数据（今日状态卡内嵌小统计）
-  try {
-    const { stats } = await fetchHomeStats()
-    document.getElementById('hs-complaints').textContent = stats.todayComplaints || 0
-    document.getElementById('hs-resonance').textContent = (stats.myResonances || 0) + (stats.myLikes || 0)
-    document.getElementById('hs-score').textContent = stats.avgColleagueScore != null ? stats.avgColleagueScore.toFixed(1) : '—'
-    document.getElementById('hs-health').textContent = stats.healthScore != null ? stats.healthScore + ' 分' : '—'
-  } catch (e) { /* ignore */ }
+  // 首屏单一聚合请求：一次 /api/home/overview 喂饱统计 / 打卡 / 人格 / 同事概况等模块
+  await refreshHomeOverview()
 
-  // 今日打卡（状态卡内）
+  // 数据（今日状态卡内嵌小统计；聚合快照优先，未就绪时保持占位）
+  const hs = App.state.homeOverview && App.state.homeOverview.stats
+  if (hs) {
+    const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text }
+    setText('hs-complaints', hs.plazaComplaintCount != null ? hs.plazaComplaintCount : '—')
+    setText('hs-resonance', hs.myComplaintCount != null ? hs.myComplaintCount : '—')
+    setText('hs-score', '—')
+    setText('hs-health', '—')
+  }
+
+  // 今日打卡（overview 已同步进 moodToday）
   renderHomeMood()
-  // 职场人格卡
+  // 职场人格卡（overview 摘要优先）
   renderHomePersona()
   // AI 发现
   renderHomeAI()
-  // feed（推荐）
+  // feed（推荐）——二级内容，仍按需加载但不阻塞首屏
   loadHomeFeed('recommend')
   // 我的同事关系
   renderHomeColleagues()
-  // 右侧栏：雷达 + 热榜 TOP3
+  // 右侧栏：雷达 + 热榜 TOP3（二级模块，延迟非阻塞）
   renderHomeRadar()
   renderHomeTop3()
 }
 
-// v3 首页：我的职场人格卡
+// v3 首页：我的职场人格卡（聚合快照摘要优先，缺省回退完整人格接口）
 async function renderHomePersona() {
   const nameEl = document.getElementById('hp-name')
   const idxEl = document.getElementById('hp-idx')
   const emojiEl = document.getElementById('hp-emoji')
   if (!nameEl) return
+  const summary = App.state.homeOverview && App.state.homeOverview.personality
+  if (summary && summary.name) {
+    nameEl.textContent = personalityTitle(summary.name)
+    if (emojiEl) emojiEl.innerHTML = littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: currentOutfit(), className: 'little-energy-persona-mini' })
+    idxEl.innerHTML = `
+      <span>吐槽 <b>${summary.totalComplaints ?? 0}</b></span>
+      <span>${esc(summary.summary || '')}</span>`
+    return
+  }
   try {
     const p = await getPersonality()
     nameEl.textContent = personalityTitle(p.personality)

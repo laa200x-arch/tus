@@ -19,6 +19,14 @@ async function main() {
   })
   assert.deepEqual(routed, ['home'], 'home data changes preserve the home page and never render colleagues')
 
+  // 首页五个快捷情绪必须落在共享 27 情绪目录的稳定 ID 上（首页聚合契约回归）
+  const quickMoodIDs = ['xnz_motivated', 'xnz_composed', 'xnz_calm', 'xnz_tired', 'xnz_angry']
+  for (const id of quickMoodIDs) {
+    assert.equal(L.normalizeMood(id), id, `overview quick mood ${id} stays a stable catalog ID`)
+    assert.ok(L.MOODS.some((m) => m.id === id), `overview quick mood ${id} exists in the 27-mood catalog`)
+  }
+  assert.equal(L.normalizeMood('😐'), 'xnz_calm', 'legacy emoji still normalizes through the shared catalog')
+
   const state = { moodToday: null }
   const hero = { innerHTML: 'old' }
   let moodCardRenders = 0

@@ -13,7 +13,8 @@ const storage = globalThis.localStorage || {
 }
 
 const App = {
-  SERVER: 'http://43.157.17.88:8020',
+  // 测试可用 TUS_SERVER 环境变量覆盖（浏览器内 process 不存在，自动回退默认生产地址）
+  SERVER: (typeof process !== 'undefined' && process.env && process.env.TUS_SERVER) || 'http://43.157.17.88:8020',
   state: {
     token: storage.getItem('jiyu.token') || null,
     user: null,              // 当前用户（服务端格式）
@@ -37,7 +38,11 @@ const App = {
     syncChosen: storage.getItem('jiyu.syncChosen') === '1',
     activeConversation: null,
     savedAccounts: JSON.parse(storage.getItem('jiyu.accounts') || '[]'),
-    socket: null
+    socket: null,
+    // === 首页聚合快照（单一数据源：/api/home/overview）===
+    homeOverview: null,              // 完整聚合响应（首屏各模块只从这里 + 既有全局状态派生）
+    homeOverviewPhase: 'idle',       // idle | loading | loaded | failed
+    homeOverviewRequestID: 0         // 请求令牌：只允许最新响应写入状态
   },
   views: {} // 由 views.js 注册
 }
@@ -127,6 +132,10 @@ function logout() {
   App.state.moodTrends = []
   App.state.moodSummary = null
   App.state.personality = null
+  // 首页聚合快照清理（并作废在途请求）
+  App.state.homeOverview = null
+  App.state.homeOverviewPhase = 'idle'
+  App.state.homeOverviewRequestID += 1
 }
 function saveAccount(account) {
   let list = App.state.savedAccounts.filter((a) => a.username !== account.username)
@@ -170,6 +179,7 @@ async function updateProfile({ nickname, bio, locationLabel, avatarUrl, littleEn
   const acc = App.state.savedAccounts.find((a) => a.username === data.user.username)
   if (acc) { acc.nickname = data.user.userName; storage.setItem('jiyu.accounts', JSON.stringify(App.state.savedAccounts)) }
   if (App.state.views && App.state.views.onDataChanged) App.state.views.onDataChanged()
+  refreshHomeOverview({ force: true }).catch(() => {})
 }
 
 /* ---------- 同事状态（吐槽动态） ---------- */
@@ -363,10 +373,14 @@ async function fetchTopics() {
   return api('/api/complaints/topics')
 }
 async function postComplaint(payload) {
-  return api('/api/complaints', { method: 'POST', body: payload })
+  const data = await api('/api/complaints', { method: 'POST', body: payload })
+  refreshHomeOverview({ force: true }).catch(() => {})
+  return data
 }
 async function deleteComplaint(id) {
-  return api('/api/complaints/' + id, { method: 'DELETE' })
+  const data = await api('/api/complaints/' + id, { method: 'DELETE' })
+  refreshHomeOverview({ force: true }).catch(() => {})
+  return data
 }
 async function toggleLikeComplaint(id) {
   return api('/api/complaints/' + id + '/like', { method: 'POST' })
@@ -385,6 +399,7 @@ async function checkinMood(payload) {
   const data = await api('/api/mood/checkin', { method: 'POST', body: payload })
   App.state.moodToday = data
   if (App.state.views && App.state.views.onDataChanged) App.state.views.onDataChanged()
+  refreshHomeOverview({ force: true }).catch(() => {})
   return data
 }
 async function fetchMoodTrends(days = 30) {
@@ -424,6 +439,75 @@ async function searchAll(q) {
   return api('/api/search', { query: { q } })
 }
 
+/* ---------- 首页聚合快照（/api/home/overview，首屏单一数据源） ---------- */
+
+const HOME_OVERVIEW_TIMEOUT_MS = 10000
+
+function withTimeout(promise, ms) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('请求超时，请重试')), ms)
+    promise.then(
+      (value) => { clearTimeout(timer); resolve(value) },
+      (error) => { clearTimeout(timer); reject(error) }
+    )
+  })
+}
+
+async function fetchHomeOverview() {
+  return api('/api/home/overview')
+}
+
+/// 把聚合快照同步进既有全局状态（情绪打卡 + 当前用户穿搭），不创建第二套状态源。
+/// moodToday 采用既有 { checked, date, mood, stressSources, note } 形状，
+/// 穿搭通过当前用户对象的 littleEnergyOutfit 同步，供 LittleEnergy 头像直接消费。
+function applyHomeOverview(overview) {
+  App.state.homeOverview = overview
+  if (overview.moodToday) {
+    App.state.moodToday = {
+      checked: true,
+      date: overview.moodToday.date,
+      mood: overview.moodToday.mood,
+      stressSources: overview.moodToday.stressSources || [],
+      note: overview.moodToday.note || null,
+      createdAt: null
+    }
+  } else {
+    const formatter = (d) => {
+      const y = d.getFullYear(); const m = String(d.getMonth() + 1).padStart(2, '0'); const day = String(d.getDate()).padStart(2, '0')
+      return `${y}-${m}-${day}`
+    }
+    App.state.moodToday = { checked: false, date: formatter(new Date()), mood: null, stressSources: [], note: null, createdAt: null }
+  }
+  // 穿搭只属于当前登录用户（防止切号期间的旧响应误写）
+  if (App.state.user && overview.user && String(App.state.user.id) === String(overview.user.id)) {
+    App.state.user.littleEnergyOutfit = overview.user.littleEnergyOutfit
+  }
+  if (App.state.views && App.state.views.onDataChanged) App.state.views.onDataChanged()
+  return overview
+}
+
+/// 首页刷新协调器：一次聚合请求喂饱首屏；失败/超时保留缓存并清除 loading。
+/// 过期响应（令牌不匹配）一律丢弃，绝不覆盖新数据。
+async function refreshHomeOverview({ force = false } = {}) {
+  if (!force && App.state.homeOverview) return App.state.homeOverview
+  if (App.state.homeOverviewPhase === 'loading' && !force) return App.state.homeOverview
+
+  App.state.homeOverviewRequestID += 1
+  const requestID = App.state.homeOverviewRequestID
+  App.state.homeOverviewPhase = 'loading'
+  try {
+    const overview = await withTimeout(fetchHomeOverview(), HOME_OVERVIEW_TIMEOUT_MS)
+    if (requestID !== App.state.homeOverviewRequestID) return App.state.homeOverview // 过期响应
+    applyHomeOverview(overview)
+    App.state.homeOverviewPhase = 'loaded'
+    return overview
+  } catch (e) {
+    if (requestID !== App.state.homeOverviewRequestID) return App.state.homeOverview // 过期响应
+    App.state.homeOverviewPhase = 'failed' // 保留缓存供重试
+    return null
+  }
+}
+
 /* ---------- v3 品行系统 + 聊天分析 ---------- */
 async function getPersona(colleagueId) {
   return api('/api/persona/' + colleagueId)
@@ -460,6 +544,7 @@ if (typeof module !== 'undefined' && module.exports) {
     extractTagsAI, getRelationshipSummary, getPersonality,
     getRadar, postRadar, batchRadar,
     fetchHomeStats, searchAll,
+    fetchHomeOverview, applyHomeOverview, refreshHomeOverview, withTimeout,
     getPersona, postPersona, getPersonaPrediction, analyzeChat,
     fetchNotifications
   }
