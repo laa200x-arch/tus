@@ -149,6 +149,74 @@ struct ServerCompany: Decodable {
     let location: String
 }
 
+// MARK: - 首页概览 DTO
+
+struct HomeOverview: Decodable, Equatable {
+    let serverTime: Date
+    let greetingPeriod: String
+    let user: HomeOverviewUser
+    let stats: HomeOverviewStats
+    let moodToday: HomeMoodToday?
+    let quickMoods: [HomeQuickMood]
+    let latestComplaints: [HomeComplaintSummary]
+    let personality: HomePersonalitySummary?
+    let colleagueSummary: HomeColleagueSummary
+}
+
+struct HomeOverviewUser: Decodable, Equatable {
+    let id: String
+    let userName: String
+    let littleEnergyOutfit: LittleEnergyOutfit
+}
+
+struct HomeOverviewStats: Decodable, Equatable {
+    let moodCheckedToday: Bool
+    let plazaComplaintCount: Int
+    let myComplaintCount: Int
+    let colleagueCount: Int
+    let unreadMessageCount: Int
+}
+
+struct HomeMoodToday: Decodable, Equatable {
+    let mood: String
+    let stressSources: [String]
+    let note: String
+    let date: String
+}
+
+struct HomeQuickMood: Decodable, Identifiable, Equatable {
+    let id: String
+    let label: String
+    let assetName: String
+}
+
+struct HomeComplaintSummary: Decodable, Identifiable, Equatable {
+    let id: String
+    let userId: String?
+    let authorName: String
+    let avatarSymbol: String
+    let littleEnergyOutfit: LittleEnergyOutfit?
+    let isAnonymous: Bool
+    let content: String
+    let sentiment: String?
+    let likeCount: Int
+    let resonanceCount: Int
+    let commentCount: Int
+    let time: Date
+}
+
+struct HomePersonalitySummary: Decodable, Equatable {
+    let name: String
+    let totalComplaints: Int
+    let summary: String
+}
+
+struct HomeColleagueSummary: Decodable, Equatable {
+    let count: Int
+    let averageScore: Double?
+    let healthScore: Int?
+}
+
 // MARK: - 响应包装
 
 struct ServerVersion: Decodable {

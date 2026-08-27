@@ -404,6 +404,11 @@ final class APIClient {
         return response.stats
     }
 
+    /// 首页概览（问候、统计、情绪、快捷心情与摘要卡片）
+    func fetchHomeOverview() async throws -> HomeOverview {
+        try await request("/api/home/overview")
+    }
+
     /// 全局搜索（吐槽 / 同事 / 公司）
     func searchAll(query: String) async throws -> SearchResults {
         try await request("/api/search", query: ["q": query])
