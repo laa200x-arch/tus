@@ -13,8 +13,7 @@ function writeJSON(filePath, value) {
 
 function ensureAssetGroup(groupPath) {
   writeJSON(path.join(groupPath, 'Contents.json'), {
-    info: { author: 'xcode', version: 1 },
-    properties: { 'provides-namespace': true }
+    info: { author: 'xcode', version: 1 }
   })
 }
 

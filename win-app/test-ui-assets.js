@@ -85,6 +85,11 @@ function validateAccessors(manifest) {
 }
 
 function validateSyncedFiles(manifest) {
+  for (const folder of ['', 'Icons', 'Backgrounds']) {
+    const contentsPath = path.join(projectRoot, 'TuS', 'Assets.xcassets', 'UI', folder, 'Contents.json')
+    const contents = JSON.parse(fs.readFileSync(contentsPath, 'utf8'))
+    assert.notEqual(contents.properties?.['provides-namespace'], true, `${folder || 'UI'} must not namespace image names`)
+  }
   for (const item of [...manifest.icons, ...manifest.backgrounds]) {
     const group = item.category === 'background' || item.category === 'decoration' ? 'Backgrounds' : 'Icons'
     const ios = path.join(projectRoot, 'TuS', 'Assets.xcassets', 'UI', group, `${item.iosAsset}.imageset`, `${item.iosAsset}.png`)
