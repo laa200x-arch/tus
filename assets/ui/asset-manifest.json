@@ -8,255 +8,941 @@
   "promptBase": "Use case: stylized-concept. Asset type: TUS mobile app UI icon. Style: polished soft 3D-clay icon matching the supplied design board; rounded geometry; subtle translucent material; gentle inner glow; compact centered silhouette. Palette: energy purple #765BFF and pale purple #A695FF with the asset-specific accent. Composition: one centered icon with generous padding and no crop. Output: genuinely transparent background PNG, no tile or container unless explicitly requested. Constraints: no text, no letters, no watermark, no extra objects, no screenshot or device chrome.",
   "icons": [
     {
-      "name": "ui_brand_tus", "category": "brand", "method": "imagegen", "group": "primary-branded",
-      "width": 256, "height": 256, "alpha": true, "screens": ["global"],
-      "iosAsset": "ui_brand_tus", "windowsPath": "icons/ui_brand_tus.png", "canonicalPath": "assets/ui/icons/ui_brand_tus.png",
-      "consumers": ["TuS/Views/Profile/MineView.swift", "win-app/src/views.js"],
-      "prompt": "Rounded purple app badge with a tiny white abstract workplace-energy spark mark; no letters."
+      "name": "ui_brand_tus",
+      "category": "brand",
+      "method": "imagegen",
+      "group": "primary-branded",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "global"
+      ],
+      "iosAsset": "ui_brand_tus",
+      "windowsPath": "icons/ui_brand_tus.png",
+      "canonicalPath": "assets/ui/icons/ui_brand_tus.png",
+      "consumers": [
+        "TuS/Views/Profile/MineView.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Rounded purple app badge with a tiny white abstract workplace-energy spark mark; no letters.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "8800c2ad40a03b3dfe77840bd7625cdf83d0c412ed199d4f7691caaf6fcd3158"
+      }
     },
     {
-      "name": "ui_nav_home", "category": "navigation", "method": "library", "group": "library",
-      "width": 256, "height": 256, "alpha": true, "screens": ["global"],
-      "iosAsset": "ui_nav_home", "windowsPath": "icons/ui_nav_home.png", "canonicalPath": "assets/ui/icons/ui_nav_home.png",
-      "consumers": ["TuS/App/ContentView.swift", "win-app/src/index.html"], "iconifyName": "house", "color": "#747B96"
+      "name": "ui_nav_home",
+      "category": "navigation",
+      "method": "library",
+      "group": "library",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "global"
+      ],
+      "iosAsset": "ui_nav_home",
+      "windowsPath": "icons/ui_nav_home.png",
+      "canonicalPath": "assets/ui/icons/ui_nav_home.png",
+      "consumers": [
+        "TuS/App/ContentView.swift",
+        "win-app/src/index.html"
+      ],
+      "iconifyName": "house",
+      "color": "#747B96"
     },
     {
-      "name": "ui_nav_plaza", "category": "navigation", "method": "library", "group": "library",
-      "width": 256, "height": 256, "alpha": true, "screens": ["global"],
-      "iosAsset": "ui_nav_plaza", "windowsPath": "icons/ui_nav_plaza.png", "canonicalPath": "assets/ui/icons/ui_nav_plaza.png",
-      "consumers": ["TuS/App/ContentView.swift", "win-app/src/index.html"], "iconifyName": "magnifying-glass", "color": "#747B96"
+      "name": "ui_nav_plaza",
+      "category": "navigation",
+      "method": "library",
+      "group": "library",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "global"
+      ],
+      "iosAsset": "ui_nav_plaza",
+      "windowsPath": "icons/ui_nav_plaza.png",
+      "canonicalPath": "assets/ui/icons/ui_nav_plaza.png",
+      "consumers": [
+        "TuS/App/ContentView.swift",
+        "win-app/src/index.html"
+      ],
+      "iconifyName": "magnifying-glass",
+      "color": "#747B96"
     },
     {
-      "name": "ui_nav_publish", "category": "navigation", "method": "imagegen", "group": "primary-branded",
-      "width": 256, "height": 256, "alpha": true, "screens": ["global", "publish"],
-      "iosAsset": "ui_nav_publish", "windowsPath": "icons/ui_nav_publish.png", "canonicalPath": "assets/ui/icons/ui_nav_publish.png",
-      "consumers": ["TuS/App/ContentView.swift", "win-app/src/index.html"],
-      "prompt": "Luminous purple rounded-square button with a crisp white plus."
+      "name": "ui_nav_publish",
+      "category": "navigation",
+      "method": "imagegen",
+      "group": "primary-branded",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "global",
+        "publish"
+      ],
+      "iosAsset": "ui_nav_publish",
+      "windowsPath": "icons/ui_nav_publish.png",
+      "canonicalPath": "assets/ui/icons/ui_nav_publish.png",
+      "consumers": [
+        "TuS/App/ContentView.swift",
+        "win-app/src/index.html"
+      ],
+      "prompt": "Luminous purple rounded-square button with a crisp white plus.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "bdc1b907c3a88ad4d803056c2f1a8bed34dc8b836385e4fe9a9f703aadf34cb5"
+      }
     },
     {
-      "name": "ui_nav_messages", "category": "navigation", "method": "library", "group": "library",
-      "width": 256, "height": 256, "alpha": true, "screens": ["global"],
-      "iosAsset": "ui_nav_messages", "windowsPath": "icons/ui_nav_messages.png", "canonicalPath": "assets/ui/icons/ui_nav_messages.png",
-      "consumers": ["TuS/App/ContentView.swift", "win-app/src/index.html"], "iconifyName": "heart", "color": "#747B96"
+      "name": "ui_nav_messages",
+      "category": "navigation",
+      "method": "library",
+      "group": "library",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "global"
+      ],
+      "iosAsset": "ui_nav_messages",
+      "windowsPath": "icons/ui_nav_messages.png",
+      "canonicalPath": "assets/ui/icons/ui_nav_messages.png",
+      "consumers": [
+        "TuS/App/ContentView.swift",
+        "win-app/src/index.html"
+      ],
+      "iconifyName": "heart",
+      "color": "#747B96"
     },
     {
-      "name": "ui_nav_profile", "category": "navigation", "method": "library", "group": "library",
-      "width": 256, "height": 256, "alpha": true, "screens": ["global"],
-      "iosAsset": "ui_nav_profile", "windowsPath": "icons/ui_nav_profile.png", "canonicalPath": "assets/ui/icons/ui_nav_profile.png",
-      "consumers": ["TuS/App/ContentView.swift", "win-app/src/index.html"], "iconifyName": "user", "color": "#747B96"
+      "name": "ui_nav_profile",
+      "category": "navigation",
+      "method": "library",
+      "group": "library",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "global"
+      ],
+      "iosAsset": "ui_nav_profile",
+      "windowsPath": "icons/ui_nav_profile.png",
+      "canonicalPath": "assets/ui/icons/ui_nav_profile.png",
+      "consumers": [
+        "TuS/App/ContentView.swift",
+        "win-app/src/index.html"
+      ],
+      "iconifyName": "user",
+      "color": "#747B96"
     },
     {
-      "name": "ui_action_search", "category": "action", "method": "library", "group": "library",
-      "width": 256, "height": 256, "alpha": true, "screens": ["home", "square", "profile"],
-      "iosAsset": "ui_action_search", "windowsPath": "icons/ui_action_search.png", "canonicalPath": "assets/ui/icons/ui_action_search.png",
-      "consumers": ["TuS/Views/Home/HomeHeroView.swift", "TuS/Views/Feed/ExchangeDynamicView.swift", "win-app/src/views.js"], "iconifyName": "magnifying-glass", "color": "#10152F"
+      "name": "ui_action_search",
+      "category": "action",
+      "method": "library",
+      "group": "library",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "home",
+        "square",
+        "profile"
+      ],
+      "iosAsset": "ui_action_search",
+      "windowsPath": "icons/ui_action_search.png",
+      "canonicalPath": "assets/ui/icons/ui_action_search.png",
+      "consumers": [
+        "TuS/Views/Home/HomeHeroView.swift",
+        "TuS/Views/Feed/ExchangeDynamicView.swift",
+        "win-app/src/views.js"
+      ],
+      "iconifyName": "magnifying-glass",
+      "color": "#10152F"
     },
     {
-      "name": "ui_action_back", "category": "action", "method": "library", "group": "library",
-      "width": 256, "height": 256, "alpha": true, "screens": ["complaint-detail", "colleagues", "settings"],
-      "iosAsset": "ui_action_back", "windowsPath": "icons/ui_action_back.png", "canonicalPath": "assets/ui/icons/ui_action_back.png",
-      "consumers": ["TuS/Views/Match/MatchDetailView.swift", "TuS/Views/Pet/PetTabView.swift", "win-app/src/views.js"], "iconifyName": "caret-left", "color": "#747B96"
+      "name": "ui_action_back",
+      "category": "action",
+      "method": "library",
+      "group": "library",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "complaint-detail",
+        "colleagues",
+        "settings"
+      ],
+      "iosAsset": "ui_action_back",
+      "windowsPath": "icons/ui_action_back.png",
+      "canonicalPath": "assets/ui/icons/ui_action_back.png",
+      "consumers": [
+        "TuS/Views/Match/MatchDetailView.swift",
+        "TuS/Views/Pet/PetTabView.swift",
+        "win-app/src/views.js"
+      ],
+      "iconifyName": "caret-left",
+      "color": "#747B96"
     },
     {
-      "name": "ui_action_more", "category": "action", "method": "library", "group": "library",
-      "width": 256, "height": 256, "alpha": true, "screens": ["square", "complaint-detail", "profile"],
-      "iosAsset": "ui_action_more", "windowsPath": "icons/ui_action_more.png", "canonicalPath": "assets/ui/icons/ui_action_more.png",
-      "consumers": ["TuS/Views/Components/Components.swift", "TuS/Views/Profile/MineView.swift", "win-app/src/views.js"], "iconifyName": "dots-three-vertical", "color": "#747B96"
+      "name": "ui_action_more",
+      "category": "action",
+      "method": "library",
+      "group": "library",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "square",
+        "complaint-detail",
+        "profile"
+      ],
+      "iosAsset": "ui_action_more",
+      "windowsPath": "icons/ui_action_more.png",
+      "canonicalPath": "assets/ui/icons/ui_action_more.png",
+      "consumers": [
+        "TuS/Views/Components/Components.swift",
+        "TuS/Views/Profile/MineView.swift",
+        "win-app/src/views.js"
+      ],
+      "iconifyName": "dots-three-vertical",
+      "color": "#747B96"
     },
     {
-      "name": "ui_action_chevron", "category": "action", "method": "library", "group": "library",
-      "width": 256, "height": 256, "alpha": true, "screens": ["home", "profile", "settings"],
-      "iosAsset": "ui_action_chevron", "windowsPath": "icons/ui_action_chevron.png", "canonicalPath": "assets/ui/icons/ui_action_chevron.png",
-      "consumers": ["TuS/Views/Home/HomeOverviewView.swift", "TuS/Views/Profile/MineView.swift", "win-app/src/views.js"], "iconifyName": "caret-right", "color": "#747B96"
+      "name": "ui_action_chevron",
+      "category": "action",
+      "method": "library",
+      "group": "library",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "home",
+        "profile",
+        "settings"
+      ],
+      "iosAsset": "ui_action_chevron",
+      "windowsPath": "icons/ui_action_chevron.png",
+      "canonicalPath": "assets/ui/icons/ui_action_chevron.png",
+      "consumers": [
+        "TuS/Views/Home/HomeOverviewView.swift",
+        "TuS/Views/Profile/MineView.swift",
+        "win-app/src/views.js"
+      ],
+      "iconifyName": "caret-right",
+      "color": "#747B96"
     },
     {
-      "name": "ui_action_like", "category": "action", "method": "library", "group": "library",
-      "width": 256, "height": 256, "alpha": true, "screens": ["home", "square", "complaint-detail"],
-      "iosAsset": "ui_action_like", "windowsPath": "icons/ui_action_like.png", "canonicalPath": "assets/ui/icons/ui_action_like.png",
-      "consumers": ["TuS/Views/Components/Components.swift", "TuS/Views/Home/HomeComplaintCard.swift", "win-app/src/views.js"], "iconifyName": "heart", "color": "#747B96"
+      "name": "ui_action_like",
+      "category": "action",
+      "method": "library",
+      "group": "library",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "home",
+        "square",
+        "complaint-detail"
+      ],
+      "iosAsset": "ui_action_like",
+      "windowsPath": "icons/ui_action_like.png",
+      "canonicalPath": "assets/ui/icons/ui_action_like.png",
+      "consumers": [
+        "TuS/Views/Components/Components.swift",
+        "TuS/Views/Home/HomeComplaintCard.swift",
+        "win-app/src/views.js"
+      ],
+      "iconifyName": "heart",
+      "color": "#747B96"
     },
     {
-      "name": "ui_action_comment", "category": "action", "method": "library", "group": "library",
-      "width": 256, "height": 256, "alpha": true, "screens": ["home", "square", "complaint-detail"],
-      "iosAsset": "ui_action_comment", "windowsPath": "icons/ui_action_comment.png", "canonicalPath": "assets/ui/icons/ui_action_comment.png",
-      "consumers": ["TuS/Views/Components/Components.swift", "TuS/Views/Home/HomeComplaintCard.swift", "win-app/src/views.js"], "iconifyName": "chat-circle", "color": "#747B96"
+      "name": "ui_action_comment",
+      "category": "action",
+      "method": "library",
+      "group": "library",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "home",
+        "square",
+        "complaint-detail"
+      ],
+      "iosAsset": "ui_action_comment",
+      "windowsPath": "icons/ui_action_comment.png",
+      "canonicalPath": "assets/ui/icons/ui_action_comment.png",
+      "consumers": [
+        "TuS/Views/Components/Components.swift",
+        "TuS/Views/Home/HomeComplaintCard.swift",
+        "win-app/src/views.js"
+      ],
+      "iconifyName": "chat-circle",
+      "color": "#747B96"
     },
     {
-      "name": "ui_action_share", "category": "action", "method": "library", "group": "library",
-      "width": 256, "height": 256, "alpha": true, "screens": ["home", "square", "complaint-detail"],
-      "iosAsset": "ui_action_share", "windowsPath": "icons/ui_action_share.png", "canonicalPath": "assets/ui/icons/ui_action_share.png",
-      "consumers": ["TuS/Views/Components/Components.swift", "TuS/Views/Home/HomeComplaintCard.swift", "win-app/src/views.js"], "iconifyName": "share-network", "color": "#747B96"
+      "name": "ui_action_share",
+      "category": "action",
+      "method": "library",
+      "group": "library",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "home",
+        "square",
+        "complaint-detail"
+      ],
+      "iosAsset": "ui_action_share",
+      "windowsPath": "icons/ui_action_share.png",
+      "canonicalPath": "assets/ui/icons/ui_action_share.png",
+      "consumers": [
+        "TuS/Views/Components/Components.swift",
+        "TuS/Views/Home/HomeComplaintCard.swift",
+        "win-app/src/views.js"
+      ],
+      "iconifyName": "share-network",
+      "color": "#747B96"
     },
     {
-      "name": "ui_action_send", "category": "action", "method": "library", "group": "library",
-      "width": 256, "height": 256, "alpha": true, "screens": ["complaint-detail", "messages"],
-      "iosAsset": "ui_action_send", "windowsPath": "icons/ui_action_send.png", "canonicalPath": "assets/ui/icons/ui_action_send.png",
-      "consumers": ["TuS/Views/Match/MatchDetailView.swift", "TuS/Views/Chat/MessageView.swift", "win-app/src/views.js"], "iconifyName": "paper-plane-tilt", "color": "#747B96"
+      "name": "ui_action_send",
+      "category": "action",
+      "method": "library",
+      "group": "library",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "complaint-detail",
+        "messages"
+      ],
+      "iosAsset": "ui_action_send",
+      "windowsPath": "icons/ui_action_send.png",
+      "canonicalPath": "assets/ui/icons/ui_action_send.png",
+      "consumers": [
+        "TuS/Views/Match/MatchDetailView.swift",
+        "TuS/Views/Chat/MessageView.swift",
+        "win-app/src/views.js"
+      ],
+      "iconifyName": "paper-plane-tilt",
+      "color": "#747B96"
     },
     {
-      "name": "ui_action_add", "category": "action", "method": "library", "group": "library",
-      "width": 256, "height": 256, "alpha": true, "screens": ["colleagues"],
-      "iosAsset": "ui_action_add", "windowsPath": "icons/ui_action_add.png", "canonicalPath": "assets/ui/icons/ui_action_add.png",
-      "consumers": ["TuS/Views/Pet/PetTabView.swift", "win-app/src/views.js"], "iconifyName": "plus", "color": "#765BFF"
+      "name": "ui_action_add",
+      "category": "action",
+      "method": "library",
+      "group": "library",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "colleagues"
+      ],
+      "iosAsset": "ui_action_add",
+      "windowsPath": "icons/ui_action_add.png",
+      "canonicalPath": "assets/ui/icons/ui_action_add.png",
+      "consumers": [
+        "TuS/Views/Pet/PetTabView.swift",
+        "win-app/src/views.js"
+      ],
+      "iconifyName": "plus",
+      "color": "#765BFF"
     },
     {
-      "name": "ui_feature_checkin", "category": "feature", "method": "imagegen", "group": "primary-branded",
-      "width": 256, "height": 256, "alpha": true, "screens": ["home", "mood"],
-      "iosAsset": "ui_feature_checkin", "windowsPath": "icons/ui_feature_checkin.png", "canonicalPath": "assets/ui/icons/ui_feature_checkin.png",
-      "consumers": ["TuS/Views/Home/HomeStatsGrid.swift", "win-app/src/views.js"], "prompt": "Purple work journal with one clean checklist line; pale lavender rounded tile allowed."
+      "name": "ui_feature_checkin",
+      "category": "feature",
+      "method": "imagegen",
+      "group": "primary-branded",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "home",
+        "mood"
+      ],
+      "iosAsset": "ui_feature_checkin",
+      "windowsPath": "icons/ui_feature_checkin.png",
+      "canonicalPath": "assets/ui/icons/ui_feature_checkin.png",
+      "consumers": [
+        "TuS/Views/Home/HomeStatsGrid.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Purple work journal with one clean checklist line; pale lavender rounded tile allowed.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "9a6a7b2bafd1f79779bea5578daddeb66740309412451c789696a8686e8aa144"
+      }
     },
     {
-      "name": "ui_feature_plaza", "category": "feature", "method": "imagegen", "group": "primary-branded",
-      "width": 256, "height": 256, "alpha": true, "screens": ["home", "square"],
-      "iosAsset": "ui_feature_plaza", "windowsPath": "icons/ui_feature_plaza.png", "canonicalPath": "assets/ui/icons/ui_feature_plaza.png",
-      "consumers": ["TuS/Views/Home/HomeStatsGrid.swift", "win-app/src/views.js"], "prompt": "Warm orange-red flame representing a busy workplace plaza; pale peach tile allowed."
+      "name": "ui_feature_plaza",
+      "category": "feature",
+      "method": "imagegen",
+      "group": "primary-branded",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "home",
+        "square"
+      ],
+      "iosAsset": "ui_feature_plaza",
+      "windowsPath": "icons/ui_feature_plaza.png",
+      "canonicalPath": "assets/ui/icons/ui_feature_plaza.png",
+      "consumers": [
+        "TuS/Views/Home/HomeStatsGrid.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Warm orange-red flame representing a busy workplace plaza; pale peach tile allowed.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "c4f62392434e224b0d4330cf4d01b145380d67ab0b7ea7c4d769b5e7de90578a"
+      }
     },
     {
-      "name": "ui_feature_my_complaints", "category": "feature", "method": "imagegen", "group": "primary-branded",
-      "width": 256, "height": 256, "alpha": true, "screens": ["home", "profile"],
-      "iosAsset": "ui_feature_my_complaints", "windowsPath": "icons/ui_feature_my_complaints.png", "canonicalPath": "assets/ui/icons/ui_feature_my_complaints.png",
-      "consumers": ["TuS/Views/Home/HomeStatsGrid.swift", "win-app/src/views.js"], "prompt": "Sky-blue circular speech bubble with three white dots; pale blue tile allowed."
+      "name": "ui_feature_my_complaints",
+      "category": "feature",
+      "method": "imagegen",
+      "group": "primary-branded",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "home",
+        "profile"
+      ],
+      "iosAsset": "ui_feature_my_complaints",
+      "windowsPath": "icons/ui_feature_my_complaints.png",
+      "canonicalPath": "assets/ui/icons/ui_feature_my_complaints.png",
+      "consumers": [
+        "TuS/Views/Home/HomeStatsGrid.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Sky-blue circular speech bubble with three white dots; pale blue tile allowed.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "80b9f0fdeade661e090c1671302bcd9c7a068cc28b1288bbe677b2f5a3bba9d9"
+      }
     },
     {
-      "name": "ui_feature_colleagues", "category": "feature", "method": "imagegen", "group": "primary-branded",
-      "width": 256, "height": 256, "alpha": true, "screens": ["home", "colleagues"],
-      "iosAsset": "ui_feature_colleagues", "windowsPath": "icons/ui_feature_colleagues.png", "canonicalPath": "assets/ui/icons/ui_feature_colleagues.png",
-      "consumers": ["TuS/Views/Home/HomeStatsGrid.swift", "win-app/src/views.js"], "prompt": "Mint-green pair of friendly coworker silhouettes; pale mint tile allowed."
+      "name": "ui_feature_colleagues",
+      "category": "feature",
+      "method": "imagegen",
+      "group": "primary-branded",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "home",
+        "colleagues"
+      ],
+      "iosAsset": "ui_feature_colleagues",
+      "windowsPath": "icons/ui_feature_colleagues.png",
+      "canonicalPath": "assets/ui/icons/ui_feature_colleagues.png",
+      "consumers": [
+        "TuS/Views/Home/HomeStatsGrid.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Mint-green pair of friendly coworker silhouettes; pale mint tile allowed.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "af42d45ba4ca58fdb6970045a96adab0766d64faaa9a46526e034ddd18e4a368"
+      }
     },
     {
-      "name": "ui_publish_complaint", "category": "publish", "method": "imagegen", "group": "primary-branded",
-      "width": 256, "height": 256, "alpha": true, "screens": ["publish"],
-      "iosAsset": "ui_publish_complaint", "windowsPath": "icons/ui_publish_complaint.png", "canonicalPath": "assets/ui/icons/ui_publish_complaint.png",
-      "consumers": ["TuS/App/ContentView.swift", "win-app/src/views.js"], "prompt": "Purple work journal with a small chat notch."
+      "name": "ui_publish_complaint",
+      "category": "publish",
+      "method": "imagegen",
+      "group": "primary-branded",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "publish"
+      ],
+      "iosAsset": "ui_publish_complaint",
+      "windowsPath": "icons/ui_publish_complaint.png",
+      "canonicalPath": "assets/ui/icons/ui_publish_complaint.png",
+      "consumers": [
+        "TuS/App/ContentView.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Purple work journal with a small chat notch.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "67f8acf321c235b2b4bf910a399033d410d1578963d9dda71655d82347263a76"
+      }
     },
     {
-      "name": "ui_publish_dynamic", "category": "publish", "method": "imagegen", "group": "primary-branded",
-      "width": 256, "height": 256, "alpha": true, "screens": ["publish"],
-      "iosAsset": "ui_publish_dynamic", "windowsPath": "icons/ui_publish_dynamic.png", "canonicalPath": "assets/ui/icons/ui_publish_dynamic.png",
-      "consumers": ["TuS/App/ContentView.swift", "win-app/src/views.js"], "prompt": "Coral-pink square post card with a small sparkle."
+      "name": "ui_publish_dynamic",
+      "category": "publish",
+      "method": "imagegen",
+      "group": "primary-branded",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "publish"
+      ],
+      "iosAsset": "ui_publish_dynamic",
+      "windowsPath": "icons/ui_publish_dynamic.png",
+      "canonicalPath": "assets/ui/icons/ui_publish_dynamic.png",
+      "consumers": [
+        "TuS/App/ContentView.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Coral-pink square post card with a small sparkle.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "a31b2e59f8d2bedfbcea3707c2fb8516144eebf46c47b9cdc251fc0768ccd8af"
+      }
     },
     {
-      "name": "ui_publish_mood", "category": "publish", "method": "imagegen", "group": "primary-branded",
-      "width": 256, "height": 256, "alpha": true, "screens": ["publish", "mood"],
-      "iosAsset": "ui_publish_mood", "windowsPath": "icons/ui_publish_mood.png", "canonicalPath": "assets/ui/icons/ui_publish_mood.png",
-      "consumers": ["TuS/App/ContentView.swift", "win-app/src/views.js"], "prompt": "Cyan-blue smiling mood bubble."
+      "name": "ui_publish_mood",
+      "category": "publish",
+      "method": "imagegen",
+      "group": "primary-branded",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "publish",
+        "mood"
+      ],
+      "iosAsset": "ui_publish_mood",
+      "windowsPath": "icons/ui_publish_mood.png",
+      "canonicalPath": "assets/ui/icons/ui_publish_mood.png",
+      "consumers": [
+        "TuS/App/ContentView.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Cyan-blue smiling mood bubble.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "f3c3657cd93d4901168f319f156632c597c3e75a7ac876058629d8c450dc2257"
+      }
     },
     {
-      "name": "ui_publish_colleague", "category": "publish", "method": "imagegen", "group": "primary-branded",
-      "width": 256, "height": 256, "alpha": true, "screens": ["publish", "colleagues"],
-      "iosAsset": "ui_publish_colleague", "windowsPath": "icons/ui_publish_colleague.png", "canonicalPath": "assets/ui/icons/ui_publish_colleague.png",
-      "consumers": ["TuS/App/ContentView.swift", "win-app/src/views.js"], "prompt": "Mint-green two-person workplace profile."
+      "name": "ui_publish_colleague",
+      "category": "publish",
+      "method": "imagegen",
+      "group": "primary-branded",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "publish",
+        "colleagues"
+      ],
+      "iosAsset": "ui_publish_colleague",
+      "windowsPath": "icons/ui_publish_colleague.png",
+      "canonicalPath": "assets/ui/icons/ui_publish_colleague.png",
+      "consumers": [
+        "TuS/App/ContentView.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Mint-green two-person workplace profile.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "45dc05fb615aa4eb9a796c05bd6770d90fdf40e4ea4c3ab8c1d514ef01903970"
+      }
     },
     {
-      "name": "ui_message_interaction", "category": "message", "method": "imagegen", "group": "primary-branded",
-      "width": 256, "height": 256, "alpha": true, "screens": ["messages"],
-      "iosAsset": "ui_message_interaction", "windowsPath": "icons/ui_message_interaction.png", "canonicalPath": "assets/ui/icons/ui_message_interaction.png",
-      "consumers": ["TuS/Views/Chat/MessageView.swift", "win-app/src/views.js"], "prompt": "Pink-magenta inbox with a small heart notification."
+      "name": "ui_message_interaction",
+      "category": "message",
+      "method": "imagegen",
+      "group": "primary-branded",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "messages"
+      ],
+      "iosAsset": "ui_message_interaction",
+      "windowsPath": "icons/ui_message_interaction.png",
+      "canonicalPath": "assets/ui/icons/ui_message_interaction.png",
+      "consumers": [
+        "TuS/Views/Chat/MessageView.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Pink-magenta inbox with a small heart notification.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "bdb91f10172df7d8e418d743196cf8a92afcb4864d090e541e64812f45f29c18"
+      }
     },
     {
-      "name": "ui_message_system", "category": "message", "method": "imagegen", "group": "primary-branded",
-      "width": 256, "height": 256, "alpha": true, "screens": ["messages"],
-      "iosAsset": "ui_message_system", "windowsPath": "icons/ui_message_system.png", "canonicalPath": "assets/ui/icons/ui_message_system.png",
-      "consumers": ["TuS/Views/Chat/MessageView.swift", "win-app/src/views.js"], "prompt": "Purple notification bell inside a soft hexagonal badge."
+      "name": "ui_message_system",
+      "category": "message",
+      "method": "imagegen",
+      "group": "primary-branded",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "messages"
+      ],
+      "iosAsset": "ui_message_system",
+      "windowsPath": "icons/ui_message_system.png",
+      "canonicalPath": "assets/ui/icons/ui_message_system.png",
+      "consumers": [
+        "TuS/Views/Chat/MessageView.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Purple notification bell inside a soft hexagonal badge.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "662d54afdfdf9ee2353a7d7fb8bd55799e60ce6851ed82f67de47c471a3b6156"
+      }
     },
     {
-      "name": "ui_message_ai", "category": "message", "method": "imagegen", "group": "primary-branded",
-      "width": 256, "height": 256, "alpha": true, "screens": ["messages", "ai"],
-      "iosAsset": "ui_message_ai", "windowsPath": "icons/ui_message_ai.png", "canonicalPath": "assets/ui/icons/ui_message_ai.png",
-      "consumers": ["TuS/Views/Chat/MessageView.swift", "TuS/Views/Match/MatchMapView.swift", "win-app/src/views.js"], "prompt": "Friendly tiny Little Energy assistant head, white face, lavender hood, black oval eyes, no clothing."
+      "name": "ui_message_ai",
+      "category": "message",
+      "method": "imagegen",
+      "group": "primary-branded",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "messages",
+        "ai"
+      ],
+      "iosAsset": "ui_message_ai",
+      "windowsPath": "icons/ui_message_ai.png",
+      "canonicalPath": "assets/ui/icons/ui_message_ai.png",
+      "consumers": [
+        "TuS/Views/Chat/MessageView.swift",
+        "TuS/Views/Match/MatchMapView.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Friendly tiny Little Energy assistant head, white face, lavender hood, black oval eyes, no clothing."
     },
     {
-      "name": "ui_message_update", "category": "message", "method": "imagegen", "group": "primary-branded",
-      "width": 256, "height": 256, "alpha": true, "screens": ["messages"],
-      "iosAsset": "ui_message_update", "windowsPath": "icons/ui_message_update.png", "canonicalPath": "assets/ui/icons/ui_message_update.png",
-      "consumers": ["TuS/Views/Chat/MessageView.swift", "win-app/src/views.js"], "prompt": "Purple secure update badge combining a small lock and upward sparkle."
+      "name": "ui_message_update",
+      "category": "message",
+      "method": "imagegen",
+      "group": "primary-branded",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "messages"
+      ],
+      "iosAsset": "ui_message_update",
+      "windowsPath": "icons/ui_message_update.png",
+      "canonicalPath": "assets/ui/icons/ui_message_update.png",
+      "consumers": [
+        "TuS/Views/Chat/MessageView.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Purple secure update badge combining a small lock and upward sparkle."
     },
     {
-      "name": "ui_profile_complaints", "category": "profile", "method": "imagegen", "group": "profile-backgrounds",
-      "width": 256, "height": 256, "alpha": true, "screens": ["profile"],
-      "iosAsset": "ui_profile_complaints", "windowsPath": "icons/ui_profile_complaints.png", "canonicalPath": "assets/ui/icons/ui_profile_complaints.png",
-      "consumers": ["TuS/Views/Profile/MineView.swift", "win-app/src/views.js"], "prompt": "Golden-yellow work journal with one white speech line; pale cream tile allowed."
+      "name": "ui_profile_complaints",
+      "category": "profile",
+      "method": "imagegen",
+      "group": "profile-backgrounds",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "profile"
+      ],
+      "iosAsset": "ui_profile_complaints",
+      "windowsPath": "icons/ui_profile_complaints.png",
+      "canonicalPath": "assets/ui/icons/ui_profile_complaints.png",
+      "consumers": [
+        "TuS/Views/Profile/MineView.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Golden-yellow work journal with one white speech line; pale cream tile allowed."
     },
     {
-      "name": "ui_profile_favorites", "category": "profile", "method": "imagegen", "group": "profile-backgrounds",
-      "width": 256, "height": 256, "alpha": true, "screens": ["profile"],
-      "iosAsset": "ui_profile_favorites", "windowsPath": "icons/ui_profile_favorites.png", "canonicalPath": "assets/ui/icons/ui_profile_favorites.png",
-      "consumers": ["TuS/Views/Profile/MineView.swift", "win-app/src/views.js"], "prompt": "Warm orange five-point favorite star; pale peach tile allowed."
+      "name": "ui_profile_favorites",
+      "category": "profile",
+      "method": "imagegen",
+      "group": "profile-backgrounds",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "profile"
+      ],
+      "iosAsset": "ui_profile_favorites",
+      "windowsPath": "icons/ui_profile_favorites.png",
+      "canonicalPath": "assets/ui/icons/ui_profile_favorites.png",
+      "consumers": [
+        "TuS/Views/Profile/MineView.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Warm orange five-point favorite star; pale peach tile allowed."
     },
     {
-      "name": "ui_profile_posts", "category": "profile", "method": "imagegen", "group": "profile-backgrounds",
-      "width": 256, "height": 256, "alpha": true, "screens": ["profile"],
-      "iosAsset": "ui_profile_posts", "windowsPath": "icons/ui_profile_posts.png", "canonicalPath": "assets/ui/icons/ui_profile_posts.png",
-      "consumers": ["TuS/Views/Profile/MineView.swift", "win-app/src/views.js"], "prompt": "Pink-magenta friendly flame representing liked posts; pale pink tile allowed."
+      "name": "ui_profile_posts",
+      "category": "profile",
+      "method": "imagegen",
+      "group": "profile-backgrounds",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "profile"
+      ],
+      "iosAsset": "ui_profile_posts",
+      "windowsPath": "icons/ui_profile_posts.png",
+      "canonicalPath": "assets/ui/icons/ui_profile_posts.png",
+      "consumers": [
+        "TuS/Views/Profile/MineView.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Pink-magenta friendly flame representing liked posts; pale pink tile allowed."
     },
     {
-      "name": "ui_profile_history", "category": "profile", "method": "imagegen", "group": "profile-backgrounds",
-      "width": 256, "height": 256, "alpha": true, "screens": ["profile"],
-      "iosAsset": "ui_profile_history", "windowsPath": "icons/ui_profile_history.png", "canonicalPath": "assets/ui/icons/ui_profile_history.png",
-      "consumers": ["TuS/Views/Profile/MineView.swift", "win-app/src/views.js"], "prompt": "Golden circular clock with one clean hand; pale yellow tile allowed."
+      "name": "ui_profile_history",
+      "category": "profile",
+      "method": "imagegen",
+      "group": "profile-backgrounds",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "profile"
+      ],
+      "iosAsset": "ui_profile_history",
+      "windowsPath": "icons/ui_profile_history.png",
+      "canonicalPath": "assets/ui/icons/ui_profile_history.png",
+      "consumers": [
+        "TuS/Views/Profile/MineView.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Golden circular clock with one clean hand; pale yellow tile allowed."
     },
     {
-      "name": "ui_tool_report", "category": "profile-tool", "method": "imagegen", "group": "profile-backgrounds",
-      "width": 256, "height": 256, "alpha": true, "screens": ["profile", "ai"],
-      "iosAsset": "ui_tool_report", "windowsPath": "icons/ui_tool_report.png", "canonicalPath": "assets/ui/icons/ui_tool_report.png",
-      "consumers": ["TuS/Views/Profile/MineView.swift", "win-app/src/views.js"], "prompt": "Cyan-blue report sheet with two simple bars; pale blue tile allowed."
+      "name": "ui_tool_report",
+      "category": "profile-tool",
+      "method": "imagegen",
+      "group": "profile-backgrounds",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "profile",
+        "ai"
+      ],
+      "iosAsset": "ui_tool_report",
+      "windowsPath": "icons/ui_tool_report.png",
+      "canonicalPath": "assets/ui/icons/ui_tool_report.png",
+      "consumers": [
+        "TuS/Views/Profile/MineView.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Cyan-blue report sheet with two simple bars; pale blue tile allowed."
     },
     {
-      "name": "ui_tool_ai", "category": "profile-tool", "method": "imagegen", "group": "profile-backgrounds",
-      "width": 256, "height": 256, "alpha": true, "screens": ["profile", "ai"],
-      "iosAsset": "ui_tool_ai", "windowsPath": "icons/ui_tool_ai.png", "canonicalPath": "assets/ui/icons/ui_tool_ai.png",
-      "consumers": ["TuS/Views/Profile/MineView.swift", "TuS/Views/Match/MatchMapView.swift", "win-app/src/views.js"], "prompt": "Mint-green insight target with one central sparkle; pale mint tile allowed."
+      "name": "ui_tool_ai",
+      "category": "profile-tool",
+      "method": "imagegen",
+      "group": "profile-backgrounds",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "profile",
+        "ai"
+      ],
+      "iosAsset": "ui_tool_ai",
+      "windowsPath": "icons/ui_tool_ai.png",
+      "canonicalPath": "assets/ui/icons/ui_tool_ai.png",
+      "consumers": [
+        "TuS/Views/Profile/MineView.swift",
+        "TuS/Views/Match/MatchMapView.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Mint-green insight target with one central sparkle; pale mint tile allowed."
     },
     {
-      "name": "ui_tool_stress", "category": "profile-tool", "method": "imagegen", "group": "profile-backgrounds",
-      "width": 256, "height": 256, "alpha": true, "screens": ["profile", "ai"],
-      "iosAsset": "ui_tool_stress", "windowsPath": "icons/ui_tool_stress.png", "canonicalPath": "assets/ui/icons/ui_tool_stress.png",
-      "consumers": ["TuS/Views/Profile/MineView.swift", "TuS/Views/Match/MatchMapView.swift", "win-app/src/views.js"], "prompt": "Coral-pink pressure cloud with one gentle pulse line; pale rose tile allowed."
+      "name": "ui_tool_stress",
+      "category": "profile-tool",
+      "method": "imagegen",
+      "group": "profile-backgrounds",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "profile",
+        "ai"
+      ],
+      "iosAsset": "ui_tool_stress",
+      "windowsPath": "icons/ui_tool_stress.png",
+      "canonicalPath": "assets/ui/icons/ui_tool_stress.png",
+      "consumers": [
+        "TuS/Views/Profile/MineView.swift",
+        "TuS/Views/Match/MatchMapView.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Coral-pink pressure cloud with one gentle pulse line; pale rose tile allowed."
     },
     {
-      "name": "ui_tool_relationship", "category": "profile-tool", "method": "imagegen", "group": "profile-backgrounds",
-      "width": 256, "height": 256, "alpha": true, "screens": ["profile", "colleagues"],
-      "iosAsset": "ui_tool_relationship", "windowsPath": "icons/ui_tool_relationship.png", "canonicalPath": "assets/ui/icons/ui_tool_relationship.png",
-      "consumers": ["TuS/Views/Profile/MineView.swift", "TuS/Views/Pet/PetTabView.swift", "win-app/src/views.js"], "prompt": "Blue-violet connected coworker silhouettes; pale lavender tile allowed."
+      "name": "ui_tool_relationship",
+      "category": "profile-tool",
+      "method": "imagegen",
+      "group": "profile-backgrounds",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "profile",
+        "colleagues"
+      ],
+      "iosAsset": "ui_tool_relationship",
+      "windowsPath": "icons/ui_tool_relationship.png",
+      "canonicalPath": "assets/ui/icons/ui_tool_relationship.png",
+      "consumers": [
+        "TuS/Views/Profile/MineView.swift",
+        "TuS/Views/Pet/PetTabView.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Blue-violet connected coworker silhouettes; pale lavender tile allowed."
     },
     {
-      "name": "ui_row_colleague", "category": "profile-row", "method": "imagegen", "group": "profile-backgrounds",
-      "width": 256, "height": 256, "alpha": true, "screens": ["profile", "colleagues"],
-      "iosAsset": "ui_row_colleague", "windowsPath": "icons/ui_row_colleague.png", "canonicalPath": "assets/ui/icons/ui_row_colleague.png",
-      "consumers": ["TuS/Views/Profile/MineView.swift", "win-app/src/views.js"], "prompt": "Small purple coworker archive symbol, clean and compact."
+      "name": "ui_row_colleague",
+      "category": "profile-row",
+      "method": "imagegen",
+      "group": "profile-backgrounds",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "profile",
+        "colleagues"
+      ],
+      "iosAsset": "ui_row_colleague",
+      "windowsPath": "icons/ui_row_colleague.png",
+      "canonicalPath": "assets/ui/icons/ui_row_colleague.png",
+      "consumers": [
+        "TuS/Views/Profile/MineView.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Small purple coworker archive symbol, clean and compact."
     },
     {
-      "name": "ui_row_company", "category": "profile-row", "method": "imagegen", "group": "profile-backgrounds",
-      "width": 256, "height": 256, "alpha": true, "screens": ["profile"],
-      "iosAsset": "ui_row_company", "windowsPath": "icons/ui_row_company.png", "canonicalPath": "assets/ui/icons/ui_row_company.png",
-      "consumers": ["TuS/Views/Profile/MineView.swift", "win-app/src/views.js"], "prompt": "Small navy-purple office building portrait symbol, clean and compact."
+      "name": "ui_row_company",
+      "category": "profile-row",
+      "method": "imagegen",
+      "group": "profile-backgrounds",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "profile"
+      ],
+      "iosAsset": "ui_row_company",
+      "windowsPath": "icons/ui_row_company.png",
+      "canonicalPath": "assets/ui/icons/ui_row_company.png",
+      "consumers": [
+        "TuS/Views/Profile/MineView.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Small navy-purple office building portrait symbol, clean and compact."
     },
     {
-      "name": "ui_badge_level", "category": "badge", "method": "imagegen", "group": "profile-backgrounds",
-      "width": 256, "height": 256, "alpha": true, "screens": ["profile"],
-      "iosAsset": "ui_badge_level", "windowsPath": "icons/ui_badge_level.png", "canonicalPath": "assets/ui/icons/ui_badge_level.png",
-      "consumers": ["TuS/Views/Profile/MineView.swift", "win-app/src/views.js"], "prompt": "Tiny polished gold level medal with one star, no number and no text."
+      "name": "ui_badge_level",
+      "category": "badge",
+      "method": "imagegen",
+      "group": "profile-backgrounds",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "profile"
+      ],
+      "iosAsset": "ui_badge_level",
+      "windowsPath": "icons/ui_badge_level.png",
+      "canonicalPath": "assets/ui/icons/ui_badge_level.png",
+      "consumers": [
+        "TuS/Views/Profile/MineView.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Tiny polished gold level medal with one star, no number and no text."
     },
     {
-      "name": "ui_avatar_anonymous", "category": "avatar", "method": "imagegen", "group": "primary-branded",
-      "width": 256, "height": 256, "alpha": true, "screens": ["home", "square", "complaint-detail"],
-      "iosAsset": "ui_avatar_anonymous", "windowsPath": "icons/ui_avatar_anonymous.png", "canonicalPath": "assets/ui/icons/ui_avatar_anonymous.png",
-      "consumers": ["TuS/Views/Components/Components.swift", "TuS/Views/Home/HomeComplaintCard.swift", "win-app/src/views.js"], "prompt": "Circular purple anonymous theatre-mask avatar with small cyan and orange accents."
+      "name": "ui_avatar_anonymous",
+      "category": "avatar",
+      "method": "imagegen",
+      "group": "primary-branded",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "home",
+        "square",
+        "complaint-detail"
+      ],
+      "iosAsset": "ui_avatar_anonymous",
+      "windowsPath": "icons/ui_avatar_anonymous.png",
+      "canonicalPath": "assets/ui/icons/ui_avatar_anonymous.png",
+      "consumers": [
+        "TuS/Views/Components/Components.swift",
+        "TuS/Views/Home/HomeComplaintCard.swift",
+        "win-app/src/views.js"
+      ],
+      "prompt": "Circular purple anonymous theatre-mask avatar with small cyan and orange accents."
     }
   ],
   "backgrounds": [
     {
-      "name": "ui_bg_app_soft", "category": "background", "method": "imagegen", "group": "profile-backgrounds",
-      "width": 1024, "height": 1536, "alpha": false, "screens": ["global"],
-      "iosAsset": "ui_bg_app_soft", "windowsPath": "backgrounds/ui_bg_app_soft.png", "canonicalPath": "assets/ui/backgrounds/ui_bg_app_soft.png",
-      "consumers": ["TuS/Support/Theme.swift", "win-app/src/style.css"],
+      "name": "ui_bg_app_soft",
+      "category": "background",
+      "method": "imagegen",
+      "group": "profile-backgrounds",
+      "width": 1024,
+      "height": 1536,
+      "alpha": false,
+      "screens": [
+        "global"
+      ],
+      "iosAsset": "ui_bg_app_soft",
+      "windowsPath": "backgrounds/ui_bg_app_soft.png",
+      "canonicalPath": "assets/ui/backgrounds/ui_bg_app_soft.png",
+      "consumers": [
+        "TuS/Support/Theme.swift",
+        "win-app/src/style.css"
+      ],
       "prompt": "Use case: stylized-concept. Asset type: full-screen mobile app background. Near-white canvas with extremely subtle lavender-blue ambient glow in the upper-right and lower-left, almost imperceptible paper-soft texture, large clean negative space, no objects, no text, no border, no watermark. 1024×1536."
     },
     {
-      "name": "ui_decor_home_hero", "category": "decoration", "method": "imagegen", "group": "profile-backgrounds",
-      "width": 1024, "height": 1024, "alpha": true, "screens": ["home"],
-      "iosAsset": "ui_decor_home_hero", "windowsPath": "backgrounds/ui_decor_home_hero.png", "canonicalPath": "assets/ui/backgrounds/ui_decor_home_hero.png",
-      "consumers": ["TuS/Views/Home/HomeHeroView.swift", "win-app/src/views.js"],
+      "name": "ui_decor_home_hero",
+      "category": "decoration",
+      "method": "imagegen",
+      "group": "profile-backgrounds",
+      "width": 1024,
+      "height": 1024,
+      "alpha": true,
+      "screens": [
+        "home"
+      ],
+      "iosAsset": "ui_decor_home_hero",
+      "windowsPath": "backgrounds/ui_decor_home_hero.png",
+      "canonicalPath": "assets/ui/backgrounds/ui_decor_home_hero.png",
+      "consumers": [
+        "TuS/Views/Home/HomeHeroView.swift",
+        "win-app/src/views.js"
+      ],
       "prompt": "Use case: stylized-concept. Asset type: transparent decorative overlay around the existing Little Energy hero. Sparse lavender four-point sparkles, one translucent pale-blue chat bubble with three tiny blue dots, and a soft elliptical lavender glow; keep the center mostly empty for the character, no character, no text, no border, genuinely transparent background. 1024×1024."
     }
   ]
