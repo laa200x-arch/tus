@@ -50,14 +50,12 @@ body {
   padding: 36px 32px; box-shadow: var(--shadow); text-align: center;
 }
 .brand-icon {
-  width: 72px; height: 72px; margin: 0 auto 12px; border-radius: 50%;
-  background: linear-gradient(135deg, #7257fa, #6c5ce7);
-  color: #fff; font-size: 34px; display: flex; align-items: center; justify-content: center;
+  width: 72px; height: 72px; margin: 0 auto 12px;
+  display: flex; align-items: center; justify-content: center;
 }
+.brand-icon img { width: 100%; height: 100%; object-fit: contain; }
 .brand-icon-small {
-  display: inline-flex; width: 26px; height: 26px; border-radius: 50%;
-  background: linear-gradient(135deg, #7257fa, #6c5ce7);
-  color: #fff; font-size: 13px; align-items: center; justify-content: center; margin-right: 6px;
+  display: inline-block; width: 26px; height: 26px; object-fit: contain; margin-right: 6px;
 }
 .brand-title { font-size: 26px; font-weight: 700; }
 .brand-subtitle { color: var(--text-2); font-size: 12px; margin: 4px 0 22px; }
@@ -115,7 +113,7 @@ body {
   cursor: pointer; color: var(--text-2); font-size: 14px; font-family: inherit;
   padding: 11px 14px; border-radius: 12px; position: relative; text-align: left;
 }
-.side-nav .tab .tab-icon { font-size: 18px; line-height: 1; width: 20px; text-align: center; }
+.side-nav .tab .tab-icon { width: 22px; height: 22px; object-fit: contain; flex: 0 0 22px; }
 .side-nav .tab:hover { background: #f3f1fd; }
 .side-nav .tab.active { background: var(--primary-soft); color: var(--primary); font-weight: 700; }
 .side-nav .tab.active .tab-icon { transform: scale(1.08); }
@@ -148,6 +146,7 @@ body {
 .bell-btn {
   border: none; background: none; cursor: pointer; font-size: 18px; position: relative; padding: 4px;
 }
+.bell-btn img { display: block; width: 22px; height: 22px; object-fit: contain; }
 .bell-dot {
   position: absolute; top: 2px; right: 2px; width: 8px; height: 8px;
   background: var(--danger); border-radius: 50%;
@@ -500,11 +499,11 @@ body {
 }
 .splash-out { opacity: 0; visibility: hidden; }
 .splash-logo {
-  width: 76px; height: 76px; border-radius: 22px; display: flex; align-items: center; justify-content: center;
-  font-size: 38px; color: #fff; background: linear-gradient(135deg, #33d1d9, #3f8cd9);
-  box-shadow: 0 10px 30px rgba(63, 140, 217, .35);
+  width: 76px; height: 76px; display: flex; align-items: center; justify-content: center;
+  filter: drop-shadow(0 10px 18px rgba(118, 91, 255, .30));
   animation: splashPop .7s cubic-bezier(.2, .9, .3, 1.3) both;
 }
+.splash-logo img { width: 100%; height: 100%; object-fit: contain; }
 @keyframes splashPop {
   from { transform: scale(.3); opacity: 0; }
   60% { transform: scale(1.12); }
@@ -1044,6 +1043,19 @@ body {
 
 /* === 顶栏消息按钮 === */
 .bell-emoji { margin-right: 2px; }
+
+.ui-asset { display: inline-block; object-fit: contain; vertical-align: middle; }
+.cp-action-icon { width: 16px; height: 16px; opacity: .78; }
+.profile-asset-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.profile-asset-item {
+  border: 0; background: #faf9ff; border-radius: 14px; padding: 12px 6px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  color: var(--text-2); font: inherit; font-size: 11px; cursor: pointer;
+}
+.profile-asset-item:hover { background: var(--primary-soft); color: var(--primary); }
+.profile-asset-icon { width: 36px; height: 36px; }
+.asset-tool-icon { width: 24px; height: 24px; object-fit: contain; }
+.tool-chevron { width: 14px; height: 14px; margin-left: auto; opacity: .55; }
 .bell-badge {
   position: absolute; top: 2px; right: 2px;
   min-width: 16px; height: 16px; padding: 0 4px;
@@ -1235,7 +1247,14 @@ body {
  * 首页重构（桌面 Dashboard · 参考图视觉系统）
  * 柔和紫蓝画布 / 半透明白卡 / 深藏青标题 / 紫色强调 / 大圆角低阴影
  * ============================================================ */
-.home-dash { padding: 18px 22px 60px; }
+.home-dash {
+  padding: 18px 22px 60px;
+  min-height: 100%;
+  background-color: #f8f8ff;
+  background-image: linear-gradient(rgba(248,248,255,.72), rgba(248,248,255,.90)), url('../assets/ui/backgrounds/ui_bg_app_soft.png');
+  background-size: cover;
+  background-position: center top;
+}
 
 /* ── Hero：问候 + 搜索 + 右侧小能仔 ── */
 .home-dash-hero {
@@ -1274,6 +1293,9 @@ body {
   width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center; font-size: 22px;
 }
+.home-dash-stat-image { width: 42px; height: 42px; }
+.home-search-icon { width: 18px; height: 18px; object-fit: contain; opacity: .72; }
+.home-ql-icon { width: 22px; height: 22px; margin-right: 7px; }
 .home-dash-stat-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .home-dash-stat-label { font-size: 12px; color: #6b7280; white-space: nowrap; }
 .home-dash-stat-num { font-size: 20px; font-weight: 800; color: #121a33; white-space: nowrap; }

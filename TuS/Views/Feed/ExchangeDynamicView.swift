@@ -312,8 +312,7 @@ struct ComplaintCardView: View {
                 Task { await store.toggleLike(complaint) }
             } label: {
                 HStack(spacing: 4) {
-                    Image(systemName: complaint.liked ? "heart.fill" : "heart")
-                        .foregroundStyle(complaint.liked ? Theme.danger : Theme.textSecondary)
+                    UIAssetImage(.actionLike, size: 17, tint: complaint.liked ? Theme.danger : Theme.textSecondary)
                     Text("\(complaint.likeCount)")
                         .foregroundStyle(Theme.textSecondary)
                 }
@@ -325,8 +324,7 @@ struct ComplaintCardView: View {
                 Task { await store.toggleResonate(complaint) }
             } label: {
                 HStack(spacing: 4) {
-                    Image(systemName: complaint.resonated ? "bubble.left.and.bubble.right.fill" : "bubble.left.and.bubble.right")
-                        .foregroundStyle(complaint.resonated ? Theme.primary : Theme.textSecondary)
+                    UIAssetImage(.actionComment, size: 17, tint: complaint.resonated ? Theme.primary : Theme.textSecondary)
                     Text("共鸣 \(complaint.resonanceCount)")
                         .foregroundStyle(Theme.textSecondary)
                 }

@@ -20,9 +20,7 @@ struct MessageView: View {
             // 工具条：好友搜索 + 小程序入口
             HStack(spacing: 10) {
                 HStack(spacing: 6) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.caption)
-                        .foregroundStyle(Theme.textSecondary)
+                    UIAssetImage(.actionSearch, size: 16, tint: Theme.textSecondary)
                     TextField("搜索好友（昵称 / 用户名）", text: $searchText)
                         .font(.subheadline)
                         .autocorrectionDisabled()
@@ -81,6 +79,7 @@ struct MessageView: View {
     private var conversationList: some View {
         ScrollView {
             LazyVStack(spacing: 10) {
+                messageCategoryStrip
                 if store.conversations.isEmpty {
                     EmptyStateView(
                         icon: "message",
@@ -102,6 +101,29 @@ struct MessageView: View {
             .animation(.easeOut(duration: 0.25), value: store.conversations.count)
         }
         .transition(.opacity)
+    }
+
+    private var messageCategoryStrip: some View {
+        HStack(spacing: 8) {
+            messageCategory(.messageInteraction, "互动消息", Theme.secondary)
+            messageCategory(.messageSystem, "系统通知", Theme.primary)
+            messageCategory(.messageAI, "AI 助手", Theme.primaryDeep)
+            messageCategory(.messageUpdate, "版本通知", Theme.success)
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 18).fill(Theme.cardBg))
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.divider, lineWidth: 1))
+    }
+
+    private func messageCategory(_ asset: UIAsset, _ title: String, _ tint: Color) -> some View {
+        VStack(spacing: 5) {
+            UIAssetImage(asset, size: 34)
+            Text(title)
+                .font(.system(size: 9, weight: .medium))
+                .foregroundStyle(tint)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity)
     }
 
     // MARK: - 好友搜索结果

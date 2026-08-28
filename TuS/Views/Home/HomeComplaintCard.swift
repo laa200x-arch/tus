@@ -25,7 +25,7 @@ struct HomeComplaintCard: View {
                 } label: {
                     HStack(spacing: 2) {
                         Text("进入广场")
-                        Image(systemName: "chevron.right")
+                        UIAssetImage(.actionChevron, size: 13, tint: Theme.primary)
                     }
                     .font(.caption)
                     .bold()

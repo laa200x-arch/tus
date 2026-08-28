@@ -27,7 +27,7 @@ struct HomeStatsGrid: View {
         ) {
             Button(action: onCheckin) {
                 statCard(
-                    icon: "heart.text.square",
+                    asset: .featureCheckin,
                     title: "今日打卡",
                     value: moodCheckedToday ? "已打卡" : "未打卡",
                     tint: moodCheckedToday ? Theme.success : Theme.warning
@@ -37,7 +37,7 @@ struct HomeStatsGrid: View {
 
             NavigationLink(value: HomeRoute.plaza) {
                 statCard(
-                    icon: "flame",
+                    asset: .featurePlaza,
                     title: "广场吐槽",
                     value: "\(plazaCount)",
                     tint: Theme.secondary
@@ -47,7 +47,7 @@ struct HomeStatsGrid: View {
 
             NavigationLink(value: HomeRoute.myComplaints) {
                 statCard(
-                    icon: "text.bubble",
+                    asset: .featureMyComplaints,
                     title: "我的吐槽",
                     value: "\(myCount)",
                     tint: Theme.primary
@@ -57,7 +57,7 @@ struct HomeStatsGrid: View {
 
             Button(action: onColleagues) {
                 statCard(
-                    icon: "person.2",
+                    asset: .featureColleagues,
                     title: "同事档案",
                     value: "\(colleagueCount)",
                     tint: Theme.primaryDeep
@@ -67,13 +67,10 @@ struct HomeStatsGrid: View {
         }
     }
 
-    private func statCard(icon: String, title: String, value: String, tint: Color) -> some View {
+    private func statCard(asset: UIAsset, title: String, value: String, tint: Color) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Image(systemName: icon)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(tint)
-                .frame(width: 32, height: 32)
-                .background(Circle().fill(tint.opacity(0.12)))
+            UIAssetImage(asset, size: 34)
+                .frame(width: 36, height: 36)
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
                     .font(.caption2)

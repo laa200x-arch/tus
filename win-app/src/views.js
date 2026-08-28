@@ -691,6 +691,13 @@ function renderMine() {
           </div>
         </div>
 
+        <div class="card profile-asset-grid">
+          <button class="profile-asset-item" id="profile-my-complaints">${uiAssetImg('profileComplaints', 'profile-asset-icon', '')}<span>我的吐槽</span></button>
+          <button class="profile-asset-item">${uiAssetImg('profileFavorites', 'profile-asset-icon', '')}<span>我的收藏</span></button>
+          <button class="profile-asset-item">${uiAssetImg('profilePosts', 'profile-asset-icon', '')}<span>我的动态</span></button>
+          <button class="profile-asset-item" id="profile-mood-history">${uiAssetImg('profileHistory', 'profile-asset-icon', '')}<span>浏览记录</span></button>
+        </div>
+
         <div class="card">
           <div class="row">
             <div style="flex:1">
@@ -705,15 +712,17 @@ function renderMine() {
       <div>
         <div class="card">
           <div class="card-title">账户与设置</div>
-          <div class="tool-row" id="tool-rules"><span class="tool-icon">🛡</span>社区规范<span class="caret">›</span></div>
-          <div class="tool-row" id="tool-mystatus"><span class="tool-icon">🗒️</span>我的状态历史<span class="caret">›</span></div>
-          <div class="tool-row" id="tool-about"><span class="tool-icon">ℹ️</span>关于职场那些事<span class="caret">›</span></div>
-          <div class="tool-row tool-logout" id="tool-logout"><span class="tool-icon">🚪</span>退出登录<span class="caret">›</span></div>
+          <div class="tool-row" id="tool-rules">${uiAssetImg('toolReport', 'tool-icon asset-tool-icon', '')}社区规范${uiAssetImg('actionChevron', 'tool-chevron', '')}</div>
+          <div class="tool-row" id="tool-mystatus">${uiAssetImg('profileHistory', 'tool-icon asset-tool-icon', '')}我的状态历史${uiAssetImg('actionChevron', 'tool-chevron', '')}</div>
+          <div class="tool-row" id="tool-about">${uiAssetImg('brandTuS', 'tool-icon asset-tool-icon', '')}关于职场那些事${uiAssetImg('actionChevron', 'tool-chevron', '')}</div>
+          <div class="tool-row tool-logout" id="tool-logout">${uiAssetImg('navProfile', 'tool-icon asset-tool-icon', '')}退出登录${uiAssetImg('actionChevron', 'tool-chevron', '')}</div>
         </div>
       </div>
     </div>`
 
   v.querySelector('#edit-profile').addEventListener('click', showProfileEditor)
+  v.querySelector('#profile-my-complaints').addEventListener('click', showMyStatuses)
+  v.querySelector('#profile-mood-history').addEventListener('click', showMyStatuses)
   v.querySelector('#change-avatar').addEventListener('click', () => avatarFile.click())
   v.querySelector('#avatar-file').addEventListener('change', async (e) => {
     const file = e.target.files[0]
@@ -1466,7 +1475,7 @@ function renderHomeHero(overview = App.state.homeOverview) {
         <div class="home-dash-greet">${esc(homeGreeting())}，${esc(userName)}！</div>
         <div class="home-dash-sub">今天也要好好上班（和好好吐槽）</div>
         <div class="home-dash-search">
-          <span class="home-search-icon">🔍</span>
+          ${uiAssetImg('actionSearch', 'home-search-icon', '')}
           <input id="home-search-input" placeholder="搜索吐槽、同事或公司…" />
         </div>
       </div>
@@ -1479,16 +1488,16 @@ function renderHomeStats(overview = App.state.homeOverview) {
   const checked = d.moodCheckedToday
   return `
     <div class="home-dash-stats" id="home-dash-stats">
-      ${homeStatCard('💗', '今日打卡', checked ? '已打卡' : '未打卡', checked ? 'var(--success)' : 'var(--warning)', 'checkin')}
-      ${homeStatCard('🔥', '广场吐槽', String(d.plaza), 'var(--secondary)', 'plaza')}
-      ${homeStatCard('💬', '我的吐槽', String(d.mine), 'var(--primary)', 'mine')}
-      ${homeStatCard('👥', '同事档案', String(d.colleagues), 'var(--primary-deep)', 'colleague')}
+      ${homeStatCard('featureCheckin', '今日打卡', checked ? '已打卡' : '未打卡', checked ? 'var(--success)' : 'var(--warning)', 'checkin')}
+      ${homeStatCard('featurePlaza', '广场吐槽', String(d.plaza), 'var(--secondary)', 'plaza')}
+      ${homeStatCard('featureMyComplaints', '我的吐槽', String(d.mine), 'var(--primary)', 'mine')}
+      ${homeStatCard('featureColleagues', '同事档案', String(d.colleagues), 'var(--primary-deep)', 'colleague')}
     </div>`
 }
 
-function homeStatCard(emoji, title, value, color, nav) {
+function homeStatCard(asset, title, value, color, nav) {
   return `<button class="home-dash-stat" data-nav="${nav}" type="button">
-    <span class="home-dash-stat-emoji" style="background:${color}1f">${emoji}</span>
+    <span class="home-dash-stat-emoji" style="background:${color}1f">${uiAssetImg(asset, 'home-dash-stat-image', '')}</span>
     <span class="home-dash-stat-body">
       <span class="home-dash-stat-label">${esc(title)}</span>
       <span class="home-dash-stat-num">${esc(value)}</span>
@@ -1599,10 +1608,10 @@ function renderHomeQuickLinks() {
     <div class="home-dash-card home-dash-quicklinks">
       <div class="home-dash-card-head"><span class="home-dash-card-title">快捷入口</span></div>
       <div class="home-dash-ql-grid">
-        <button class="home-dash-ql" data-nav="mine" type="button">💬 我的吐槽</button>
-        <button class="home-dash-ql" data-nav="colleague" type="button">👥 同事档案</button>
-        <button class="home-dash-ql" data-nav="ai" type="button">🧠 AI 洞察</button>
-        <button class="home-dash-ql" data-nav="messages" type="button">💬 消息中心</button>
+        <button class="home-dash-ql" data-nav="mine" type="button">${uiAssetImg('featureMyComplaints', 'home-ql-icon', '')} 我的吐槽</button>
+        <button class="home-dash-ql" data-nav="colleague" type="button">${uiAssetImg('featureColleagues', 'home-ql-icon', '')} 同事档案</button>
+        <button class="home-dash-ql" data-nav="ai" type="button">${uiAssetImg('messageAI', 'home-ql-icon', '')} AI 洞察</button>
+        <button class="home-dash-ql" data-nav="messages" type="button">${uiAssetImg('navMessages', 'home-ql-icon', '')} 消息中心</button>
       </div>
     </div>`
 }
@@ -1965,12 +1974,12 @@ function complaintCardHtml(c) {
           ${(cat || tagHtml) ? `<div class="row" style="margin-top:8px;flex-wrap:wrap;gap:6px">${cat ? `<span class="tag tag-verified">${cat.emoji} ${esc(cat.label)}</span>` : ''}${tagHtml}</div>` : ''}
         </div>
       </div>
-      <div class="complaint-actions">
+          <div class="complaint-actions">
         <span class="cp-resonate-rate ${c.resonanceRate > 0 ? '' : 'dim'}" title="共鸣值 = 共鸣 / (赞+共鸣)">🎯 共鸣值 ${c.resonanceRate || 0}%</span>
         <span class="spacer"></span>
-        <button class="cp-act-btn ${c.liked ? 'active' : ''}" data-act="like">❤️ <span data-lc>${c.likeCount || 0}</span></button>
-        <button class="cp-act-btn ${c.resonated ? 'active' : ''}" data-act="resonate">🤝 <span data-rc>${c.resonanceCount || 0}</span> 共鸣</button>
-        <button class="cp-act-btn" data-act="comment">💬 <span data-cc>${c.commentCount || 0}</span></button>
+        <button class="cp-act-btn ${c.liked ? 'active' : ''}" data-act="like">${uiAssetImg('actionLike', 'cp-action-icon', '')} <span data-lc>${c.likeCount || 0}</span></button>
+        <button class="cp-act-btn ${c.resonated ? 'active' : ''}" data-act="resonate">${uiAssetImg('actionComment', 'cp-action-icon', '')} <span data-rc>${c.resonanceCount || 0}</span> 共鸣</button>
+        <button class="cp-act-btn" data-act="comment">${uiAssetImg('actionComment', 'cp-action-icon', '')} <span data-cc>${c.commentCount || 0}</span></button>
         ${c.userId === (App.state.user ? App.state.user.id : null) ? `<button class="cp-act-btn" data-act="del" title="删除">🗑</button>` : ''}
       </div>
     </div>`

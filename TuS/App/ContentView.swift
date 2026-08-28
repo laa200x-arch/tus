@@ -32,6 +32,16 @@ enum HomeTab: Int, CaseIterable, Identifiable {
         }
     }
 
+    var asset: UIAsset {
+        switch self {
+        case .home: return .navHome
+        case .plaza: return .navPlaza
+        case .compose: return .navPublish
+        case .messages: return .navMessages
+        case .mine: return .navProfile
+        }
+    }
+
     /// 中间发布动作不是可选中的 Tab 页
     var isComposeAction: Bool { self == .compose }
 }
@@ -52,7 +62,8 @@ struct ContentView: View {
                 HomeOverviewView()
             }
             .tabItem {
-                Label(HomeTab.home.title, systemImage: HomeTab.home.icon)
+                HomeTab.home.asset.image
+                Text(HomeTab.home.title)
             }
             .tag(HomeTab.home)
 
@@ -60,7 +71,8 @@ struct ContentView: View {
                 ComplaintTabView()
             }
             .tabItem {
-                Label(HomeTab.plaza.title, systemImage: HomeTab.plaza.icon)
+                HomeTab.plaza.asset.image
+                Text(HomeTab.plaza.title)
             }
             .tag(HomeTab.plaza)
 
@@ -69,7 +81,7 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .contentShape(Rectangle())
                 .tabItem {
-                    Image(systemName: HomeTab.compose.icon)
+                    HomeTab.compose.asset.image
                 }
                 .accessibilityLabel("发吐槽")
                 .tag(HomeTab.compose)
@@ -78,7 +90,8 @@ struct ContentView: View {
                 MessageView()
             }
             .tabItem {
-                Label(HomeTab.messages.title, systemImage: HomeTab.messages.icon)
+                HomeTab.messages.asset.image
+                Text(HomeTab.messages.title)
             }
             .badge(store.unreadTotal > 0 ? store.unreadTotal : 0)
             .tag(HomeTab.messages)
@@ -87,7 +100,8 @@ struct ContentView: View {
                 MineView()
             }
             .tabItem {
-                Label(HomeTab.mine.title, systemImage: HomeTab.mine.icon)
+                HomeTab.mine.asset.image
+                Text(HomeTab.mine.title)
             }
             .tag(HomeTab.mine)
         }

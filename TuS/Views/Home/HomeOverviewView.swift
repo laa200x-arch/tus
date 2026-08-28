@@ -21,7 +21,16 @@ struct HomeOverviewView: View {
             .padding(.top, 10)
             .padding(.bottom, 28)
         }
-        .background(Theme.homeBackground.ignoresSafeArea())
+        .background {
+            ZStack {
+                Theme.homeBackground
+                UIAsset.appBackground.image
+                    .resizable()
+                    .scaledToFill()
+                    .opacity(0.46)
+            }
+            .ignoresSafeArea()
+        }
         .navigationTitle("首页")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -29,7 +38,7 @@ struct HomeOverviewView: View {
                 Button {
                     showCompose = true
                 } label: {
-                    Image(systemName: "square.and.pencil")
+                    UIAssetImage(.publishComplaint, size: 24)
                 }
                 .accessibilityLabel("发吐槽")
             }

@@ -21,6 +21,13 @@ struct HomeHeroView: View {
             .frame(width: 200, height: 200)
             .offset(x: 20, y: -14)
 
+            UIAsset.homeHeroDecoration.image
+                .resizable()
+                .scaledToFit()
+                .frame(width: 144, height: 144)
+                .opacity(0.48)
+                .offset(x: 18, y: -8)
+
             HStack(alignment: .center, spacing: 12) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(headline)
@@ -73,9 +80,7 @@ struct HomeHeroView: View {
     private var searchEntry: some View {
         Button(action: onSearch) {
             HStack(spacing: 8) {
-                Image(systemName: "magnifyingglass")
-                    .font(.footnote)
-                    .foregroundStyle(Theme.textSecondary)
+                UIAssetImage(.actionSearch, size: 16, tint: Theme.textSecondary)
                 Text("搜索吐槽、同事或公司")
                     .font(.footnote)
                     .foregroundStyle(Theme.textSecondary)

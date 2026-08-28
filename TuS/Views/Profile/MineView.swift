@@ -209,13 +209,13 @@ struct MineView: View {
                 .bold()
                 .foregroundStyle(Theme.textPrimary)
             HStack(spacing: 12) {
-                statTile("\(store.colleagues.count)", "同事档案", color: Theme.primary) {
+                statTile("\(store.colleagues.count)", "同事档案", asset: .rowColleague, color: Theme.primary) {
                     showColleagues = true
                 }
-                statTile("\(store.companies.count)", "公司属性", color: Theme.secondary) {
+                statTile("\(store.companies.count)", "公司属性", asset: .rowCompany, color: Theme.secondary) {
                     showCompanyList = true
                 }
-                statTile("\(store.myComplaints.count)", "我的吐槽", color: Theme.primaryDeep) {
+                statTile("\(store.myComplaints.count)", "我的吐槽", asset: .profileComplaints, color: Theme.primaryDeep) {
                     showMyStatuses = true
                 }
             }
@@ -226,9 +226,10 @@ struct MineView: View {
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.divider, lineWidth: 1))
     }
 
-    private func statTile(_ value: String, _ title: String, color: Color, action: @escaping () -> Void) -> some View {
+    private func statTile(_ value: String, _ title: String, asset: UIAsset, color: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             VStack(spacing: 6) {
+                UIAssetImage(asset, size: 28)
                 Text(value)
                     .font(.title2)
                     .bold()
@@ -277,21 +278,21 @@ struct MineView: View {
     private var toolsSection: some View {
         VStack(spacing: 0) {
             // v3：「更多」并入「我的」—— AI 洞察入口
-            toolRow(icon: "sparkles", title: "AI 洞察") { showAI = true }
+            toolRow(asset: .toolAI, title: "AI 洞察") { showAI = true }
             Divider().padding(.leading, 40)
-            toolRow(icon: "person.2", title: "同事档案") { showColleagues = true }
+            toolRow(asset: .rowColleague, title: "同事档案") { showColleagues = true }
             Divider().padding(.leading, 40)
-            toolRow(icon: "building.2", title: "公司属性管理") { showCompanyList = true }
+            toolRow(asset: .rowCompany, title: "公司属性管理") { showCompanyList = true }
             Divider().padding(.leading, 40)
-            toolRow(icon: "text.bubble", title: "我的吐槽") { showMyStatuses = true }
+            toolRow(asset: .profileComplaints, title: "我的吐槽") { showMyStatuses = true }
             Divider().padding(.leading, 40)
-            toolRow(icon: "info.circle", title: "关于职场那些事") {
+            toolRow(asset: .brandTuS, title: "关于职场那些事") {
                 alertTitle = "关于职场那些事"
                 alertMessage = "职场那些事 —— 记录职场里的千奇百怪：甩锅、画饼、加班、PUA…… 四维标签（同事属性 / 公司属性 / 主题 / 软件）帮你把槽点记得清清楚楚。文明吐槽，不指名道姓，不人身攻击。"
                 showAlert = true
             }
             Divider().padding(.leading, 40)
-            toolRow(icon: "arrow.left.arrow.right.circle", title: "切换账号 / 退出登录") {
+            toolRow(asset: .navProfile, title: "切换账号 / 退出登录") {
                 showLogoutConfirm = true
             }
         }
@@ -300,19 +301,15 @@ struct MineView: View {
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.divider, lineWidth: 1))
     }
 
-    private func toolRow(icon: String, title: String, action: @escaping () -> Void) -> some View {
+    private func toolRow(asset: UIAsset, title: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                Image(systemName: icon)
-                    .foregroundStyle(Theme.primary)
-                    .frame(width: 22)
+                UIAssetImage(asset, size: 22)
                 Text(title)
                     .font(.subheadline)
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundStyle(Theme.textSecondary.opacity(0.6))
+                UIAssetImage(.actionChevron, size: 14, tint: Theme.textSecondary.opacity(0.6))
             }
             .padding(.vertical, 13)
             .contentShape(Rectangle())

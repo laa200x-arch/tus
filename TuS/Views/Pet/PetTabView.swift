@@ -42,7 +42,7 @@ struct ColleagueTabView: View {
                     if segment == .colleagues { showAddColleague = true }
                     else { showAddCompany = true }
                 } label: {
-                    Image(systemName: "plus")
+                    UIAssetImage(.actionAdd, size: 18, tint: Theme.primary)
                 }
             }
         }
@@ -170,9 +170,7 @@ struct ColleagueCardView: View {
                 }
             }
             Spacer()
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundStyle(Theme.textSecondary.opacity(0.6))
+            UIAssetImage(.actionChevron, size: 14, tint: Theme.textSecondary.opacity(0.6))
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -206,8 +204,7 @@ struct CompanyCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
-                Image(systemName: "building.2.fill")
-                    .foregroundStyle(Theme.primary)
+                UIAssetImage(.rowCompany, size: 20)
                 Text(company.name)
                     .font(.subheadline)
                     .bold()

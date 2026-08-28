@@ -15,9 +15,7 @@ struct HomePersonalityCard: View {
         Button(action: onOpenAI) {
             HStack(spacing: 12) {
                 if let summary {
-                    Image(systemName: "sparkles")
-                        .font(.title2)
-                        .foregroundStyle(Theme.primary)
+                    UIAssetImage(.toolAI, size: 38)
                         .frame(width: 44, height: 44)
                         .background(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -36,9 +34,7 @@ struct HomePersonalityCard: View {
                             .lineLimit(2)
                     }
                 } else {
-                    Image(systemName: "sparkles")
-                        .font(.title2)
-                        .foregroundStyle(Theme.primary)
+                    UIAssetImage(.toolAI, size: 38)
                         .frame(width: 44, height: 44)
                         .background(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -55,10 +51,7 @@ struct HomePersonalityCard: View {
                     }
                 }
                 Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .bold()
-                    .foregroundStyle(Theme.primary)
+                UIAssetImage(.actionChevron, size: 14, tint: Theme.primary)
             }
             .frame(minHeight: 72)
             .contentShape(Rectangle())

@@ -11,7 +11,7 @@
 <body>
   <!-- 启动动画 -->
   <div id="splash" class="splash">
-    <div class="splash-logo">💢</div>
+    <div class="splash-logo"><img src="../assets/ui/icons/ui_brand_tus.png" alt=""></div>
     <div class="splash-title">职场那些事</div>
     <div class="splash-sub">匿名树洞 · 放心吐槽你的职场日常</div>
     <div class="splash-bar"><div class="splash-bar-inner"></div></div>
@@ -20,7 +20,7 @@
   <!-- 登录页 -->
   <div id="login-page" class="page center-page hidden">
     <div class="login-card">
-      <div class="brand-icon">💢</div>
+      <div class="brand-icon"><img src="../assets/ui/icons/ui_brand_tus.png" alt=""></div>
       <h1 class="brand-title">职场那些事</h1>
       <p class="brand-subtitle">匿名树洞 · 放心吐槽你的职场日常</p>
 
@@ -58,15 +58,15 @@
   <div id="app" class="hidden">
     <!-- 左侧导航栏 -->
     <aside class="sidebar">
-      <div class="sidebar-brand"><span class="brand-icon-small">💢</span> 职场那些事</div>
+      <div class="sidebar-brand"><img class="brand-icon-small" src="../assets/ui/icons/ui_brand_tus.png" alt=""> 职场那些事</div>
       <div class="sidebar-tagline">职场关系操作系统</div>
       <nav class="side-nav">
-        <button class="tab active" data-view="home"><span class="tab-icon">🏠</span><span>首页</span></button>
-        <button class="tab" data-view="complaint"><span class="tab-icon">🔥</span><span>吐槽广场</span></button>
-        <button class="tab" data-view="colleague"><span class="tab-icon">👥</span><span>同事</span></button>
-        <button class="tab" data-view="ai"><span class="tab-icon">🧠</span><span>AI 洞察</span></button>
-        <button class="tab" data-view="company"><span class="tab-icon">🏢</span><span>公司</span></button>
-        <button class="tab" data-view="mine"><span class="tab-icon">👤</span><span>我的</span></button>
+        <button class="tab active" data-view="home"><img class="tab-icon" src="../assets/ui/icons/ui_nav_home.png" alt=""><span>首页</span></button>
+        <button class="tab" data-view="complaint"><img class="tab-icon" src="../assets/ui/icons/ui_nav_plaza.png" alt=""><span>吐槽广场</span></button>
+        <button class="tab" data-view="colleague"><img class="tab-icon" src="../assets/ui/icons/ui_feature_colleagues.png" alt=""><span>同事</span></button>
+        <button class="tab" data-view="ai"><img class="tab-icon" src="../assets/ui/icons/ui_message_ai.png" alt=""><span>AI 洞察</span></button>
+        <button class="tab" data-view="company"><img class="tab-icon" src="../assets/ui/icons/ui_row_company.png" alt=""><span>公司</span></button>
+        <button class="tab" data-view="mine"><img class="tab-icon" src="../assets/ui/icons/ui_nav_profile.png" alt=""><span>我的</span></button>
       </nav>
       <div class="sidebar-promo" id="sidebar-promo">
         <div class="promo-icon">🛒</div>
@@ -81,8 +81,8 @@
       <header class="topbar">
         <div class="topbar-title">职场那些事</div>
         <div class="topbar-right">
-          <button class="bell-btn" id="msg-bell-btn" title="消息"><span class="bell-emoji">💬</span><span id="msg-bell-badge" class="bell-badge hidden"></span></button>
-          <button class="bell-btn" id="bell-btn" title="系统通知">🔔<span id="bell-dot" class="bell-dot hidden"></span></button>
+          <button class="bell-btn" id="msg-bell-btn" title="消息"><img class="bell-emoji" src="../assets/ui/icons/ui_nav_messages.png" alt=""><span id="msg-bell-badge" class="bell-badge hidden"></span></button>
+          <button class="bell-btn" id="bell-btn" title="系统通知"><img src="../assets/ui/icons/ui_message_system.png" alt=""><span id="bell-dot" class="bell-dot hidden"></span></button>
           <div class="user-menu" id="user-menu">
             <span id="topbar-avatar" class="topbar-avatar"></span>
             <span id="topbar-user-name" class="topbar-username"></span>
@@ -121,6 +121,7 @@
   <div id="toast" class="toast hidden"></div>
 
   <script src="../node_modules/socket.io-client/dist/socket.io.min.js"></script>
+  <script src="ui-assets.js"></script>
   <script src="little-energy.js"></script>
   <script src="api.js"></script>
   <script src="views.js"></script>
