@@ -73,6 +73,27 @@ function validateSchema(manifest) {
   )
 }
 
+function validateAccessors(manifest) {
+  const swift = fs.readFileSync(path.join(projectRoot, 'TuS', 'Support', 'UIAsset.swift'), 'utf8')
+  const windows = fs.readFileSync(path.join(projectRoot, 'win-app', 'src', 'ui-assets.js'), 'utf8')
+  const index = fs.readFileSync(path.join(projectRoot, 'win-app', 'src', 'index.html'), 'utf8')
+  for (const item of [...manifest.icons, ...manifest.backgrounds]) {
+    assert.ok(swift.includes(`\"${item.iosAsset}\"`), `iOS accessor missing ${item.iosAsset}`)
+    assert.ok(windows.includes(`'${item.windowsPath}'`), `Windows accessor missing ${item.windowsPath}`)
+  }
+  assert.ok(index.indexOf('ui-assets.js') < index.indexOf('views.js'), 'ui-assets.js must load before views.js')
+}
+
+function validateSyncedFiles(manifest) {
+  for (const item of [...manifest.icons, ...manifest.backgrounds]) {
+    const group = item.category === 'background' || item.category === 'decoration' ? 'Backgrounds' : 'Icons'
+    const ios = path.join(projectRoot, 'TuS', 'Assets.xcassets', 'UI', group, `${item.iosAsset}.imageset`, `${item.iosAsset}.png`)
+    const windows = path.join(projectRoot, 'win-app', 'assets', 'ui', item.windowsPath)
+    assert.ok(fs.existsSync(ios), `missing synced iOS asset: ${item.name}`)
+    assert.ok(fs.existsSync(windows), `missing synced Windows asset: ${item.name}`)
+  }
+}
+
 async function validateCanonicalFiles(manifest, filter) {
   const sharp = require('sharp')
   const entries = [...manifest.icons, ...manifest.backgrounds].filter(filter)
@@ -113,11 +134,19 @@ async function validateCanonicalFiles(manifest, filter) {
 async function main() {
   const manifest = readManifest()
   validateSchema(manifest)
+  validateAccessors(manifest)
 
   if (process.argv.includes('--schema-only')) {
     console.log('PASS | 39 icons / 2 backgrounds / 0 duplicate names')
     return
   }
+
+  if (process.argv.includes('--accessors-only')) {
+    console.log('PASS | iOS and Windows UI asset accessors match manifest')
+    return
+  }
+
+  if (process.argv.includes('--synced')) validateSyncedFiles(manifest)
 
   const methodIndex = process.argv.indexOf('--method')
   const method = methodIndex >= 0 ? process.argv[methodIndex + 1] : null

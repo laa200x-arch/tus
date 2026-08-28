@@ -10,6 +10,7 @@
 		A00000000000000000000001 /* TuSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000101 /* TuSApp.swift */; };
 		A00000000000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000102 /* ContentView.swift */; };
 		A00000000000000000000003 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000103 /* Theme.swift */; };
+		C00000000000000000000001 /* UIAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000101 /* UIAsset.swift */; };
 		A00000000000000000000004 /* SkillModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000104 /* SkillModel.swift */; };
 		A00000000000000000000005 /* AgreementModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000105 /* AgreementModel.swift */; };
 		A00000000000000000000006 /* EvaluateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000106 /* EvaluateModel.swift */; };
@@ -61,6 +62,7 @@
 		B00000000000000000000004 /* HomeOverviewDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000105 /* HomeOverviewDecodingTests.swift */; };
 		B00000000000000000000005 /* HomeOverviewStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000106 /* HomeOverviewStoreTests.swift */; };
 		B00000000000000000000006 /* HomeNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000107 /* HomeNavigationTests.swift */; };
+		C00000000000000000000002 /* UIAssetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000102 /* UIAssetTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -77,6 +79,7 @@
 		A00000000000000000000101 /* TuSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TuSApp.swift; sourceTree = "<group>"; };
 		A00000000000000000000102 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A00000000000000000000103 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		C00000000000000000000101 /* UIAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIAsset.swift; sourceTree = "<group>"; };
 		A00000000000000000000104 /* SkillModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkillModel.swift; sourceTree = "<group>"; };
 		A00000000000000000000105 /* AgreementModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgreementModel.swift; sourceTree = "<group>"; };
 		A00000000000000000000106 /* EvaluateModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvaluateModel.swift; sourceTree = "<group>"; };
@@ -93,6 +96,7 @@
 		A00000000000000000000111 /* ExchangeDynamicView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeDynamicView.swift; sourceTree = "<group>"; };
 		A00000000000000000000112 /* MessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageView.swift; sourceTree = "<group>"; };
 		A00000000000000000000113 /* MineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MineView.swift; sourceTree = "<group>"; };
+		C00000000000000000000102 /* UIAssetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIAssetTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000114 /* ProfileEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileEditView.swift; sourceTree = "<group>"; };
 		A00000000000000000000115 /* ExposureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureView.swift; sourceTree = "<group>"; };
 		A00000000000000000000116 /* AgreementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgreementView.swift; sourceTree = "<group>"; };
@@ -196,6 +200,7 @@
 			isa = PBXGroup;
 			children = (
 				A00000000000000000000103 /* Theme.swift */,
+				C00000000000000000000101 /* UIAsset.swift */,
 				A00000000000000000000118 /* AppConfig.swift */,
 				A00000000000000000000119 /* TokenStore.swift */,
 			);
@@ -356,6 +361,7 @@
 		B00000000000000000000201 /* TuSTests */ = {
 			isa = PBXGroup;
 			children = (
+				C00000000000000000000102 /* UIAssetTests.swift */,
 				B00000000000000000000103 /* LittleEnergyModelsTests.swift */,
 				B00000000000000000000105 /* HomeOverviewDecodingTests.swift */,
 				B00000000000000000000106 /* HomeOverviewStoreTests.swift */,
@@ -450,6 +456,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C00000000000000000000002 /* UIAssetTests.swift in Sources */,
 				A00000000000000000000018 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -477,6 +484,7 @@
 				A00000000000000000000001 /* TuSApp.swift in Sources */,
 				A00000000000000000000002 /* ContentView.swift in Sources */,
 				A00000000000000000000003 /* Theme.swift in Sources */,
+				C00000000000000000000001 /* UIAsset.swift in Sources */,
 				A00000000000000000000004 /* SkillModel.swift in Sources */,
 				A00000000000000000000005 /* AgreementModel.swift in Sources */,
 				A00000000000000000000006 /* EvaluateModel.swift in Sources */,

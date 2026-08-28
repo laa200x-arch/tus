@@ -32,7 +32,7 @@ function iosContents(filename, template) {
   }
 }
 
-async function syncUIAssets({ rootDir = path.resolve(__dirname, '..', '..') } = {}) {
+async function syncUIAssets({ rootDir = path.resolve(__dirname, '..', '..'), allowMissing = false } = {}) {
   const manifest = loadManifest(rootDir)
   const entries = [...manifest.icons, ...manifest.backgrounds]
   const iosRoot = path.join(rootDir, 'TuS', 'Assets.xcassets', 'UI')
@@ -43,10 +43,14 @@ async function syncUIAssets({ rootDir = path.resolve(__dirname, '..', '..') } = 
   ensureAssetGroup(iosRoot)
   ensureAssetGroup(iosIcons)
   ensureAssetGroup(iosBackgrounds)
+  const syncedNames = []
 
   for (const item of entries) {
     const source = path.join(rootDir, item.canonicalPath)
-    if (!fs.existsSync(source)) throw new Error(`missing canonical asset: ${item.name}`)
+    if (!fs.existsSync(source)) {
+      if (allowMissing) continue
+      throw new Error(`missing canonical asset: ${item.name}`)
+    }
 
     const group = item.category === 'background' || item.category === 'decoration' ? iosBackgrounds : iosIcons
     const imageSet = path.join(group, `${item.iosAsset}.imageset`)
@@ -58,13 +62,14 @@ async function syncUIAssets({ rootDir = path.resolve(__dirname, '..', '..') } = 
     const windowsTarget = path.join(windowsRoot, item.windowsPath)
     fs.mkdirSync(path.dirname(windowsTarget), { recursive: true })
     fs.copyFileSync(source, windowsTarget)
+    syncedNames.push(item.name)
   }
 
-  return entries.map((item) => item.name)
+  return syncedNames
 }
 
 if (require.main === module) {
-  syncUIAssets()
+  syncUIAssets({ allowMissing: process.argv.includes('--allow-missing') })
     .then((names) => console.log(`Synced ${names.length} UI assets to iOS and Windows.`))
     .catch((error) => {
       console.error(error.message)
@@ -73,4 +78,3 @@ if (require.main === module) {
 }
 
 module.exports = { loadManifest, syncUIAssets }
-
