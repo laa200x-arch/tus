@@ -16,6 +16,20 @@
 
 ---
 
+## 最新版本与下载
+
+- **Windows v2.1.4**：在 [GitHub Releases](https://github.com/laa200x-arch/tus/releases/latest) 下载 `TuS-Setup-2.1.4.exe`。
+- **iOS**：每次推送 `main` 都会触发 [Build IPA](https://github.com/laa200x-arch/tus/actions/workflows/build-ipa.yml)；构建完成后从 Actions 的 Artifacts 下载 IPA。
+
+### v2.1.4：小能仔完整造型修复
+
+- 小能仔统一采用“情绪 + 完整造型”资源，避免衣服、鞋子与配饰堆叠成乱图。
+- 新增通勤、休闲、职场、学院、街头五套完整造型；编辑资料中可拖动查看四个角度并保存。
+- 黑化同事为独立形象，不参与换装；个人页只保留一个小能仔，移除信用分与重复头像。
+- 首页去除重复的四项统计卡；iOS 使用原生底栏图标，Windows 保留适配桌面的导航布局。
+
+---
+
 ## 快速开始
 
 ```bash
