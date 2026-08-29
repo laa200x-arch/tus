@@ -630,7 +630,12 @@
         "TuS/Views/Match/MatchMapView.swift",
         "win-app/src/views.js"
       ],
-      "prompt": "Friendly tiny Little Energy assistant head, white face, lavender hood, black oval eyes, no clothing."
+      "prompt": "Friendly tiny Little Energy assistant head, white face, lavender hood, black oval eyes, no clothing.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "45f31d69ae621559fa2de63380a541131dac0b13c4cff9c50be52c6608ae9db0"
+      }
     },
     {
       "name": "ui_message_update",
@@ -650,7 +655,12 @@
         "TuS/Views/Chat/MessageView.swift",
         "win-app/src/views.js"
       ],
-      "prompt": "Purple secure update badge combining a small lock and upward sparkle."
+      "prompt": "Purple secure update badge combining a small lock and upward sparkle.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "3ed53a0485e58a2309a265b8e3ed717231f8c64ee68ace07d2491a4efcc53f1b"
+      }
     },
     {
       "name": "ui_profile_complaints",
@@ -670,7 +680,12 @@
         "TuS/Views/Profile/MineView.swift",
         "win-app/src/views.js"
       ],
-      "prompt": "Golden-yellow work journal with one white speech line; pale cream tile allowed."
+      "prompt": "Golden-yellow work journal with one white speech line; pale cream tile allowed.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "e7c75297e4d51d2f0821b627307d38bd50f9d0eeb2d541c1f9b9dd8c993a0a0d"
+      }
     },
     {
       "name": "ui_profile_favorites",
@@ -690,7 +705,12 @@
         "TuS/Views/Profile/MineView.swift",
         "win-app/src/views.js"
       ],
-      "prompt": "Warm orange five-point favorite star; pale peach tile allowed."
+      "prompt": "Warm orange five-point favorite star; pale peach tile allowed.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "3445a10a5a147b2a88661c67844a5ec424fa76199e816bfed0498bb26d113579"
+      }
     },
     {
       "name": "ui_profile_posts",
@@ -710,7 +730,12 @@
         "TuS/Views/Profile/MineView.swift",
         "win-app/src/views.js"
       ],
-      "prompt": "Pink-magenta friendly flame representing liked posts; pale pink tile allowed."
+      "prompt": "Pink-magenta friendly flame representing liked posts; pale pink tile allowed.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "53f668c1f0d292536ba2bf1d4c9b1a7dab26385ff9c5c67015020dc339a1b6a2"
+      }
     },
     {
       "name": "ui_profile_history",
@@ -730,7 +755,12 @@
         "TuS/Views/Profile/MineView.swift",
         "win-app/src/views.js"
       ],
-      "prompt": "Golden circular clock with one clean hand; pale yellow tile allowed."
+      "prompt": "Golden circular clock with one clean hand; pale yellow tile allowed.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "2f9152d74feea40619ece17f215a359ded63b7088bba8d598dc82ad9a55e8623"
+      }
     },
     {
       "name": "ui_tool_report",
@@ -751,7 +781,12 @@
         "TuS/Views/Profile/MineView.swift",
         "win-app/src/views.js"
       ],
-      "prompt": "Cyan-blue report sheet with two simple bars; pale blue tile allowed."
+      "prompt": "Cyan-blue report sheet with two simple bars; pale blue tile allowed.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "36124fc1bf59f2f6599c62785fe7ea109eefc40ba7f6bd30988522e1afe2a6b0"
+      }
     },
     {
       "name": "ui_tool_ai",
@@ -773,7 +808,12 @@
         "TuS/Views/Match/MatchMapView.swift",
         "win-app/src/views.js"
       ],
-      "prompt": "Mint-green insight target with one central sparkle; pale mint tile allowed."
+      "prompt": "Mint-green insight target with one central sparkle; pale mint tile allowed.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "4aade956f86b5bf6030740803f3a718cee06bf9d75972c90eaaba7ef7e10e491"
+      }
     },
     {
       "name": "ui_tool_stress",
@@ -795,7 +835,12 @@
         "TuS/Views/Match/MatchMapView.swift",
         "win-app/src/views.js"
       ],
-      "prompt": "Coral-pink pressure cloud with one gentle pulse line; pale rose tile allowed."
+      "prompt": "Coral-pink pressure cloud with one gentle pulse line; pale rose tile allowed.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "94d9272e094928075075c94a6bff6a0f54e8c43283b02daf3e1aa332f3f84e4a"
+      }
     },
     {
       "name": "ui_tool_relationship",
@@ -817,7 +862,12 @@
         "TuS/Views/Pet/PetTabView.swift",
         "win-app/src/views.js"
       ],
-      "prompt": "Blue-violet connected coworker silhouettes; pale lavender tile allowed."
+      "prompt": "Blue-violet connected coworker silhouettes; pale lavender tile allowed.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "fc16409482ee0a63abb81bb94b491bad18d8d7d53844dcbab9ec74fe823c2bad"
+      }
     },
     {
       "name": "ui_row_colleague",
@@ -838,7 +888,12 @@
         "TuS/Views/Profile/MineView.swift",
         "win-app/src/views.js"
       ],
-      "prompt": "Small purple coworker archive symbol, clean and compact."
+      "prompt": "Small purple coworker archive symbol, clean and compact.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "27ba2a31d4995070b7e599bc4eca79d681adc7d8da5a7ac75d115bf0decbe2f5"
+      }
     },
     {
       "name": "ui_row_company",
@@ -858,7 +913,12 @@
         "TuS/Views/Profile/MineView.swift",
         "win-app/src/views.js"
       ],
-      "prompt": "Small navy-purple office building portrait symbol, clean and compact."
+      "prompt": "Small navy-purple office building portrait symbol, clean and compact.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "e5d500a5157e9aa368b45d12c93417f8eb73f13a03fa5bc667fc0f8fef616c06"
+      }
     },
     {
       "name": "ui_badge_level",
@@ -878,7 +938,12 @@
         "TuS/Views/Profile/MineView.swift",
         "win-app/src/views.js"
       ],
-      "prompt": "Tiny polished gold level medal with one star, no number and no text."
+      "prompt": "Tiny polished gold level medal with one star, no number and no text.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "c7dbe2795b283e6469db203231e076e43e45fd2afe54ec2f0707c33fe3669d01"
+      }
     },
     {
       "name": "ui_avatar_anonymous",
@@ -901,7 +966,12 @@
         "TuS/Views/Home/HomeComplaintCard.swift",
         "win-app/src/views.js"
       ],
-      "prompt": "Circular purple anonymous theatre-mask avatar with small cyan and orange accents."
+      "prompt": "Circular purple anonymous theatre-mask avatar with small cyan and orange accents.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "e3803dd6214b24f58db93467fc6b1122633d307abfd2a48691ce988d6688c8a2"
+      }
     }
   ],
   "backgrounds": [
@@ -923,7 +993,12 @@
         "TuS/Support/Theme.swift",
         "win-app/src/style.css"
       ],
-      "prompt": "Use case: stylized-concept. Asset type: full-screen mobile app background. Near-white canvas with extremely subtle lavender-blue ambient glow in the upper-right and lower-left, almost imperceptible paper-soft texture, large clean negative space, no objects, no text, no border, no watermark. 1024×1536."
+      "prompt": "Use case: stylized-concept. Asset type: full-screen mobile app background. Near-white canvas with extremely subtle lavender-blue ambient glow in the upper-right and lower-left, almost imperceptible paper-soft texture, large clean negative space, no objects, no text, no border, no watermark. 1024×1536.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "9a587bed73b347b7b1cda460b8aa9aca4694edab847eaffe79edbce4f356eb9c"
+      }
     },
     {
       "name": "ui_decor_home_hero",
@@ -943,7 +1018,12 @@
         "TuS/Views/Home/HomeHeroView.swift",
         "win-app/src/views.js"
       ],
-      "prompt": "Use case: stylized-concept. Asset type: transparent decorative overlay around the existing Little Energy hero. Sparse lavender four-point sparkles, one translucent pale-blue chat bubble with three tiny blue dots, and a soft elliptical lavender glow; keep the center mostly empty for the character, no character, no text, no border, genuinely transparent background. 1024×1024."
+      "prompt": "Use case: stylized-concept. Asset type: transparent decorative overlay around the existing Little Energy hero. Sparse lavender four-point sparkles, one translucent pale-blue chat bubble with three tiny blue dots, and a soft elliptical lavender glow; keep the center mostly empty for the character, no character, no text, no border, genuinely transparent background. 1024×1024.",
+      "generation": {
+        "tool": "built-in-imagegen",
+        "promptVersion": "tus-ui-v1",
+        "sha256": "377ecdd112aa3695b761419780ae4f2fe10287136130916687b3088fb13bfa98"
+      }
     }
   ]
 }
