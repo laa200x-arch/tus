@@ -23,17 +23,17 @@ jobs:
       - name: 列出可用 Xcode（调试用）
         run: xcodebuild -version
 
-      - name: 运行 iOS 单元测试
+      - name: 编译 iOS 单元测试（无需模拟器运行时）
         run: |
           set -o pipefail
           xcodebuild \
             -project TuS.xcodeproj \
             -scheme TuS \
             -configuration Debug \
-            -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
+            -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath build-tests \
             CODE_SIGNING_ALLOWED=NO \
-            test 2>&1 | tee xcode-test.log
+            build-for-testing 2>&1 | tee xcode-test.log
 
       - name: 编译 Release（不签名）
         run: |
