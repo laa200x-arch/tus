@@ -29,6 +29,13 @@ const OUTFIT_CATALOG = Object.freeze({
   accessories: Object.freeze(['accessory_glasses', 'accessory_hat', 'accessory_headphones', 'accessory_watch', 'accessory_necklace', 'accessory_ring', 'accessory_bracelet', 'accessory_backpack', 'accessory_tote_bag', 'accessory_crossbody_bag', 'accessory_belt', 'accessory_hairclip'])
 })
 const DEFAULT_OUTFIT = Object.freeze({ topId: 'top_tshirt', bottomId: 'bottom_slacks', shoesId: 'shoes_sneakers', accessoryIds: Object.freeze([]) })
+const LOOKS = Object.freeze([
+  Object.freeze({ id: 'commute', label: '简约通勤', outfit: DEFAULT_OUTFIT }),
+  Object.freeze({ id: 'casual', label: '休闲卫衣', outfit: Object.freeze({ topId: 'top_hoodie', bottomId: 'bottom_cargo', shoesId: 'shoes_canvas', accessoryIds: Object.freeze([]) }) }),
+  Object.freeze({ id: 'professional', label: '职场精英', outfit: Object.freeze({ topId: 'top_shirt', bottomId: 'bottom_slacks', shoesId: 'shoes_leather', accessoryIds: Object.freeze([]) }) }),
+  Object.freeze({ id: 'campus', label: '学院风', outfit: Object.freeze({ topId: 'top_sweater', bottomId: 'bottom_shorts', shoesId: 'shoes_sneakers', accessoryIds: Object.freeze(['accessory_crossbody_bag']) }) }),
+  Object.freeze({ id: 'street', label: '都市潮酷', outfit: Object.freeze({ topId: 'top_jacket', bottomId: 'bottom_cargo', shoesId: 'shoes_boots', accessoryIds: Object.freeze(['accessory_hat', 'accessory_crossbody_bag']) }) })
+])
 const moodById = new Map(MOODS.map((m) => [m.id, m]))
 const legacyMoodIds = new Map(MOODS.filter((m) => m.legacyEmoji).map((m) => [m.legacyEmoji, m.id]))
 
@@ -49,21 +56,24 @@ function normalizeOutfit(value) {
   }
 }
 
+function resolveLook(value) {
+  const outfit = normalizeOutfit(value)
+  const id = ({ top_hoodie: 'casual', top_shirt: 'professional', top_sweater: 'campus', top_jacket: 'street' })[outfit.topId] || 'commute'
+  return LOOKS.find((look) => look.id === id) || LOOKS[0]
+}
+
 function assetPath(path) { return `../assets/little-energy/${path}` }
 function littleEnergyAvatarHtml({ moodId, outfit, role = 'user', className = '' } = {}) {
   if (role === 'darkColleague') {
     return `<div class="little-energy-avatar dark-colleague ${className}" aria-label="被吐槽同事小能仔"><img src="${assetPath('colleague/dark-colleague.png')}" alt=""></div>`
   }
   const mood = moodById.get(normalizeMood(moodId))
-  const worn = normalizeOutfit(outfit)
+  const look = resolveLook(outfit)
   const layers = [
     ['emotion', `emotions/${mood.assetName}.png`],
-    ['top', `outfits/tops/${worn.topId}.png`],
-    ['bottom', `outfits/bottoms/${worn.bottomId}.png`],
-    ['shoes', `outfits/shoes/${worn.shoesId}.png`],
-    ...worn.accessoryIds.map((id) => ['accessory', `outfits/accessories/${id}.png`])
+    ['look', `looks/${look.id}-front.png`]
   ]
-  return `<div class="little-energy-avatar ${className}" data-mood="${mood.id}" aria-label="小能仔·${mood.label}">${layers.map(([kind, src]) => `<img class="little-energy-layer layer-${kind}" src="${assetPath(src)}" alt="">`).join('')}</div>`
+  return `<div class="little-energy-avatar ${className}" data-mood="${mood.id}" data-look="${look.id}" aria-label="小能仔·${mood.label}，${look.label}">${layers.map(([kind, src]) => `<img class="little-energy-layer layer-${kind}" src="${assetPath(src)}" alt="">`).join('')}</div>`
 }
 
 function littleEnergyEmojiPayload(id) {
@@ -108,13 +118,10 @@ function routeDataChange(currentView, renderers = {}) {
 
 function littleEnergyAssetSources(moodId, outfit) {
   const mood = moodById.get(normalizeMood(moodId))
-  const worn = normalizeOutfit(outfit)
+  const look = resolveLook(outfit)
   return [
     assetPath(`emotions/${mood.assetName}.png`),
-    assetPath(`outfits/tops/${worn.topId}.png`),
-    assetPath(`outfits/bottoms/${worn.bottomId}.png`),
-    assetPath(`outfits/shoes/${worn.shoesId}.png`),
-    ...worn.accessoryIds.map((id) => assetPath(`outfits/accessories/${id}.png`))
+    assetPath(`looks/${look.id}-front.png`)
   ]
 }
 
@@ -129,7 +136,7 @@ function loadCanvasImage(src, imageFactory = () => new Image()) {
 }
 
 const api = {
-  MOODS, OUTFIT_CATALOG, DEFAULT_OUTFIT, normalizeMood, normalizeOutfit,
+  MOODS, OUTFIT_CATALOG, DEFAULT_OUTFIT, LOOKS, normalizeMood, normalizeOutfit, resolveLook,
   littleEnergyAvatarHtml, littleEnergyEmojiPayload, messageOutfit, applyMoodToday,
   routeDataChange, littleEnergyAssetSources, loadCanvasImage, userAvatarHtml,
   personalityTitle, compatibleMoodPayload

@@ -54,6 +54,58 @@ struct LittleEnergyOutfit: Codable, Hashable {
     }
 }
 
+enum LittleEnergyTurntableAngle: String, CaseIterable, Hashable {
+    case front
+    case left
+    case back
+    case right
+}
+
+/// 一个完整的可穿着小能仔造型。资料接口仍保存旧的结构化 outfit，
+/// 此处只负责把旧字段稳定解析为一张完整角色资源，防止单品商品图覆盖角色。
+struct LittleEnergyLook: Hashable, Identifiable {
+    let id: String
+    let title: String
+    let canonicalOutfit: LittleEnergyOutfit
+
+    var frontAssetName: String { assetName(for: .front) }
+
+    func assetName(for angle: LittleEnergyTurntableAngle) -> String {
+        "look-\(id)-\(angle.rawValue)"
+    }
+
+    static let all: [LittleEnergyLook] = [
+        LittleEnergyLook(id: "commute", title: "简约通勤", canonicalOutfit: .default),
+        LittleEnergyLook(
+            id: "casual", title: "休闲卫衣",
+            canonicalOutfit: LittleEnergyOutfit(topId: "top_hoodie", bottomId: "bottom_cargo", shoesId: "shoes_canvas")
+        ),
+        LittleEnergyLook(
+            id: "professional", title: "职场精英",
+            canonicalOutfit: LittleEnergyOutfit(topId: "top_shirt", bottomId: "bottom_slacks", shoesId: "shoes_leather")
+        ),
+        LittleEnergyLook(
+            id: "campus", title: "学院风",
+            canonicalOutfit: LittleEnergyOutfit(topId: "top_sweater", bottomId: "bottom_shorts", shoesId: "shoes_sneakers", accessoryIds: ["accessory_crossbody_bag"])
+        ),
+        LittleEnergyLook(
+            id: "street", title: "都市潮酷",
+            canonicalOutfit: LittleEnergyOutfit(topId: "top_jacket", bottomId: "bottom_cargo", shoesId: "shoes_boots", accessoryIds: ["accessory_hat", "accessory_crossbody_bag"])
+        )
+    ]
+
+    static func resolve(outfit: LittleEnergyOutfit) -> LittleEnergyLook {
+        let topID = outfit.normalized.topId
+        switch topID {
+        case "top_hoodie": return all[1]
+        case "top_shirt": return all[2]
+        case "top_sweater": return all[3]
+        case "top_jacket": return all[4]
+        default: return all[0]
+        }
+    }
+}
+
 enum LittleEnergyRole: Hashable {
     case user
     case darkColleague

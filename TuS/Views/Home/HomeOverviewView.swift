@@ -1,14 +1,13 @@
 import SwiftUI
 
 /// 首页重构：单一服务端聚合快照驱动的纵向信息流
-/// 参考图顺序：问候/Hero → 四统计卡 → 今日情绪卡 → 最新吐槽 → 职场人格
+/// 参考图顺序：问候/Hero → 今日情绪卡 → 最新吐槽 → 职场人格
 /// 加载策略：缓存/骨架先渲染，无全屏无限转圈；失败时分区重试
 struct HomeOverviewView: View {
     @EnvironmentObject private var store: MockDataStore
 
     @State private var showCheckin = false
     @State private var showCompose = false
-    @State private var showColleagues = false
     @State private var showAI = false
     @State private var showSearch = false
 
@@ -63,7 +62,6 @@ struct HomeOverviewView: View {
         }
         .sheet(isPresented: $showCheckin) { MoodCheckinView() }
         .sheet(isPresented: $showCompose) { ComplaintComposeView() }
-        .sheet(isPresented: $showColleagues) { NavigationStack { ColleagueTabView() } }
         .sheet(isPresented: $showAI) { NavigationStack { AITabView() } }
         .sheet(isPresented: $showSearch) { NavigationStack { HomeSearchView() } }
     }
@@ -90,10 +88,6 @@ struct HomeOverviewView: View {
     private var sections: some View {
         VStack(alignment: .leading, spacing: HomeMetrics.sectionGap) {
             HomeHeroView(onSearch: { showSearch = true })
-            HomeStatsGrid(
-                onCheckin: { showCheckin = true },
-                onColleagues: { showColleagues = true }
-            )
             HomeMoodCard(onFullCheckin: { showCheckin = true })
             HomeComplaintCard()
             HomePersonalityCard(onOpenAI: { showAI = true })
@@ -109,25 +103,6 @@ struct HomeOverviewView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .modifier(HomeCardStyle())
-
-            LazyVGrid(
-                columns: [
-                    GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10),
-                    GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)
-                ],
-                spacing: 10
-            ) {
-                ForEach(0..<4, id: \.self) { _ in
-                    VStack(alignment: .leading, spacing: 8) {
-                        skeletonBar(width: 32, height: 32, circle: true)
-                        skeletonBar(width: 52, height: 10)
-                        skeletonBar(width: 40, height: 12)
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 92, alignment: .leading)
-                    .padding(10)
-                    .modifier(HomeCardStyle())
-                }
-            }
 
             VStack(alignment: .leading, spacing: 12) {
                 skeletonBar(width: 120, height: 16)

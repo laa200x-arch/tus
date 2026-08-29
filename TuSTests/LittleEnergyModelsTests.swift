@@ -121,4 +121,16 @@ final class LittleEnergyModelsTests: XCTestCase {
         {"id":"1","userId":"2","authorName":"A","avatarSymbol":"x",\(outfit)"isAnonymous":\(anonymous),"content":"c","colleagueId":null,"colleagueName":null,"category":null,"behaviorTags":[],"sentiment":null,"aiExtracted":null,"likeCount":0,"resonanceCount":0,"hotScore":0,"liked":false,"resonated":false,"commentCount":0,"resonanceRate":0,"time":"2026-08-26T00:00:00Z"}
         """
     }
+
+    func testLegacyOutfitResolvesToOneCompleteLook() {
+        XCTAssertEqual(LittleEnergyLook.resolve(outfit: .default).id, "commute")
+        XCTAssertEqual(
+            LittleEnergyLook.resolve(outfit: LittleEnergyOutfit(topId: "top_hoodie")).id,
+            "casual"
+        )
+        XCTAssertEqual(
+            LittleEnergyLook.resolve(outfit: LittleEnergyOutfit(topId: "top_jacket")).frontAssetName,
+            "look-street-front"
+        )
+    }
 }

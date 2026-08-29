@@ -5,7 +5,7 @@
 'use strict'
 
 const LE = globalThis.LittleEnergy
-const { MOODS, OUTFIT_CATALOG, normalizeMood, normalizeOutfit, littleEnergyAvatarHtml, littleEnergyEmojiPayload, messageOutfit, applyMoodToday, routeDataChange, littleEnergyAssetSources, loadCanvasImage, userAvatarHtml, personalityTitle, compatibleMoodPayload } = LE
+const { MOODS, LOOKS, normalizeMood, normalizeOutfit, resolveLook, littleEnergyAvatarHtml, littleEnergyEmojiPayload, messageOutfit, applyMoodToday, routeDataChange, littleEnergyAssetSources, loadCanvasImage, userAvatarHtml, personalityTitle, compatibleMoodPayload } = LE
 function currentMoodId() { return normalizeMood(App.state.moodToday && App.state.moodToday.mood) }
 function currentOutfit() { return normalizeOutfit(App.state.user && App.state.user.littleEnergyOutfit) }
 function moodChoiceHtml(m, className = 'mood-choice') {
@@ -674,10 +674,6 @@ function renderMine() {
         <div class="card">
           <div class="profile-head">
             ${littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: currentOutfit(), className: 'little-energy-profile' })}
-            <div class="profile-avatar-wrap">
-              ${avatarHtml(u, 'avatar avatar-xl')}
-              <button class="avatar-cam" id="change-avatar" title="更换头像">📷</button>
-            </div>
             <div class="profile-info">
               <div class="row" style="gap:8px">
                 <span class="profile-name">${esc(u.userName)}</span>${uiAssetImg('badgeLevel', 'profile-level-asset', '')}
@@ -687,7 +683,6 @@ function renderMine() {
           </div>
           <div class="row" style="margin-top:14px;gap:10px">
             <button class="btn btn-primary" id="edit-profile">✏️ 编辑资料</button>
-            <input type="file" id="avatar-file" accept="image/*" hidden>
           </div>
         </div>
 
@@ -727,20 +722,6 @@ function renderMine() {
   v.querySelector('#edit-profile').addEventListener('click', showProfileEditor)
   v.querySelector('#profile-my-complaints').addEventListener('click', showMyStatuses)
   v.querySelector('#profile-mood-history').addEventListener('click', showMyStatuses)
-  v.querySelector('#change-avatar').addEventListener('click', () => avatarFile.click())
-  v.querySelector('#avatar-file').addEventListener('change', async (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    try {
-      const blob = await compressImage(file)
-      if (blob.size > 1024 * 1024) { toast('头像过大（压缩后仍超过 1MB），请更换更小的图片'); e.target.value = ''; return }
-      const url = await uploadMedia(await blob.arrayBuffer(), 'avatar.jpg', 'image/jpeg')
-      await updateProfile({ avatarUrl: url })
-      toast('✅ 头像已更新')
-      renderMine()
-    } catch (err) { toast('头像上传失败：' + err.message) }
-    e.target.value = ''
-  })
   v.querySelector('#tool-mystatus').addEventListener('click', showMyStatuses)
   v.querySelector('#tool-report').addEventListener('click', () => switchView('ai'))
   v.querySelector('#tool-ai').addEventListener('click', () => switchView('ai'))
@@ -762,13 +743,10 @@ function renderMine() {
 function showProfileEditor() {
   const u = App.state.user
   const draft = normalizeOutfit(u.littleEnergyOutfit)
+  const angles = ['front', 'left', 'back', 'right']
+  let angleIndex = 0
   openModal(`
     <div class="modal-title">编辑资料</div>
-    <div class="row" style="align-items:center;gap:12px;margin-bottom:14px">
-      ${avatarHtml(u, 'avatar avatar-lg')}
-      <button class="btn btn-outline btn-sm" id="pe-avatar">🖼 更换头像</button>
-      <input type="file" id="pe-avatar-file" accept="image/*" hidden>
-    </div>
     <div class="form-row">
       <div class="form-field"><label>昵称</label><input id="pe-nickname" value="${esc(u.userName)}"></div>
       <div class="form-field"><label>所在城市</label><input id="pe-location" value="${esc(u.locationLabel || '')}" placeholder="如：广州·天河"></div>
@@ -776,40 +754,36 @@ function showProfileEditor() {
     <div class="form-field"><label>简介</label><textarea id="pe-bio" rows="2" placeholder="介绍一下自己吧">${esc(u.bio || '')}</textarea></div>
     <div class="outfit-editor">
       <div class="card-title">小能仔换装</div>
-      <div id="pe-outfit-preview">${littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: draft, className: 'little-energy-preview' })}</div>
-      ${[['tops','上衣'],['bottoms','下装'],['shoes','鞋子'],['accessories','配饰']].map(([group, label]) => `<div class="outfit-group"><label>${label}</label><div class="outfit-grid" data-group="${group}">${group === 'accessories' ? '<button type="button" class="outfit-item" data-id="">无配饰</button>' : ''}${OUTFIT_CATALOG[group].map((id) => `<button type="button" class="outfit-item" data-id="${id}"><img src="../assets/little-energy/outfits/${group}/${id}.png" alt=""><span>${id.replace(/^[^_]+_/, '')}</span></button>`).join('')}</div></div>`).join('')}
+      <div id="pe-outfit-preview" class="little-energy-turntable" aria-label="小能仔 3D 造型预览"></div>
+      <div class="turntable-hint">左右拖动查看小能仔 3D 造型</div>
+      <div class="outfit-group"><label>整套造型</label><div class="outfit-grid look-grid">${LOOKS.map((look) => `<button type="button" class="outfit-item look-item" data-look-id="${look.id}"><img src="../assets/little-energy/looks/${look.id}-front.png" alt=""><span>${esc(look.label)}</span></button>`).join('')}</div></div>
     </div>
     <div class="modal-actions"><button class="btn btn-outline" data-close>取消</button><button class="btn btn-primary" id="pe-save">💾 保存</button></div>
   `, (box) => {
+    const preview = box.querySelector('#pe-outfit-preview')
     const redrawOutfit = () => {
-      box.querySelector('#pe-outfit-preview').innerHTML = littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: draft, className: 'little-energy-preview' })
-      box.querySelectorAll('.outfit-grid').forEach((grid) => grid.querySelectorAll('.outfit-item').forEach((item) => {
-        const group = grid.dataset.group
-        const active = group === 'accessories' ? (item.dataset.id ? draft.accessoryIds.includes(item.dataset.id) : !draft.accessoryIds.length) : draft[{ tops: 'topId', bottoms: 'bottomId', shoes: 'shoesId' }[group]] === item.dataset.id
-        item.classList.toggle('active', active)
-      }))
+      const look = resolveLook(draft)
+      preview.innerHTML = `<img src="../assets/little-energy/looks/${look.id}-${angles[angleIndex]}.png" alt="${esc(look.label)}小能仔">`
+      box.querySelectorAll('.look-item').forEach((item) => item.classList.toggle('active', item.dataset.lookId === look.id))
     }
-    box.querySelectorAll('.outfit-item').forEach((item) => item.addEventListener('click', () => {
-      const group = item.closest('.outfit-grid').dataset.group
-      const id = item.dataset.id
-      if (group === 'accessories') draft.accessoryIds = id ? (draft.accessoryIds.includes(id) ? draft.accessoryIds.filter((x) => x !== id) : [...draft.accessoryIds, id]) : []
-      else draft[{ tops: 'topId', bottoms: 'bottomId', shoes: 'shoesId' }[group]] = id
+    box.querySelectorAll('.look-item').forEach((item) => item.addEventListener('click', () => {
+      const look = LOOKS.find((value) => value.id === item.dataset.lookId)
+      if (!look) return
+      Object.assign(draft, normalizeOutfit(look.outfit))
+      angleIndex = 0
       redrawOutfit()
     }))
     redrawOutfit()
-    const af = box.querySelector('#pe-avatar-file')
-    box.querySelector('#pe-avatar').addEventListener('click', () => af.click())
-    af.addEventListener('change', async (e) => {
-      const file = e.target.files[0]
-      if (!file) return
-      try {
-        const blob = await compressImage(file)
-        if (blob.size > 1024 * 1024) { toast('头像过大（压缩后仍超过 1MB）'); e.target.value = ''; return }
-        const url = await uploadMedia(await blob.arrayBuffer(), 'avatar.jpg', 'image/jpeg')
-        await updateProfile({ avatarUrl: url })
-        toast('✅ 头像已更新')
-      } catch (err) { toast('头像上传失败：' + err.message) }
-      e.target.value = ''
+    let dragStart = null
+    preview.addEventListener('pointerdown', (event) => {
+      dragStart = event.clientX
+      preview.setPointerCapture?.(event.pointerId)
+    })
+    preview.addEventListener('pointerup', (event) => {
+      if (dragStart == null || Math.abs(event.clientX - dragStart) < 16) return
+      angleIndex = (angleIndex + (event.clientX < dragStart ? 1 : angles.length - 1)) % angles.length
+      dragStart = null
+      redrawOutfit()
     })
     box.querySelector('#pe-save').addEventListener('click', async () => {
       const nickname = box.querySelector('#pe-nickname').value.trim()
@@ -1500,28 +1474,6 @@ function renderHomeHero(overview = App.state.homeOverview) {
     </div>`
 }
 
-function renderHomeStats(overview = App.state.homeOverview) {
-  const d = homeStatsData()
-  const checked = d.moodCheckedToday
-  return `
-    <div class="home-dash-stats" id="home-dash-stats">
-      ${homeStatCard('featureCheckin', '今日打卡', checked ? '已打卡' : '未打卡', checked ? 'var(--success)' : 'var(--warning)', 'checkin')}
-      ${homeStatCard('featurePlaza', '广场吐槽', String(d.plaza), 'var(--secondary)', 'plaza')}
-      ${homeStatCard('featureMyComplaints', '我的吐槽', String(d.mine), 'var(--primary)', 'mine')}
-      ${homeStatCard('featureColleagues', '同事档案', String(d.colleagues), 'var(--primary-deep)', 'colleague')}
-    </div>`
-}
-
-function homeStatCard(asset, title, value, color, nav) {
-  return `<button class="home-dash-stat" data-nav="${nav}" type="button">
-    <span class="home-dash-stat-emoji" style="background:${color}1f">${uiAssetImg(asset, 'home-dash-stat-image', '')}</span>
-    <span class="home-dash-stat-body">
-      <span class="home-dash-stat-label">${esc(title)}</span>
-      <span class="home-dash-stat-num">${esc(value)}</span>
-    </span>
-  </button>`
-}
-
 function renderHomeMood(overview = App.state.homeOverview) {
   const today = App.state.moodToday
   const checked = !!(today && today.checked)
@@ -1657,7 +1609,6 @@ async function renderHome() {
     <div class="home-dash">
       ${renderHomeHero(overview)}
       ${renderHomeStateBanner()}
-      ${renderHomeStats(overview)}
       <div class="home-main-grid">
         <div class="home-col-left">
           ${renderHomeMood(overview)}
@@ -1691,7 +1642,7 @@ function bindHome() {
   if (s) s.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && s.value.trim()) renderSearch(s.value.trim())
   })
-  // 委托处理所有 data-nav 导航（统计卡 / 快捷入口 / 模块卡）
+  // 委托处理各内容区的导航（快捷入口 / 模块卡）
   v.addEventListener('click', (e) => {
     const navEl = e.target.closest('[data-nav]')
     if (!navEl) return
@@ -1724,7 +1675,6 @@ function applyHomeModules() {
     const el = v.querySelector('#' + id)
     if (el) el.outerHTML = html
   }
-  setSlot('home-dash-stats', renderHomeStats(overview))
   setSlot('home-state', renderHomeStateBanner())
   setSlot('home-mood', renderHomeMood(overview))
   setSlot('home-complaint', renderHomeComplaint(overview))

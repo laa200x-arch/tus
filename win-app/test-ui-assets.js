@@ -107,6 +107,8 @@ function validateConsumerUsage(manifest, platform) {
 
   const missing = []
   for (const item of [...manifest.icons, ...manifest.backgrounds]) {
+    if (platform === 'ios' && item.iosNativeSymbol) continue
+    if (platform === 'windows' && item.windowsUnused) continue
     const consumers = item.consumers.filter((consumer) => platform === 'ios'
       ? consumer.startsWith('TuS/')
       : consumer.startsWith('win-app/'))

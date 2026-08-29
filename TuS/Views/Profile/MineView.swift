@@ -1,5 +1,4 @@
 import SwiftUI
-import PhotosUI
 
 /// 我的（吐槽同事：档案 + 设置）
 /// 头像 / 信用分 / 我的档案（同事·公司·吐槽）/ 聊天记录同步 / 退出登录
@@ -15,8 +14,6 @@ struct MineView: View {
     @State private var showAlert = false
     @State private var alertTitle = ""
     @State private var alertMessage = ""
-    @State private var avatarItem: PhotosPickerItem?
-    @State private var isUploadingAvatar = false
     // v3：「更多」并入「我的」→ 同事档案 / AI 洞察 入口
     @State private var showColleagues = false
     @State private var showAI = false
@@ -80,24 +77,8 @@ struct MineView: View {
                 LittleEnergyAvatarView(
                     moodID: store.currentMoodID,
                     outfit: store.currentUser.littleEnergyOutfit,
-                    size: 82
+                    size: 92
                 )
-                ZStack(alignment: .bottomTrailing) {
-                    AvatarView(user: store.currentUser, size: 62)
-                    PhotosPicker(selection: $avatarItem, matching: .images) {
-                        if isUploadingAvatar {
-                            ProgressView()
-                                .frame(width: 24, height: 24)
-                        } else {
-                            Image(systemName: "camera.fill")
-                                .font(.system(size: 10))
-                                .foregroundStyle(.white)
-                                .frame(width: 24, height: 24)
-                                .background(Circle().fill(Theme.primary))
-                        }
-                    }
-                    .disabled(isUploadingAvatar)
-                }
                 VStack(alignment: .leading, spacing: 5) {
                     HStack(spacing: 6) {
                         Text(store.currentUser.userName)
@@ -112,7 +93,6 @@ struct MineView: View {
                         .lineLimit(1)
                 }
                 Spacer()
-                creditRing
             }
 
             HStack(spacing: 10) {
@@ -139,84 +119,6 @@ struct MineView: View {
         .padding(16)
         .background(RoundedRectangle(cornerRadius: 18).fill(Theme.cardBg))
         .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.divider, lineWidth: 1))
-        .onChange(of: avatarItem) { _ in
-            handleAvatarSelection()
-        }
-    }
-
-    /// 相册选择头像 → 压缩上传 → 更新资料
-    private func handleAvatarSelection() {
-        guard let avatarItem else { return }
-        Task {
-            isUploadingAvatar = true
-            defer {
-                isUploadingAvatar = false
-                self.avatarItem = nil
-            }
-            guard let data = try? await avatarItem.loadTransferable(type: Data.self),
-                  let image = UIImage(data: data),
-                  let jpeg = downscaledJPEG(image) else {
-                alertTitle = "提示"
-                alertMessage = "头像读取失败，请重试"
-                showAlert = true
-                return
-            }
-            guard jpeg.count <= 1024 * 1024 else {
-                alertTitle = "提示"
-                alertMessage = "头像过大（压缩后仍超过 1MB），请更换更小的图片"
-                showAlert = true
-                return
-            }
-            guard let url = try? await APIClient.shared.uploadMedia(
-                data: jpeg, fileName: "avatar.jpg", mimeType: "image/jpeg"
-            ) else {
-                alertTitle = "提示"
-                alertMessage = "头像上传失败，请检查网络"
-                showAlert = true
-                return
-            }
-            await store.updateAvatar(url: url)
-            alertTitle = "成功"
-            alertMessage = "头像已更新"
-            showAlert = true
-        }
-    }
-
-    /// 压缩图片至最长边 512px 并转 JPEG（头像）
-    private func downscaledJPEG(_ image: UIImage) -> Data? {
-        let maxSide: CGFloat = 512
-        let size = image.size
-        var target = image
-        if max(size.width, size.height) > maxSide {
-            let scale = maxSide / max(size.width, size.height)
-            let newSize = CGSize(width: size.width * scale, height: size.height * scale)
-            let renderer = UIGraphicsImageRenderer(size: newSize)
-            target = renderer.image { _ in
-                image.draw(in: CGRect(origin: .zero, size: newSize))
-            }
-        }
-        return target.jpegData(compressionQuality: 0.8)
-    }
-
-    private var creditRing: some View {
-        ZStack {
-            Circle()
-                .stroke(Theme.divider, lineWidth: 6)
-            Circle()
-                .trim(from: 0, to: min(CGFloat(store.currentUser.creditScore) / 100, 1))
-                .stroke(Theme.primary, style: StrokeStyle(lineWidth: 6, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-            VStack(spacing: 0) {
-                Text("\(Int(store.currentUser.creditScore))")
-                    .font(.headline)
-                    .bold()
-                    .foregroundStyle(Theme.textPrimary)
-                Text("信用分")
-                    .font(.system(size: 9))
-                    .foregroundStyle(Theme.textSecondary)
-            }
-        }
-        .frame(width: 64, height: 64)
     }
 
     // MARK: - 我的档案

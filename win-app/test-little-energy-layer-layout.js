@@ -11,16 +11,10 @@ function rule(selector) {
 }
 
 const emotion = rule('.little-energy-avatar .layer-emotion')
-const top = rule('.little-energy-avatar .layer-top')
-const bottom = rule('.little-energy-avatar .layer-bottom')
-const shoes = rule('.little-energy-avatar .layer-shoes')
+const look = rule('.little-energy-avatar .layer-look')
 
 assert.match(emotion, /z-index:\s*1/, 'emotion base must stay visible behind clothes')
-assert.match(top, /z-index:\s*2/, 'top layer must be above the base')
-assert.match(bottom, /z-index:\s*3/, 'bottom layer must be above the top')
-assert.match(shoes, /z-index:\s*4/, 'shoes layer must be above the bottom')
-assert.match(top, /transform:\s*translateY\([^)]*\)\s*scale\(/, 'top must be visually aligned to the mascot body')
-assert.match(bottom, /transform:\s*translateY\([^)]*\)\s*scale\(/, 'bottom must be visually aligned to the mascot body')
-assert.match(shoes, /transform:\s*translateY\([^)]*\)\s*scale\(/, 'shoes must be visually aligned to the mascot body')
+assert.match(look, /z-index:\s*2/, 'one complete look shell must sit above the mood base')
+assert.doesNotMatch(css, /\.little-energy-avatar \.layer-(top|bottom|shoes|accessory)\s*\{/, 'no product-cutout layers may remain in the avatar CSS')
 
-console.log('PASS | Little Energy clothing layers preserve the emotion base and calibrated body alignment')
+console.log('PASS | Little Energy avatars render one complete look above the emotion base')

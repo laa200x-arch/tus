@@ -51,13 +51,13 @@ app.whenReady().then(async () => {
     window.__errs = [];
     window.addEventListener('error', (e) => window.__errs.push('JS错误: ' + e.message + ' @' + (e.error && e.error.stack ? e.error.stack.split('\\n').slice(0,3).join(' | ') : (e.filename||'') + ':' + e.lineno)));
     window.addEventListener('unhandledrejection', (e) => window.__errs.push('Promise未捕获: ' + (e.reason && e.reason.message || e.reason) + ' @' + (e.reason && e.reason.stack ? e.reason.stack.split('\\n').slice(0,3).join(' | ') : '')));
-    App.SERVER = 'http://localhost:8020';
+    App.SERVER = 'http://localhost:3000';
     'injected'
   `)
 
   // 诊断：直接 fetch 测试
   const fetchDiag = await wc.executeJavaScript(`
-    fetch('http://localhost:8020/api/tags')
+    fetch('http://localhost:3000/api/tags')
       .then(r => 'FETCH_OK status=' + r.status)
       .catch(e => 'FETCH_ERR: ' + e.message)
   `)

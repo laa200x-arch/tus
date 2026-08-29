@@ -24,21 +24,11 @@ enum HomeTab: Int, CaseIterable, Identifiable {
 
     var icon: String {
         switch self {
-        case .home: return "house"
-        case .plaza: return "flame"
+        case .home: return "house.fill"
+        case .plaza: return "flame.fill"
         case .compose: return "plus.circle.fill"
-        case .messages: return "message"
-        case .mine: return "person"
-        }
-    }
-
-    var asset: UIAsset {
-        switch self {
-        case .home: return .navHome
-        case .plaza: return .navPlaza
-        case .compose: return .navPublish
-        case .messages: return .navMessages
-        case .mine: return .navProfile
+        case .messages: return "message.fill"
+        case .mine: return "person.fill"
         }
     }
 
@@ -62,7 +52,7 @@ struct ContentView: View {
                 HomeOverviewView()
             }
             .tabItem {
-                HomeTab.home.asset.image
+                Image(systemName: HomeTab.home.icon)
                 Text(HomeTab.home.title)
             }
             .tag(HomeTab.home)
@@ -71,7 +61,7 @@ struct ContentView: View {
                 ComplaintTabView()
             }
             .tabItem {
-                HomeTab.plaza.asset.image
+                Image(systemName: HomeTab.plaza.icon)
                 Text(HomeTab.plaza.title)
             }
             .tag(HomeTab.plaza)
@@ -81,7 +71,7 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .contentShape(Rectangle())
                 .tabItem {
-                    HomeTab.compose.asset.image
+                    Image(systemName: HomeTab.compose.icon)
                 }
                 .accessibilityLabel("发吐槽")
                 .tag(HomeTab.compose)
@@ -90,7 +80,7 @@ struct ContentView: View {
                 MessageView()
             }
             .tabItem {
-                HomeTab.messages.asset.image
+                Image(systemName: HomeTab.messages.icon)
                 Text(HomeTab.messages.title)
             }
             .badge(store.unreadTotal > 0 ? store.unreadTotal : 0)
@@ -100,7 +90,7 @@ struct ContentView: View {
                 MineView()
             }
             .tabItem {
-                HomeTab.mine.asset.image
+                Image(systemName: HomeTab.mine.icon)
                 Text(HomeTab.mine.title)
             }
             .tag(HomeTab.mine)

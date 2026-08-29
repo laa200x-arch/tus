@@ -44,10 +44,10 @@
         "global"
       ],
       "iosAsset": "ui_nav_home",
+      "iosNativeSymbol": "house.fill",
       "windowsPath": "icons/ui_nav_home.png",
       "canonicalPath": "assets/ui/icons/ui_nav_home.png",
       "consumers": [
-        "TuS/App/ContentView.swift",
         "win-app/src/index.html"
       ],
       "iconifyName": "house",
@@ -65,10 +65,10 @@
         "global"
       ],
       "iosAsset": "ui_nav_plaza",
+      "iosNativeSymbol": "flame.fill",
       "windowsPath": "icons/ui_nav_plaza.png",
       "canonicalPath": "assets/ui/icons/ui_nav_plaza.png",
       "consumers": [
-        "TuS/App/ContentView.swift",
         "win-app/src/index.html"
       ],
       "iconifyName": "magnifying-glass",
@@ -87,10 +87,10 @@
         "publish"
       ],
       "iosAsset": "ui_nav_publish",
+      "iosNativeSymbol": "plus.circle.fill",
       "windowsPath": "icons/ui_nav_publish.png",
       "canonicalPath": "assets/ui/icons/ui_nav_publish.png",
       "consumers": [
-        "TuS/App/ContentView.swift",
         "win-app/src/index.html"
       ],
       "prompt": "Luminous purple rounded-square button with a crisp white plus.",
@@ -112,10 +112,10 @@
         "global"
       ],
       "iosAsset": "ui_nav_messages",
+      "iosNativeSymbol": "message.fill",
       "windowsPath": "icons/ui_nav_messages.png",
       "canonicalPath": "assets/ui/icons/ui_nav_messages.png",
       "consumers": [
-        "TuS/App/ContentView.swift",
         "win-app/src/index.html"
       ],
       "iconifyName": "heart",
@@ -133,10 +133,10 @@
         "global"
       ],
       "iosAsset": "ui_nav_profile",
+      "iosNativeSymbol": "person.fill",
       "windowsPath": "icons/ui_nav_profile.png",
       "canonicalPath": "assets/ui/icons/ui_nav_profile.png",
       "consumers": [
-        "TuS/App/ContentView.swift",
         "win-app/src/index.html"
       ],
       "iconifyName": "user",
@@ -364,11 +364,11 @@
         "mood"
       ],
       "iosAsset": "ui_feature_checkin",
+      "windowsUnused": true,
       "windowsPath": "icons/ui_feature_checkin.png",
       "canonicalPath": "assets/ui/icons/ui_feature_checkin.png",
       "consumers": [
-        "TuS/Views/Home/HomeStatsGrid.swift",
-        "win-app/src/views.js"
+        "TuS/Views/Home/HomeStatsGrid.swift"
       ],
       "prompt": "Purple work journal with one clean checklist line; pale lavender rounded tile allowed.",
       "generation": {
@@ -390,11 +390,11 @@
         "square"
       ],
       "iosAsset": "ui_feature_plaza",
+      "windowsUnused": true,
       "windowsPath": "icons/ui_feature_plaza.png",
       "canonicalPath": "assets/ui/icons/ui_feature_plaza.png",
       "consumers": [
-        "TuS/Views/Home/HomeStatsGrid.swift",
-        "win-app/src/views.js"
+        "TuS/Views/Home/HomeStatsGrid.swift"
       ],
       "prompt": "Warm orange-red flame representing a busy workplace plaza; pale peach tile allowed.",
       "generation": {

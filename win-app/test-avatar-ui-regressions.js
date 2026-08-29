@@ -1,0 +1,27 @@
+'use strict'
+
+const assert = require('node:assert/strict')
+const fs = require('node:fs')
+const path = require('node:path')
+
+const root = path.join(__dirname, '..')
+const swift = (file) => fs.readFileSync(path.join(root, file), 'utf8')
+const mine = swift('TuS/Views/Profile/MineView.swift')
+const edit = swift('TuS/Views/Profile/ProfileEditView.swift')
+const home = swift('TuS/Views/Home/HomeOverviewView.swift')
+const content = swift('TuS/App/ContentView.swift')
+const windowsViews = fs.readFileSync(path.join(__dirname, 'src/views.js'), 'utf8')
+
+assert.match(mine, /LittleEnergyAvatarView\(/, 'Mine retains one Little Energy identity')
+assert.doesNotMatch(mine, /AvatarView\(user:\s*store\.currentUser/, 'Mine must not render a second photo avatar')
+assert.doesNotMatch(mine, /creditRing/, 'Mine must not display credit score')
+assert.doesNotMatch(edit, /PhotosPicker|avatarItem|handleAvatarSelection/, 'Edit Profile must not offer a separate photo-avatar flow')
+assert.match(edit, /LittleEnergyTurntableView\(/, 'Edit Profile contains the draggable whole-look preview')
+assert.doesNotMatch(home, /HomeStatsGrid\(/, 'Home removes the duplicate four-stat block')
+assert.match(content, /Image\(systemName: HomeTab\.home\.icon\)/, 'iOS tab bar uses native system icons')
+assert.doesNotMatch(content, /HomeTab\.home\.asset\.image/, 'iOS tab bar must not use generated raster nav art')
+assert.doesNotMatch(windowsViews, /function renderHomeStats\(/, 'Windows dashboard removes the duplicate four-stat block')
+assert.doesNotMatch(windowsViews, /profile-avatar-wrap|change-avatar|pe-avatar/, 'Windows profile keeps one Little Energy identity')
+assert.match(windowsViews, /little-energy-turntable/, 'Windows profile editor exposes a draggable whole-look turntable')
+
+console.log('PASS | Profile identity, home density, native tabs, and whole-look preview regressions')

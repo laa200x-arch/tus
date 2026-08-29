@@ -1,5 +1,15 @@
 # 设计视觉验收（v2.1.3）
 
+## 2026-08-29：完整小能仔造型修复
+
+**final result: blocked（仅 iOS 视觉捕获）**
+
+- Windows Electron 实机截图：`win-app/smoke-out/02-home.png`，在真实登录后的首页检查。
+- 已修复：角色不再输出散件商品图；首页四张重复统计卡已移除；透明棋盘格背景已从 20 张完整角色 PNG 清除。
+- 已检查：首页 Hero 和情绪卡只渲染“情绪 + 单张完整造型”，无白色方块、无鞋裤覆盖角色。
+- Windows 资料页结构回归测试确认只保留小能仔身份和整套造型转台；桌面端继续使用侧栏，不复制 iOS 底栏。
+- iOS 的 `xcodebuild` 与模拟器不在当前 Windows 主机可用范围内；已添加 XCTest 与源级回归测试，待 GitHub macOS 工作流验证编译并完成 iOS 视觉复核。
+
 ## 验收输入
 
 - 参考：`assets/ui/reference/tus-full-design-v1.jpg`
