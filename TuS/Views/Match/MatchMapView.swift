@@ -53,8 +53,7 @@ struct AITabView: View {
     private var personalityCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
-                Image(systemName: "sparkles")
-                    .foregroundStyle(Theme.primary)
+                UIAssetImage(.messageAI, size: 22)
                 Text("职场人格")
                     .font(.subheadline)
                     .bold()
@@ -130,8 +129,7 @@ struct AITabView: View {
     private var moodTrendCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
-                Image(systemName: "chart.xyaxis.line")
-                    .foregroundStyle(Theme.secondary)
+                UIAssetImage(.toolStress, size: 22)
                 Text("最近 30 天情绪曲线")
                     .font(.subheadline)
                     .bold()
@@ -185,8 +183,7 @@ struct AITabView: View {
     private var moodSummaryCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
-                Image(systemName: "brain.head.profile")
-                    .foregroundStyle(Theme.primary)
+                UIAssetImage(.toolAI, size: 22)
                 Text("AI 情绪总结")
                     .font(.subheadline)
                     .bold()
@@ -249,8 +246,7 @@ struct AITabView: View {
     private var relationshipSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
-                Image(systemName: "person.2.wave.2")
-                    .foregroundStyle(Theme.secondary)
+                UIAssetImage(.toolRelationship, size: 22)
                 Text("人际洞察")
                     .font(.subheadline)
                     .bold()

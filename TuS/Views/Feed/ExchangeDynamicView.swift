@@ -5,6 +5,7 @@ struct ComplaintTabView: View {
     @EnvironmentObject private var store: MockDataStore
     @State private var mode: Mode
     @State private var showCompose = false
+    @State private var showSearch = false
 
     enum Mode: String, CaseIterable, Identifiable {
         case hot = "热点"
@@ -63,6 +64,12 @@ struct ComplaintTabView: View {
             }
         }
         .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button { showSearch = true } label: {
+                    UIAssetImage(.actionSearch, size: 18, tint: Theme.textSecondary)
+                }
+                .accessibilityLabel("搜索吐槽")
+            }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     showCompose = true
@@ -73,6 +80,9 @@ struct ComplaintTabView: View {
         }
         .sheet(isPresented: $showCompose) {
             ComplaintComposeView()
+        }
+        .sheet(isPresented: $showSearch) {
+            NavigationStack { HomeSearchView() }
         }
         .task {
             if store.isServerMode {
@@ -217,11 +227,15 @@ struct ComplaintCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
-                LittleEnergyAvatarView(
-                    moodID: LittleEnergyCatalog.normalizeMood(complaint.sentiment),
-                    outfit: ComplaintPresentation.outfit(for: complaint),
-                    size: 44
-                )
+                if complaint.isAnonymous {
+                    UIAssetImage(.avatarAnonymous, size: 44)
+                } else {
+                    LittleEnergyAvatarView(
+                        moodID: LittleEnergyCatalog.normalizeMood(complaint.sentiment),
+                        outfit: ComplaintPresentation.outfit(for: complaint),
+                        size: 44
+                    )
+                }
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
                         Text(complaint.authorName)
@@ -240,6 +254,14 @@ struct ComplaintCardView: View {
                         Text(Formatters.timeText(complaint.time))
                             .font(.caption2)
                             .foregroundStyle(Theme.textSecondary)
+                        Menu {
+                            ShareLink(item: complaint.content) { Text("分享") }
+                            if allowDelete {
+                                Button("删除", role: .destructive) { showDeleteConfirm = true }
+                            }
+                        } label: {
+                            UIAssetImage(.actionMore, size: 16, tint: Theme.textSecondary)
+                        }
                     }
                     if let colleagueName = complaint.colleagueName, !colleagueName.isEmpty {
                         HStack(spacing: 4) {
@@ -331,6 +353,15 @@ struct ComplaintCardView: View {
                 .font(.caption)
             }
             .buttonStyle(.plain)
+
+            ShareLink(item: complaint.content) {
+                HStack(spacing: 4) {
+                    UIAssetImage(.actionShare, size: 17, tint: Theme.textSecondary)
+                    Text("分享")
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                .font(.caption)
+            }
 
             Spacer()
 

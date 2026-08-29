@@ -47,6 +47,7 @@ app.whenReady().then(async () => {
   // 注入本地 server + 清 token
   await wc.executeJavaScript(`
     localStorage.removeItem('jiyu.token');
+    localStorage.setItem('jiyu.updateShown', '2.1.3');
     window.__errs = [];
     window.addEventListener('error', (e) => window.__errs.push('JS错误: ' + e.message + ' @' + (e.error && e.error.stack ? e.error.stack.split('\\n').slice(0,3).join(' | ') : (e.filename||'') + ':' + e.lineno)));
     window.addEventListener('unhandledrejection', (e) => window.__errs.push('Promise未捕获: ' + (e.reason && e.reason.message || e.reason) + ' @' + (e.reason && e.reason.stack ? e.reason.stack.split('\\n').slice(0,3).join(' | ') : '')));
@@ -70,7 +71,7 @@ app.whenReady().then(async () => {
   // 自动登录
   const loginResult = await wc.executeJavaScript(`
     (async () => {
-      document.getElementById('login-username').value = 'winapp_tester'
+      document.getElementById('login-username').value = 'aqing'
       document.getElementById('login-password').value = '123456'
       document.getElementById('login-submit').click()
       for (let i = 0; i < 40; i++) {
@@ -90,6 +91,15 @@ app.whenReady().then(async () => {
     const info = await wc.executeJavaScript(`({view: App.views.current, bodyLen: (document.querySelector('#view-container,#view,main,.content')||document.body).innerHTML.length, errs: window.__errs.length})`)
     await wc.capturePage().then((img) => fs.writeFileSync(path.join(OUT, file), img.toPNG()))
     console.log('VIEW', name, JSON.stringify(info))
+    if (name === 'home') {
+      const layers = await wc.executeJavaScript(`
+        [...document.querySelectorAll('#home-little-energy .little-energy-layer')].map((img) => {
+          const style = getComputedStyle(img)
+          return { className: img.className, src: img.getAttribute('src'), naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight, display: style.display, opacity: style.opacity, zIndex: style.zIndex }
+        })
+      `)
+      console.log('LITTLE_ENERGY_LAYERS', JSON.stringify(layers))
+    }
   }
 
   await snap('home', '02-home.png', `() => document.getElementById('home-feed') && document.getElementById('home-feed').innerText !== '加载中…'`)

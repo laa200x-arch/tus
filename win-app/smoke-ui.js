@@ -111,6 +111,22 @@ app.whenReady().then(async () => {
       })()
     `)
     console.log('V3_HOME', JSON.stringify(home))
+    // 发布入口：Windows 保留侧栏，打开四种发布动作而非复制手机底栏
+    const publish = await w.webContents.executeJavaScript(`
+      (async () => {
+        const button = document.getElementById('sidebar-publish')
+        if (!button) return { err: 'missing sidebar publish' }
+        button.click()
+        await new Promise((r) => setTimeout(r, 250))
+        const modal = document.getElementById('modal-box')
+        const mask = document.getElementById('modal-mask')
+        const count = modal ? modal.querySelectorAll('[data-publish]').length : 0
+        const open = !!mask && !mask.classList.contains('hidden')
+        document.querySelector('#modal-box [data-close]')?.click()
+        return { open, count }
+      })()
+    `)
+    console.log('V3_PUBLISH', JSON.stringify(publish))
     // v3 验证：消息中心抽屉（tabs + 通知）
     const notif = await w.webContents.executeJavaScript(`
       (async () => {
@@ -167,7 +183,8 @@ app.whenReady().then(async () => {
     const homeOk = home && !home.err && home.hasHero && home.statCount === 4 && home.hasMood &&
       home.hasComplaint && home.hasPersonality && home.hasColleagueSummary &&
       home.noBlockingSpinner && home.hasSettled
-    console.log('SMOKE_RESULT:', results.every((r) => r && !r.err && r.htmlLen > 0) && detail && !detail.err && detail.hasPersona && homeOk && errCount === 0 ? 'PASS' : 'FAIL')
+    const publishOk = publish && !publish.err && publish.open && publish.count === 4
+    console.log('SMOKE_RESULT:', results.every((r) => r && !r.err && r.htmlLen > 0) && detail && !detail.err && detail.hasPersona && homeOk && publishOk && errCount === 0 ? 'PASS' : 'FAIL')
   } catch (e) {
     console.log('SMOKE_EXEC_ERR:', e.message)
     console.log('SMOKE_RESULT: FAIL')

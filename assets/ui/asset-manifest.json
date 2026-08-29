@@ -207,7 +207,7 @@
       "windowsPath": "icons/ui_action_more.png",
       "canonicalPath": "assets/ui/icons/ui_action_more.png",
       "consumers": [
-        "TuS/Views/Components/Components.swift",
+        "TuS/Views/Feed/ExchangeDynamicView.swift",
         "TuS/Views/Profile/MineView.swift",
         "win-app/src/views.js"
       ],
@@ -231,7 +231,7 @@
       "windowsPath": "icons/ui_action_chevron.png",
       "canonicalPath": "assets/ui/icons/ui_action_chevron.png",
       "consumers": [
-        "TuS/Views/Home/HomeOverviewView.swift",
+        "TuS/Views/Home/HomeComplaintCard.swift",
         "TuS/Views/Profile/MineView.swift",
         "win-app/src/views.js"
       ],
@@ -255,8 +255,7 @@
       "windowsPath": "icons/ui_action_like.png",
       "canonicalPath": "assets/ui/icons/ui_action_like.png",
       "consumers": [
-        "TuS/Views/Components/Components.swift",
-        "TuS/Views/Home/HomeComplaintCard.swift",
+        "TuS/Views/Feed/ExchangeDynamicView.swift",
         "win-app/src/views.js"
       ],
       "iconifyName": "heart",
@@ -279,8 +278,7 @@
       "windowsPath": "icons/ui_action_comment.png",
       "canonicalPath": "assets/ui/icons/ui_action_comment.png",
       "consumers": [
-        "TuS/Views/Components/Components.swift",
-        "TuS/Views/Home/HomeComplaintCard.swift",
+        "TuS/Views/Feed/ExchangeDynamicView.swift",
         "win-app/src/views.js"
       ],
       "iconifyName": "chat-circle",
@@ -303,8 +301,7 @@
       "windowsPath": "icons/ui_action_share.png",
       "canonicalPath": "assets/ui/icons/ui_action_share.png",
       "consumers": [
-        "TuS/Views/Components/Components.swift",
-        "TuS/Views/Home/HomeComplaintCard.swift",
+        "TuS/Views/Feed/ExchangeDynamicView.swift",
         "win-app/src/views.js"
       ],
       "iconifyName": "share-network",
@@ -962,8 +959,7 @@
       "windowsPath": "icons/ui_avatar_anonymous.png",
       "canonicalPath": "assets/ui/icons/ui_avatar_anonymous.png",
       "consumers": [
-        "TuS/Views/Components/Components.swift",
-        "TuS/Views/Home/HomeComplaintCard.swift",
+        "TuS/Views/Feed/ExchangeDynamicView.swift",
         "win-app/src/views.js"
       ],
       "prompt": "Circular purple anonymous theatre-mask avatar with small cyan and orange accents.",

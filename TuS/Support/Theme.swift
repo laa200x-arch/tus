@@ -3,6 +3,8 @@ import SwiftUI
 /// 设计系统（紫色主题：主色紫罗兰 + 暖橙强调 + 浅紫灰背景，现代卡片风）
 /// 参考：主色 #6C5CE7 / 背景 #F5F6FC / 卡片纯白 / 强调橙 / 成功绿 / 大圆角胶囊
 enum Theme {
+    /// 全产品统一柔光底图；界面按自身布局决定缩放与透明度。
+    static let appBackgroundAsset = UIAsset.appBackground.image
     /// 主色：紫罗兰（主按钮、选中态、认证图标、信用环）
     static let primary = Color(red: 0.42, green: 0.36, blue: 0.91)   // #6C5CE7
     /// 深紫（渐变/头像底）

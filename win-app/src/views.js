@@ -278,7 +278,7 @@ async function renderColleagues() {
   const v = document.getElementById('view')
   v.innerHTML = `
     <div class="apple-header">
-      <div class="apple-title">👥 同事宇宙</div>
+      <div class="apple-title">${uiAssetImg('rowColleague', 'section-leading-asset', '')} 同事宇宙</div>
       <div class="apple-subtitle">我的同事 · 领导画像 · 关系地图</div>
     </div>
     <div class="cp-tabs" id="cu-tabs">
@@ -289,14 +289,14 @@ async function renderColleagues() {
     <div class="pet-section" style="margin-top:10px">
       <div class="pet-section-head">
         <span class="pet-section-title" id="cu-title">同事档案</span>
-        <button class="pet-edit-btn" id="colleague-add" style="width:auto;padding:0 14px;border-radius:999px;font-weight:700">＋ 添加</button>
+        <button class="pet-edit-btn" id="colleague-add" style="width:auto;padding:0 14px;border-radius:999px;font-weight:700">${uiAssetImg('actionAdd', 'inline-action-asset', '')} 添加</button>
       </div>
       <div id="colleague-list"></div>
     </div>
     <div class="pet-section">
       <div class="pet-section-head">
-        <span class="pet-section-title">我的公司</span>
-        <button class="pet-edit-btn" id="company-add" style="width:auto;padding:0 14px;border-radius:999px;font-weight:700">＋ 新建</button>
+        <span class="pet-section-title">${uiAssetImg('rowCompany', 'section-leading-asset', '')} 我的公司</span>
+        <button class="pet-edit-btn" id="company-add" style="width:auto;padding:0 14px;border-radius:999px;font-weight:700">${uiAssetImg('actionAdd', 'inline-action-asset', '')} 新建</button>
       </div>
       <div id="company-list"></div>
     </div>`
@@ -680,7 +680,7 @@ function renderMine() {
             </div>
             <div class="profile-info">
               <div class="row" style="gap:8px">
-                <span class="profile-name">${esc(u.userName)}</span>
+                <span class="profile-name">${esc(u.userName)}</span>${uiAssetImg('badgeLevel', 'profile-level-asset', '')}
               </div>
               <div class="profile-bio">@${esc(u.username || u.userName)}</div>
             </div>
@@ -712,6 +712,10 @@ function renderMine() {
       <div>
         <div class="card">
           <div class="card-title">账户与设置</div>
+          <div class="tool-row" id="tool-report">${uiAssetImg('toolReport', 'tool-icon asset-tool-icon', '')}情绪报告${uiAssetImg('actionChevron', 'tool-chevron', '')}</div>
+          <div class="tool-row" id="tool-ai">${uiAssetImg('toolAI', 'tool-icon asset-tool-icon', '')}AI 洞察${uiAssetImg('actionChevron', 'tool-chevron', '')}</div>
+          <div class="tool-row" id="tool-stress">${uiAssetImg('toolStress', 'tool-icon asset-tool-icon', '')}压力分析与打卡${uiAssetImg('actionChevron', 'tool-chevron', '')}</div>
+          <div class="tool-row" id="tool-relationship">${uiAssetImg('toolRelationship', 'tool-icon asset-tool-icon', '')}关系雷达${uiAssetImg('actionChevron', 'tool-chevron', '')}</div>
           <div class="tool-row" id="tool-rules">${uiAssetImg('toolReport', 'tool-icon asset-tool-icon', '')}社区规范${uiAssetImg('actionChevron', 'tool-chevron', '')}</div>
           <div class="tool-row" id="tool-mystatus">${uiAssetImg('profileHistory', 'tool-icon asset-tool-icon', '')}我的状态历史${uiAssetImg('actionChevron', 'tool-chevron', '')}</div>
           <div class="tool-row" id="tool-about">${uiAssetImg('brandTuS', 'tool-icon asset-tool-icon', '')}关于职场那些事${uiAssetImg('actionChevron', 'tool-chevron', '')}</div>
@@ -738,6 +742,10 @@ function renderMine() {
     e.target.value = ''
   })
   v.querySelector('#tool-mystatus').addEventListener('click', showMyStatuses)
+  v.querySelector('#tool-report').addEventListener('click', () => switchView('ai'))
+  v.querySelector('#tool-ai').addEventListener('click', () => switchView('ai'))
+  v.querySelector('#tool-stress').addEventListener('click', renderMoodCheckin)
+  v.querySelector('#tool-relationship').addEventListener('click', () => switchView('colleague'))
   v.querySelector('#tool-rules').addEventListener('click', () => showStaticText('社区规范', rulesText()))
   v.querySelector('#tool-about').addEventListener('click', () => showStaticText('关于职场那些事', aboutText()))
   v.querySelector('#tool-logout').addEventListener('click', () => {
@@ -860,6 +868,12 @@ function aboutText() {
 async function renderMessage() {
   const v = document.getElementById('view')
   v.innerHTML = `
+    <div class="message-category-strip">
+      <div class="message-category-item">${uiAssetImg('messageInteraction', 'message-category-asset', '')}<span>互动消息</span></div>
+      <div class="message-category-item">${uiAssetImg('messageSystem', 'message-category-asset', '')}<span>系统通知</span></div>
+      <div class="message-category-item">${uiAssetImg('messageAI', 'message-category-asset', '')}<span>AI 助手</span></div>
+      <div class="message-category-item">${uiAssetImg('messageUpdate', 'message-category-asset', '')}<span>版本更新</span></div>
+    </div>
     <div class="msg-tools">
       <div class="search-box">
         <input id="user-search" placeholder="🔍 搜索好友（昵称 / 用户名）" autocomplete="off">
@@ -1396,7 +1410,7 @@ function showNewMessagePopup(msg, conv) {
 App.views = {
   // v2
   renderHome, renderComplaint, renderAI, renderCompany, renderColleagueDetail,
-  showComplaintCompose,
+  showComplaintCompose, showPublishMenu,
   renderMoodCheckin, renderMoodTrends, renderPersonalityCard, renderRelationshipRadar,
   // 保留（被消息抽屉 / 保留视图调用）
   renderStatus, renderMessage, renderColleagues, renderMine, renderLogin,
@@ -1479,7 +1493,10 @@ function renderHomeHero(overview = App.state.homeOverview) {
           <input id="home-search-input" placeholder="搜索吐槽、同事或公司…" />
         </div>
       </div>
-      <div class="home-dash-hero-avatar" id="home-little-energy">${littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: currentOutfit(), className: 'little-energy-dash-hero' })}</div>
+      <div class="home-dash-hero-avatar" id="home-little-energy">
+        ${uiAssetImg('homeHeroDecoration', 'home-hero-decoration', '')}
+        ${littleEnergyAvatarHtml({ moodId: currentMoodId(), outfit: currentOutfit(), className: 'little-energy-dash-hero' })}
+      </div>
     </div>`
 }
 
@@ -1945,7 +1962,7 @@ async function openComplaintDetail(id) {
     const data = await fetchFeedComplaints('hot')
     const c = (data.complaints || []).find((x) => String(x.id) === String(id))
     if (c) {
-      openModal(`<div class="modal-title">吐槽详情</div>${complaintCardHtml(c)}`, (box) => {
+      openModal(`<div class="modal-title"><button class="asset-back-button" data-close>${uiAssetImg('actionBack', 'inline-action-asset', '')}</button>吐槽详情</div>${complaintCardHtml(c)}`, (box) => {
         bindComplaintCardActions(box)
       })
     } else toast('该吐槽已被删除')
@@ -1961,13 +1978,14 @@ function complaintCardHtml(c) {
   return `
     <div class="card complaint-card" data-cid="${c.id}">
       <div class="row">
-        <div class="complaint-avatar">${avatarHtml(c, 'little-energy-feed-avatar')}</div>
+        <div class="complaint-avatar">${c.isAnonymous ? uiAssetImg('avatarAnonymous', 'anonymous-avatar-asset', '') : avatarHtml(c, 'little-energy-feed-avatar')}</div>
         <div style="flex:1;min-width:0">
           <div class="feed-head">
             <span class="feed-author">${esc(c.authorName)}</span>
             <span class="card-sub">·</span>
             <span class="feed-time">${fmtTime(c.time)}</span>
             ${c.sentiment ? `<span class="card-sub">· ${esc(c.sentiment)}</span>` : ''}
+            <span class="spacer"></span><button class="cp-more-btn cp-act-btn" data-act="more" title="更多">${uiAssetImg('actionMore', 'cp-action-icon', '')}</button>
           </div>
           ${c.colleagueName ? `<div class="card-sub" style="margin-top:2px">@ ${esc(c.colleagueName)}</div>` : ''}
           <div class="complaint-content">${esc(c.content)}</div>
@@ -1980,6 +1998,7 @@ function complaintCardHtml(c) {
         <button class="cp-act-btn ${c.liked ? 'active' : ''}" data-act="like">${uiAssetImg('actionLike', 'cp-action-icon', '')} <span data-lc>${c.likeCount || 0}</span></button>
         <button class="cp-act-btn ${c.resonated ? 'active' : ''}" data-act="resonate">${uiAssetImg('actionComment', 'cp-action-icon', '')} <span data-rc>${c.resonanceCount || 0}</span> 共鸣</button>
         <button class="cp-act-btn" data-act="comment">${uiAssetImg('actionComment', 'cp-action-icon', '')} <span data-cc>${c.commentCount || 0}</span></button>
+        <button class="cp-act-btn" data-act="share">${uiAssetImg('actionShare', 'cp-action-icon', '')} 分享</button>
         ${c.userId === (App.state.user ? App.state.user.id : null) ? `<button class="cp-act-btn" data-act="del" title="删除">🗑</button>` : ''}
       </div>
     </div>`
@@ -2005,6 +2024,10 @@ function bindComplaintCardActions(root, opts = {}) {
         } catch (err) { toast(err.message) }
       } else if (act === 'comment') {
         showCommentPanel(cid, card)
+      } else if (act === 'share' || act === 'more') {
+        const text = card.querySelector('.complaint-content')?.textContent || ''
+        if (navigator.share) navigator.share({ title: '职场那些事', text }).catch(() => {})
+        else navigator.clipboard.writeText(text).then(() => toast('内容已复制')).catch(() => toast('暂时无法分享'))
       } else if (act === 'del') {
         if (!confirm('删除这条吐槽？')) return
         try {
@@ -2024,7 +2047,7 @@ async function showCommentPanel(cid, card) {
     <div id="cmt-list" class="cmt-list">加载中…</div>
     <div class="cmt-input-row">
       <input id="cmt-input" placeholder="说点什么…（≤300 字）" maxlength="300" />
-      <button class="btn btn-primary btn-sm" id="cmt-send">发送</button>
+      <button class="btn btn-primary btn-sm" id="cmt-send">${uiAssetImg('actionSend', 'inline-action-asset light-asset', '')}发送</button>
     </div>
   `, async (box) => {
     const list = box.querySelector('#cmt-list')
@@ -2069,6 +2092,34 @@ async function showCommentPanel(cid, card) {
     })
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') send.click() })
     load()
+  })
+}
+
+/* ---------- 桌面快捷发布：保留侧栏与宽屏弹窗，不复制手机底栏 ---------- */
+function showPublishMenu() {
+  const actions = [
+    ['complaint', 'publishComplaint', '发布吐槽', '吐槽一下，轻松一下'],
+    ['dynamic', 'publishDynamic', '记录情绪动态', '写下此刻的职场状态'],
+    ['mood', 'publishMood', '今日情绪打卡', '同步全局小能仔状态'],
+    ['colleague', 'publishColleague', '新增同事档案', '补充一位同事画像']
+  ]
+  openModal(`
+    <div class="modal-title">快捷发布</div>
+    <div class="desktop-publish-grid">
+      ${actions.map(([id, asset, title, subtitle]) => `<button class="desktop-publish-item" data-publish="${id}">
+        ${uiAssetImg(asset, 'desktop-publish-asset', '')}
+        <span><b>${title}</b><small>${subtitle}</small></span>
+        ${uiAssetImg('actionChevron', 'tool-chevron', '')}
+      </button>`).join('')}
+    </div>`, (box) => {
+    box.querySelectorAll('[data-publish]').forEach((button) => button.addEventListener('click', () => {
+      const action = button.dataset.publish
+      closeModal()
+      if (action === 'complaint') showComplaintCompose()
+      else if (action === 'dynamic') showStatusCompose()
+      else if (action === 'mood') renderMoodCheckin()
+      else if (action === 'colleague') showColleagueForm()
+    }))
   })
 }
 

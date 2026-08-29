@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// 应用主框架：5 项导航（首页 / 广场 / 中间发布 / 消息 / 我的）
-/// 中间发布按钮打开现有吐槽发布 Sheet，不是可选中页面；原 AI Tab 移除，
+/// 中间发布按钮打开统一发布面板，不是可选中页面；原 AI Tab 移除，
 /// AI 洞察通过首页人格卡与「我的」现有入口访问。
 enum HomeTab: Int, CaseIterable, Identifiable {
     case home = 0
@@ -76,7 +76,7 @@ struct ContentView: View {
             }
             .tag(HomeTab.plaza)
 
-            // 中间发布按钮：选中即弹出吐槽发布 Sheet，并回到上一个真实 Tab
+            // 中间发布按钮：选中即弹出统一发布面板，并回到上一个真实 Tab
             Color.clear
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .contentShape(Rectangle())
@@ -114,9 +114,7 @@ struct ContentView: View {
                 lastRealTab = newValue
             }
         }
-        .sheet(isPresented: $showCompose) {
-            ComplaintComposeView()
-        }
+        .sheet(isPresented: $showCompose) { PublishMenuView() }
         .task {
             await checkForUpdate()
             // 首次登录后询问聊天记录同步方式（之后可在「我的 → 设置」修改）
@@ -164,6 +162,162 @@ struct ContentView: View {
         let localVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
         if version.current != localVersion {
             updateInfo = version
+        }
+    }
+}
+
+private enum PublishAction: String, CaseIterable, Identifiable {
+    case complaint
+    case dynamic
+    case mood
+    case colleague
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .complaint: return "发布吐槽"
+        case .dynamic: return "记录情绪动态"
+        case .mood: return "今日情绪打卡"
+        case .colleague: return "新增同事档案"
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .complaint: return "吐槽一下，轻松一下"
+        case .dynamic: return "记录此刻的职场状态"
+        case .mood: return "选择小能仔今日情绪"
+        case .colleague: return "补充一位同事的画像"
+        }
+    }
+
+    var asset: UIAsset {
+        switch self {
+        case .complaint: return .publishComplaint
+        case .dynamic: return .publishDynamic
+        case .mood: return .publishMood
+        case .colleague: return .publishColleague
+        }
+    }
+}
+
+private struct PublishMenuView: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var action: PublishAction?
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 12) {
+                Text("选择你现在想记录的内容")
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                ForEach(PublishAction.allCases) { item in
+                    Button { action = item } label: {
+                        HStack(spacing: 14) {
+                            UIAssetImage(item.asset, size: 48)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(item.title)
+                                    .font(.headline)
+                                    .foregroundStyle(Theme.textPrimary)
+                                Text(item.subtitle)
+                                    .font(.caption)
+                                    .foregroundStyle(Theme.textSecondary)
+                            }
+                            Spacer()
+                            UIAssetImage(.actionChevron, size: 14, tint: Theme.textSecondary)
+                        }
+                        .padding(14)
+                        .background(RoundedRectangle(cornerRadius: 18).fill(Theme.cardBg))
+                        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.divider, lineWidth: 1))
+                    }
+                    .buttonStyle(.plain)
+                }
+                Spacer()
+            }
+            .padding(16)
+            .background(Theme.bg)
+            .navigationTitle("发布")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("关闭") { dismiss() }
+                }
+            }
+            .sheet(item: $action) { item in
+                switch item {
+                case .complaint: ComplaintComposeView()
+                case .dynamic: StatusComposeView()
+                case .mood: MoodCheckinView()
+                case .colleague: ColleagueEditView()
+                }
+            }
+        }
+    }
+}
+
+private struct StatusComposeView: View {
+    @EnvironmentObject private var store: MockDataStore
+    @Environment(\.dismiss) private var dismiss
+    @State private var content = ""
+    @State private var isSending = false
+    @State private var warning: String?
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("今天的职场状态")
+                    .font(.headline)
+                TextEditor(text: $content)
+                    .frame(minHeight: 180)
+                    .padding(8)
+                    .background(RoundedRectangle(cornerRadius: 14).fill(Theme.inputBg))
+                Text("将使用今天全局一致的小能仔情绪与服装发布。")
+                    .font(.caption)
+                    .foregroundStyle(Theme.textSecondary)
+                Spacer()
+                Button { submit() } label: {
+                    HStack {
+                        UIAssetImage(.actionSend, size: 18, tint: .white)
+                        Text(isSending ? "发布中…" : "发布动态")
+                    }
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(Capsule().fill(Theme.primary))
+                }
+                .disabled(content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSending)
+            }
+            .padding(16)
+            .navigationTitle("记录动态")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("取消") { dismiss() }
+                }
+            }
+            .alert("发布失败", isPresented: Binding(get: { warning != nil }, set: { if !$0 { warning = nil } })) {
+                Button("好的", role: .cancel) {}
+            } message: {
+                Text(warning ?? "")
+            }
+        }
+    }
+
+    private func submit() {
+        let text = content.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+        isSending = true
+        Task {
+            let result = await store.postStatus(content: text, mood: store.currentMoodID)
+            isSending = false
+            switch result {
+            case .sent: dismiss()
+            case .blocked(let message), .failed(let message): warning = message
+            }
         }
     }
 }

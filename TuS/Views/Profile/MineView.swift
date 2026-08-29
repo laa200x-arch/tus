@@ -20,6 +20,7 @@ struct MineView: View {
     // v3：「更多」并入「我的」→ 同事档案 / AI 洞察 入口
     @State private var showColleagues = false
     @State private var showAI = false
+    @State private var showMood = false
     @AppStorage("jiyu.syncHistory") private var syncHistory = true
 
     var body: some View {
@@ -35,12 +36,27 @@ struct MineView: View {
         .background(Theme.bg)
         .navigationTitle("我的")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Menu {
+                    Button("编辑资料") { showEdit = true }
+                    Button("关于职场那些事") {
+                        alertTitle = "关于职场那些事"
+                        alertMessage = "记录职场里的千奇百怪，也记录自己的情绪变化。"
+                        showAlert = true
+                    }
+                } label: {
+                    UIAssetImage(.actionMore, size: 18, tint: Theme.textSecondary)
+                }
+            }
+        }
         .sheet(isPresented: $showEdit) { ProfileEditView() }
         .sheet(isPresented: $showProfile) { NavigationStack { UserProfileView(user: store.currentUser) } }
         .sheet(isPresented: $showCompanyList) { CompanyListView() }
         .sheet(isPresented: $showMyStatuses) { MyComplaintsView() }
         .sheet(isPresented: $showColleagues) { NavigationStack { ColleagueTabView() } }
         .sheet(isPresented: $showAI) { NavigationStack { AITabView() } }
+        .sheet(isPresented: $showMood) { MoodCheckinView() }
         .alert(alertTitle, isPresented: $showAlert) {
             Button("好的", role: .cancel) {}
         } message: {
@@ -83,10 +99,13 @@ struct MineView: View {
                     .disabled(isUploadingAvatar)
                 }
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(store.currentUser.userName)
-                        .font(.title3)
-                        .bold()
-                        .foregroundStyle(Theme.textPrimary)
+                    HStack(spacing: 6) {
+                        Text(store.currentUser.userName)
+                            .font(.title3)
+                            .bold()
+                            .foregroundStyle(Theme.textPrimary)
+                        UIAssetImage(.badgeLevel, size: 22)
+                    }
                     Text(store.currentUser.bio.isEmpty ? "@\(store.currentUser.userName)" : store.currentUser.bio)
                         .font(.caption)
                         .foregroundStyle(Theme.textSecondary)
@@ -208,16 +227,15 @@ struct MineView: View {
                 .font(.subheadline)
                 .bold()
                 .foregroundStyle(Theme.textPrimary)
-            HStack(spacing: 12) {
-                statTile("\(store.colleagues.count)", "同事档案", asset: .rowColleague, color: Theme.primary) {
-                    showColleagues = true
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                statTile("\(store.myComplaints.count)", "我的吐槽", asset: .profileComplaints, color: Theme.primaryDeep) { showMyStatuses = true }
+                statTile("—", "我的收藏", asset: .profileFavorites, color: Theme.secondary) {
+                    alertTitle = "我的收藏"
+                    alertMessage = "收藏内容会在后续版本集中展示。"
+                    showAlert = true
                 }
-                statTile("\(store.companies.count)", "公司属性", asset: .rowCompany, color: Theme.secondary) {
-                    showCompanyList = true
-                }
-                statTile("\(store.myComplaints.count)", "我的吐槽", asset: .profileComplaints, color: Theme.primaryDeep) {
-                    showMyStatuses = true
-                }
+                statTile("\(store.statuses.count)", "我的动态", asset: .profilePosts, color: Theme.primary) { showMyStatuses = true }
+                statTile("30 天", "情绪记录", asset: .profileHistory, color: Theme.secondary) { showAI = true }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -251,9 +269,7 @@ struct MineView: View {
     private var settingsSection: some View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
-                Image(systemName: "clock.arrow.circlepath")
-                    .foregroundStyle(Theme.primary)
-                    .frame(width: 22)
+                UIAssetImage(.profileHistory, size: 22)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("聊天记录同步")
                         .font(.subheadline)
@@ -277,8 +293,13 @@ struct MineView: View {
 
     private var toolsSection: some View {
         VStack(spacing: 0) {
-            // v3：「更多」并入「我的」—— AI 洞察入口
+            toolRow(asset: .toolReport, title: "情绪报告") { showAI = true }
+            Divider().padding(.leading, 40)
             toolRow(asset: .toolAI, title: "AI 洞察") { showAI = true }
+            Divider().padding(.leading, 40)
+            toolRow(asset: .toolStress, title: "压力分析与打卡") { showMood = true }
+            Divider().padding(.leading, 40)
+            toolRow(asset: .toolRelationship, title: "关系雷达") { showColleagues = true }
             Divider().padding(.leading, 40)
             toolRow(asset: .rowColleague, title: "同事档案") { showColleagues = true }
             Divider().padding(.leading, 40)

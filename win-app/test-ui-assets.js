@@ -99,6 +99,34 @@ function validateSyncedFiles(manifest) {
   }
 }
 
+function validateConsumerUsage(manifest, platform) {
+  const swift = fs.readFileSync(path.join(projectRoot, 'TuS', 'Support', 'UIAsset.swift'), 'utf8')
+  const windows = fs.readFileSync(path.join(projectRoot, 'win-app', 'src', 'ui-assets.js'), 'utf8')
+  const swiftCases = new Map([...swift.matchAll(/case\s+(\w+)\s*=\s*"([^"]+)"/g)].map((match) => [match[2], match[1]]))
+  const windowsKeys = new Map([...windows.matchAll(/\s+(\w+):\s*'([^']+)'/g)].map((match) => [path.basename(match[2], '.png'), match[1]]))
+
+  const missing = []
+  for (const item of [...manifest.icons, ...manifest.backgrounds]) {
+    const consumers = item.consumers.filter((consumer) => platform === 'ios'
+      ? consumer.startsWith('TuS/')
+      : consumer.startsWith('win-app/'))
+    assert.ok(consumers.length > 0, `${item.name} has no ${platform} consumer`)
+    for (const consumer of consumers) {
+      const sourcePath = path.join(projectRoot, consumer)
+      assert.ok(fs.existsSync(sourcePath), `${item.name} consumer missing: ${consumer}`)
+      const source = fs.readFileSync(sourcePath, 'utf8')
+      if (platform === 'ios') {
+        const caseName = swiftCases.get(item.name)
+        if (!(caseName && (source.includes(`.${caseName}`) || source.includes(item.name)))) missing.push(`${consumer} -> ${item.name}`)
+      } else {
+        const key = windowsKeys.get(item.name)
+        if (!(source.includes(item.name) || (key && (source.includes(`'${key}'`) || source.includes(`"${key}"`))))) missing.push(`${consumer} -> ${item.name}`)
+      }
+    }
+  }
+  assert.deepEqual(missing, [], `${platform} consumers missing assets:\n${missing.join('\n')}`)
+}
+
 async function validateCanonicalFiles(manifest, filter) {
   const sharp = require('sharp')
   const entries = [...manifest.icons, ...manifest.backgrounds].filter(filter)
@@ -152,6 +180,8 @@ async function main() {
   }
 
   if (process.argv.includes('--synced')) validateSyncedFiles(manifest)
+  if (process.argv.includes('--ios-usage')) validateConsumerUsage(manifest, 'ios')
+  if (process.argv.includes('--windows-usage')) validateConsumerUsage(manifest, 'windows')
 
   const methodIndex = process.argv.indexOf('--method')
   const method = methodIndex >= 0 ? process.argv[methodIndex + 1] : null

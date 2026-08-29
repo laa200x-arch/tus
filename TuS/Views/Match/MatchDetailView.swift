@@ -42,7 +42,12 @@ struct ComplaintComposeView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") { dismiss() }
+                    Button { dismiss() } label: {
+                        HStack(spacing: 5) {
+                            UIAssetImage(.actionBack, size: 16, tint: Theme.primary)
+                            Text("取消")
+                        }
+                    }
                 }
             }
             .alert("发布失败", isPresented: $showAlert) {
@@ -275,7 +280,10 @@ struct ComplaintComposeView: View {
         Button {
             publish()
         } label: {
-            Text(submitting ? "发布中…" : "发布")
+            HStack(spacing: 7) {
+                UIAssetImage(.actionSend, size: 18, tint: .white)
+                Text(submitting ? "发布中…" : "发布")
+            }
                 .font(.headline)
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)

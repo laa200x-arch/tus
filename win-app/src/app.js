@@ -232,6 +232,7 @@ function bindTabs() {
   document.querySelectorAll('.tab').forEach((t) => t.addEventListener('click', () => {
     switchView(t.dataset.view)
   }))
+  document.getElementById('sidebar-publish')?.addEventListener('click', () => views.showPublishMenu())
   // 顶栏：用户下拉菜单
   document.getElementById('user-menu').addEventListener('click', (e) => {
     e.stopPropagation()

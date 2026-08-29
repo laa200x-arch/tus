@@ -534,9 +534,7 @@ struct ChatDetailView: View {
                             .tint(.white)
                             .frame(width: 38, height: 38)
                     } else {
-                        Image(systemName: "paperplane.fill")
-                            .font(.system(size: 15))
-                            .foregroundStyle(.white)
+                        UIAssetImage(.actionSend, size: 17, tint: .white)
                             .frame(width: 38, height: 38)
                             .background(Circle().fill(
                                 inputText.trimmingCharacters(in: .whitespaces).isEmpty && !isUploading

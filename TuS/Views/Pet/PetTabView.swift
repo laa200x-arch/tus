@@ -56,10 +56,13 @@ struct ColleagueTabView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("同事属性 · 公司属性")
-                .font(.title2)
-                .bold()
-                .foregroundStyle(Theme.textPrimary)
+            HStack(spacing: 9) {
+                UIAssetImage(.toolRelationship, size: 30)
+                Text("同事属性 · 公司属性")
+                    .font(.title2)
+                    .bold()
+                    .foregroundStyle(Theme.textPrimary)
+            }
             Text("给同事建个档案，给公司做个记录。四维标签，越记越清楚。")
                 .font(.caption)
                 .foregroundStyle(Theme.textSecondary)
@@ -357,7 +360,12 @@ struct ColleagueEditView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") { dismiss() }
+                    Button { dismiss() } label: {
+                        HStack(spacing: 5) {
+                            UIAssetImage(.actionBack, size: 16, tint: Theme.primary)
+                            Text("取消")
+                        }
+                    }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("保存") { save() }
@@ -483,7 +491,12 @@ struct CompanyEditView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") { dismiss() }
+                    Button { dismiss() } label: {
+                        HStack(spacing: 5) {
+                            UIAssetImage(.actionBack, size: 16, tint: Theme.primary)
+                            Text("取消")
+                        }
+                    }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("保存") { save() }
