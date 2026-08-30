@@ -62,6 +62,7 @@
 		B00000000000000000000004 /* HomeOverviewDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000105 /* HomeOverviewDecodingTests.swift */; };
 		B00000000000000000000005 /* HomeOverviewStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000106 /* HomeOverviewStoreTests.swift */; };
 		B00000000000000000000006 /* HomeNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000107 /* HomeNavigationTests.swift */; };
+		D00000000000000000000001 /* ComplaintFavoritesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00000000000000000000101 /* ComplaintFavoritesTests.swift */; };
 		C00000000000000000000002 /* UIAssetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000102 /* UIAssetTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -134,6 +135,7 @@
 		B00000000000000000000105 /* HomeOverviewDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeOverviewDecodingTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000106 /* HomeOverviewStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeOverviewStoreTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000107 /* HomeNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeNavigationTests.swift; sourceTree = "<group>"; };
+		D00000000000000000000101 /* ComplaintFavoritesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComplaintFavoritesTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -366,6 +368,7 @@
 				B00000000000000000000105 /* HomeOverviewDecodingTests.swift */,
 				B00000000000000000000106 /* HomeOverviewStoreTests.swift */,
 				B00000000000000000000107 /* HomeNavigationTests.swift */,
+				D00000000000000000000101 /* ComplaintFavoritesTests.swift */,
 			);
 			path = TuSTests;
 			sourceTree = "<group>";
@@ -472,6 +475,7 @@
 				B00000000000000000000004 /* HomeOverviewDecodingTests.swift in Sources */,
 				B00000000000000000000005 /* HomeOverviewStoreTests.swift in Sources */,
 				B00000000000000000000006 /* HomeNavigationTests.swift in Sources */,
+				D00000000000000000000001 /* ComplaintFavoritesTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

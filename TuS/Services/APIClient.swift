@@ -363,8 +363,10 @@ final class APIClient {
     }
 
     /// 吐槽广场 feed（sort: "hot" 热度 / "new" 最新；filter: recommend/new/anonymous/colleague/mine）
-    func fetchFeedComplaints(sort: String = "hot", filter: String = "recommend") async throws -> [ComplaintModel] {
-        let response: ComplaintsFeedResponse = try await request("/api/complaints/feed", query: ["sort": sort, "filter": filter])
+    func fetchFeedComplaints(sort: String = "hot", filter: String = "recommend", topic: String? = nil) async throws -> [ComplaintModel] {
+        var query = ["sort": sort, "filter": filter]
+        if let topic, !topic.isEmpty { query["topic"] = topic }
+        let response: ComplaintsFeedResponse = try await request("/api/complaints/feed", query: query)
         return response.complaints
     }
 
@@ -372,6 +374,18 @@ final class APIClient {
     func fetchMineComplaints() async throws -> [ComplaintModel] {
         let response: ComplaintsFeedResponse = try await request("/api/complaints/mine")
         return response.complaints
+    }
+
+    /// 已收藏吐槽
+    func fetchFavoriteComplaints() async throws -> [ComplaintModel] {
+        let response: ComplaintsFeedResponse = try await request("/api/complaints/favorites")
+        return response.complaints
+    }
+
+    /// 吐槽详情（作为评论页、收藏页等的唯一详情数据源）
+    func fetchComplaint(id: String) async throws -> ComplaintModel {
+        let response: ComplaintResponse = try await request("/api/complaints/\(id)")
+        return response.complaint
     }
 
     /// 热搜榜（top 10，按热度）
@@ -487,6 +501,13 @@ final class APIClient {
     func toggleLikeComplaint(id: String) async throws -> (liked: Bool, likeCount: Int) {
         let response: LikeToggleResponse = try await request("/api/complaints/\(id)/like", method: "POST")
         return (response.liked, response.likeCount)
+    }
+
+    /// 收藏（toggle），返回最新状态与计数
+    @discardableResult
+    func toggleFavoriteComplaint(id: String) async throws -> (favorited: Bool, favoriteCount: Int) {
+        let response: FavoriteToggleResponse = try await request("/api/complaints/\(id)/favorite", method: "POST")
+        return (response.favorited, response.favoriteCount)
     }
 
     /// 共鸣（toggle），返回最新状态与计数
@@ -610,6 +631,11 @@ private struct TopicsResponse: Decodable {
 private struct LikeToggleResponse: Decodable {
     let liked: Bool
     let likeCount: Int
+}
+
+private struct FavoriteToggleResponse: Decodable {
+    let favorited: Bool
+    let favoriteCount: Int
 }
 
 private struct ResonateToggleResponse: Decodable {

@@ -213,7 +213,7 @@ struct PersonalityTemplate: Codable, Identifiable {
     let desc: String
 }
 
-/// 吐槽广场 · 单条吐槽（计数与互动状态为 var，便于点赞/共鸣后本地更新）
+/// 吐槽广场 · 单条吐槽（计数与互动状态为 var，便于互动后本地更新）
 struct ComplaintModel: Codable, Identifiable, Hashable {
     let id: String
     let userId: String
@@ -230,14 +230,144 @@ struct ComplaintModel: Codable, Identifiable, Hashable {
     let sentiment: String?
     let aiExtracted: AIExtracted?
     var likeCount: Int
+    /// 收藏字段在旧版服务端中不存在，解码时默认成未收藏 / 0。
+    var favoriteCount: Int = 0
     var resonanceCount: Int
     var hotScore: Double
     var liked: Bool
+    var favorited: Bool = false
     var resonated: Bool
     /// 设计稿 v2.1：评论数 + 共鸣值%（= 共鸣/(赞+共鸣)，无互动为 0；可选兼容旧响应）
     var commentCount: Int?
     var resonanceRate: Int?
     let time: Date
+
+    private enum CodingKeys: String, CodingKey {
+        case id, userId, authorName, avatarSymbol, littleEnergyOutfit, isAnonymous, content
+        case colleagueId, colleagueName, category, behaviorTags, sentiment, aiExtracted
+        case likeCount, favoriteCount, resonanceCount, hotScore, liked, favorited, resonated
+        case commentCount, resonanceRate, time
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        userId = try container.decode(String.self, forKey: .userId)
+        authorName = try container.decode(String.self, forKey: .authorName)
+        avatarSymbol = try container.decode(String.self, forKey: .avatarSymbol)
+        littleEnergyOutfit = try container.decodeIfPresent(LittleEnergyOutfit.self, forKey: .littleEnergyOutfit)
+        isAnonymous = try container.decode(Bool.self, forKey: .isAnonymous)
+        content = try container.decode(String.self, forKey: .content)
+        colleagueId = try container.decodeIfPresent(String.self, forKey: .colleagueId)
+        colleagueName = try container.decodeIfPresent(String.self, forKey: .colleagueName)
+        category = try container.decodeIfPresent(String.self, forKey: .category)
+        behaviorTags = try container.decode([String].self, forKey: .behaviorTags)
+        sentiment = try container.decodeIfPresent(String.self, forKey: .sentiment)
+        aiExtracted = try container.decodeIfPresent(AIExtracted.self, forKey: .aiExtracted)
+        likeCount = try container.decode(Int.self, forKey: .likeCount)
+        favoriteCount = try container.decodeIfPresent(Int.self, forKey: .favoriteCount) ?? 0
+        resonanceCount = try container.decode(Int.self, forKey: .resonanceCount)
+        hotScore = try container.decode(Double.self, forKey: .hotScore)
+        liked = try container.decode(Bool.self, forKey: .liked)
+        favorited = try container.decodeIfPresent(Bool.self, forKey: .favorited) ?? false
+        resonated = try container.decode(Bool.self, forKey: .resonated)
+        commentCount = try container.decodeIfPresent(Int.self, forKey: .commentCount)
+        resonanceRate = try container.decodeIfPresent(Int.self, forKey: .resonanceRate)
+        time = try container.decode(Date.self, forKey: .time)
+    }
+
+    init(
+        id: String,
+        userId: String,
+        authorName: String,
+        avatarSymbol: String,
+        littleEnergyOutfit: LittleEnergyOutfit?,
+        isAnonymous: Bool,
+        content: String,
+        colleagueId: String?,
+        colleagueName: String?,
+        category: String?,
+        behaviorTags: [String],
+        sentiment: String?,
+        aiExtracted: AIExtracted?,
+        likeCount: Int,
+        favoriteCount: Int = 0,
+        resonanceCount: Int,
+        hotScore: Double,
+        liked: Bool,
+        favorited: Bool = false,
+        resonated: Bool,
+        commentCount: Int? = nil,
+        resonanceRate: Int? = nil,
+        time: Date
+    ) {
+        self.id = id
+        self.userId = userId
+        self.authorName = authorName
+        self.avatarSymbol = avatarSymbol
+        self.littleEnergyOutfit = littleEnergyOutfit
+        self.isAnonymous = isAnonymous
+        self.content = content
+        self.colleagueId = colleagueId
+        self.colleagueName = colleagueName
+        self.category = category
+        self.behaviorTags = behaviorTags
+        self.sentiment = sentiment
+        self.aiExtracted = aiExtracted
+        self.likeCount = likeCount
+        self.favoriteCount = favoriteCount
+        self.resonanceCount = resonanceCount
+        self.hotScore = hotScore
+        self.liked = liked
+        self.favorited = favorited
+        self.resonated = resonated
+        self.commentCount = commentCount
+        self.resonanceRate = resonanceRate
+        self.time = time
+    }
+}
+
+/// 收藏结果只在接口成功后统一写回三份已有列表，避免页面各自保留一份收藏状态。
+struct ComplaintFavoriteDecision {
+    struct Result {
+        let feed: [ComplaintModel]
+        let mine: [ComplaintModel]
+        let favorites: [ComplaintModel]
+    }
+
+    static func apply(
+        id: String,
+        favorited: Bool,
+        favoriteCount: Int,
+        feed: [ComplaintModel],
+        mine: [ComplaintModel],
+        favorites: [ComplaintModel],
+        candidate: ComplaintModel? = nil
+    ) -> Result {
+        func updated(_ complaint: ComplaintModel) -> ComplaintModel {
+            guard complaint.id == id else { return complaint }
+            var changed = complaint
+            changed.favorited = favorited
+            changed.favoriteCount = favoriteCount
+            return changed
+        }
+
+        let nextFeed = feed.map(updated)
+        let nextMine = mine.map(updated)
+        var nextFavorites = favorites.map(updated)
+        let canonical = nextFeed.first(where: { $0.id == id })
+            ?? nextMine.first(where: { $0.id == id })
+            ?? candidate.map(updated)
+            ?? nextFavorites.first(where: { $0.id == id })
+
+        if favorited, let canonical, !nextFavorites.contains(where: { $0.id == id }) {
+            nextFavorites.insert(canonical, at: 0)
+        } else if !favorited {
+            nextFavorites.removeAll { $0.id == id }
+        }
+
+        return Result(feed: nextFeed, mine: nextMine, favorites: nextFavorites)
+    }
 }
 
 /// 吐槽评论（设计稿卡片"评论 N"）

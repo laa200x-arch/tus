@@ -206,6 +206,7 @@ final class MockDataStore: ObservableObject {
         tagDict = Self.demoTagDict
         feedComplaints = []
         myComplaints = []
+        favoriteComplaints = []
         topics = []
         moodCheckedToday = false
         moodToday = nil
@@ -719,6 +720,7 @@ final class MockDataStore: ObservableObject {
     @Published var tagDict: TagDict = MockDataStore.demoTagDict
     @Published var feedComplaints: [ComplaintModel] = []     // 吐槽广场 feed
     @Published var myComplaints: [ComplaintModel] = []       // 我的吐槽
+    @Published var favoriteComplaints: [ComplaintModel] = [] // 已收藏吐槽
     @Published var topics: [TopicItem] = []                  // 热搜榜
     @Published var moodCheckedToday: Bool = false            // 今日是否已打卡
     @Published var moodToday: MoodCheckin?                   // 今日打卡内容
@@ -741,9 +743,11 @@ final class MockDataStore: ObservableObject {
         guard isServerMode else { return }
         async let feed = APIClient.shared.fetchFeedComplaints(sort: sort)
         async let mine = APIClient.shared.fetchMineComplaints()
+        async let favorites = APIClient.shared.fetchFavoriteComplaints()
         async let tops = APIClient.shared.fetchTopics()
         if let f = try? await feed { feedComplaints = f }
         if let m = try? await mine { myComplaints = m }
+        if let f = try? await favorites { favoriteComplaints = f }
         if let t = try? await tops { topics = t }
     }
 
@@ -810,6 +814,7 @@ final class MockDataStore: ObservableObject {
         }
         feedComplaints.removeAll { $0.id == id }
         myComplaints.removeAll { $0.id == id }
+        favoriteComplaints.removeAll { $0.id == id }
         topics.removeAll { $0.id == id }
     }
 
@@ -821,6 +826,22 @@ final class MockDataStore: ObservableObject {
         } else {
             let liked = !complaint.liked
             applyComplaintToggle(id: complaint.id, liked: liked, likeCount: complaint.likeCount + (liked ? 1 : -1))
+        }
+    }
+
+    /// 收藏（toggle）：接口确认后统一更新广场、我的与收藏列表。
+    func toggleFavorite(_ complaint: ComplaintModel) async {
+        if isServerMode {
+            guard let result = try? await APIClient.shared.toggleFavoriteComplaint(id: complaint.id) else { return }
+            applyComplaintFavorite(id: complaint.id, favorited: result.favorited, favoriteCount: result.favoriteCount, candidate: complaint)
+        } else {
+            let favorited = !complaint.favorited
+            applyComplaintFavorite(
+                id: complaint.id,
+                favorited: favorited,
+                favoriteCount: max(0, complaint.favoriteCount + (favorited ? 1 : -1)),
+                candidate: complaint
+            )
         }
     }
 
@@ -854,6 +875,21 @@ final class MockDataStore: ObservableObject {
             if let resonated { myComplaints[i].resonated = resonated }
             if let resonanceCount { myComplaints[i].resonanceCount = resonanceCount }
         }
+    }
+
+    private func applyComplaintFavorite(id: String, favorited: Bool, favoriteCount: Int, candidate: ComplaintModel) {
+        let changed = ComplaintFavoriteDecision.apply(
+            id: id,
+            favorited: favorited,
+            favoriteCount: favoriteCount,
+            feed: feedComplaints,
+            mine: myComplaints,
+            favorites: favoriteComplaints,
+            candidate: candidate
+        )
+        feedComplaints = changed.feed
+        myComplaints = changed.mine
+        favoriteComplaints = changed.favorites
     }
 
     /// 刷新今日打卡状态 + 30 天趋势
