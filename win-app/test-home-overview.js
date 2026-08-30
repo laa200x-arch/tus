@@ -19,9 +19,9 @@ assert.deepEqual(
   scriptOrder,
   [
     '../node_modules/socket.io-client/dist/socket.io.min.js',
-    'ui-assets.js', 'little-energy.js', 'api.js', 'views.js', 'app.js'
+    'ui-assets.js', 'little-energy.js', 'page-history.js', 'api.js', 'views.js', 'app.js'
   ],
-  'index.html 必须以打包顺序加载脚本（socket.io → ui-assets → little-energy → api → views → app）'
+  'index.html 必须以打包顺序加载脚本（socket.io → ui-assets → little-energy → page-history → api → views → app）'
 )
 
 /* ---------- 概览夹具（与服务端契约一致） ---------- */
