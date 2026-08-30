@@ -36,6 +36,14 @@ jobs:
         working-directory: win-app
         run: npm run dist
 
+      - name: Stage release asset with stable name
+        shell: pwsh
+        run: |
+          $version = '${{ steps.version.outputs.value }}'
+          $installer = Get-ChildItem 'win-app/dist/*Setup*.exe' | Select-Object -First 1
+          if (-not $installer) { throw 'NSIS installer was not produced' }
+          Copy-Item -LiteralPath $installer.FullName -Destination "win-app/dist/TuS-Setup-$version.exe" -Force
+
       - name: Publish installer
         uses: softprops/action-gh-release@v2
         with:
@@ -43,4 +51,4 @@ jobs:
           name: 职场那些事 Windows v${{ steps.version.outputs.value }}
           body: |
             v${{ steps.version.outputs.value }}：小能仔完整造型、吐槽收藏与详情、全页搜索/资料/发布流程更新。
-          files: win-app/dist/*Setup*.exe
+          files: win-app/dist/TuS-Setup-${{ steps.version.outputs.value }}.exe
