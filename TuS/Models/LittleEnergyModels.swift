@@ -157,6 +157,10 @@ enum LittleEnergyCatalog {
         moods.first(where: { $0.id == normalizeMood(value) }) ?? moods[0]
     }
 
+    static func completeAvatarAsset(moodID: String?, lookID: String) -> String {
+        "\(normalizeMood(moodID))-\(lookID)-front"
+    }
+
     private static func mood(_ id: String, _ label: String, _ legacyEmoji: String?, _ score: Int) -> LittleEnergyMood {
         LittleEnergyMood(
             id: id, label: label, legacyEmoji: legacyEmoji, score: score,

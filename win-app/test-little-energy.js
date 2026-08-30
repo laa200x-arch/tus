@@ -29,9 +29,9 @@ const userHtml = L.littleEnergyAvatarHtml({
   moodId: 'xnz_angry',
   outfit: { topId: 'top_hoodie', bottomId: 'bottom_jeans', shoesId: 'shoes_canvas', accessoryIds: ['accessory_hat'] }
 })
-assert.match(userHtml, /xnz_angry\.png/)
+assert.match(userHtml, /complete\/xnz_angry-casual-front\.png/)
 assert.equal(L.resolveLook({ topId: 'top_hoodie' }).id, 'casual', 'legacy hoodie choice resolves to one complete casual look')
-assert.match(userHtml, /looks\/casual-front\.png/, 'user renderer uses a complete integrated character look')
+assert.match(userHtml, /data-look="casual"/, 'user renderer resolves a complete integrated character look')
 assert.doesNotMatch(userHtml, /outfits\/(tops|bottoms|shoes|accessories)/, 'user renderer must never stack product cutouts over the mascot')
 assert.doesNotMatch(userHtml, /dark-colleague\.png/)
 
@@ -45,12 +45,11 @@ assert.deepEqual(L.littleEnergyEmojiPayload('xnz_happy'), {
 assert.equal(L.littleEnergyEmojiPayload('../bad'), null)
 
 const dressedAvatar = L.userAvatarHtml({ littleEnergyOutfit: { topId: 'top_hoodie' }, mood: 'xnz_angry' }, { className: 'avatar-sm' })
-assert.match(dressedAvatar, /xnz_angry\.png/)
-assert.match(dressedAvatar, /looks\/casual-front\.png/)
+assert.match(dressedAvatar, /complete\/xnz_angry-casual-front\.png/)
 assert.doesNotMatch(dressedAvatar, /avatarSymbol|👤/)
 const anonymousAvatar = L.userAvatarHtml({ isAnonymous: true, littleEnergyOutfit: { topId: 'top_hoodie' } })
 assert.match(anonymousAvatar, /data-mood="xnz_calm"/)
-assert.match(anonymousAvatar, /looks\/commute-front\.png/, 'anonymous avatar is deterministic and does not leak outfit')
+assert.match(anonymousAvatar, /complete\/xnz_calm-commute-front\.png/, 'anonymous avatar is deterministic and does not leak outfit')
 assert.equal(L.personalityTitle('🐟 摸鱼哲学家'), '摸鱼哲学家')
 assert.equal(L.personalityTitle('✨ 可靠同盟'), '可靠同盟')
 assert.equal(L.compatibleMoodPayload('😡'), 'xnz_angry')
@@ -71,8 +70,8 @@ for (const className of ['little-energy-feed-avatar', 'little-energy-comment-ava
 }
 assert.deepEqual(
   L.littleEnergyAssetSources('xnz_happy', { topId: 'top_jacket' }),
-  ['../assets/little-energy/emotions/xnz_happy.png', '../assets/little-energy/looks/street-front.png'],
-  'asset preload is limited to the emotion base plus exactly one complete look'
+  ['../assets/little-energy/complete/xnz_happy-street-front.png'],
+  'asset preload contains exactly one complete avatar image'
 )
 
 console.log('PASS | Windows Little Energy catalog, state, renderer, outfit and emoji contracts')

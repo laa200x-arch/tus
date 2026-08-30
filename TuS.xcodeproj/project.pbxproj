@@ -26,6 +26,7 @@
 		A00000000000000000000010 /* MatchDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000110 /* MatchDetailView.swift */; };
 		A00000000000000000000011 /* ExchangeDynamicView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000111 /* ExchangeDynamicView.swift */; };
 		A00000000000000000000012 /* MessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000112 /* MessageView.swift */; };
+		E00000000000000000000001 /* VersionNoticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E00000000000000000000101 /* VersionNoticeView.swift */; };
 		A00000000000000000000013 /* MineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000113 /* MineView.swift */; };
 		A00000000000000000000014 /* ProfileEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000114 /* ProfileEditView.swift */; };
 		A00000000000000000000015 /* ExposureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000115 /* ExposureView.swift */; };
@@ -97,6 +98,7 @@
 		A00000000000000000000110 /* MatchDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDetailView.swift; sourceTree = "<group>"; };
 		A00000000000000000000111 /* ExchangeDynamicView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeDynamicView.swift; sourceTree = "<group>"; };
 		A00000000000000000000112 /* MessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageView.swift; sourceTree = "<group>"; };
+		E00000000000000000000101 /* VersionNoticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersionNoticeView.swift; sourceTree = "<group>"; };
 		A00000000000000000000113 /* MineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MineView.swift; sourceTree = "<group>"; };
 		C00000000000000000000102 /* UIAssetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIAssetTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000114 /* ProfileEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileEditView.swift; sourceTree = "<group>"; };
@@ -329,6 +331,7 @@
 			isa = PBXGroup;
 			children = (
 				A00000000000000000000112 /* MessageView.swift */,
+				E00000000000000000000101 /* VersionNoticeView.swift */,
 				A00000000000000000000130 /* MiniAppsView.swift */,
 			);
 			path = Chat;
@@ -508,6 +511,7 @@
 				A00000000000000000000011 /* ExchangeDynamicView.swift in Sources */,
 				D00000000000000000000002 /* ComplaintDetailView.swift in Sources */,
 				A00000000000000000000012 /* MessageView.swift in Sources */,
+				E00000000000000000000001 /* VersionNoticeView.swift in Sources */,
 				A00000000000000000000029 /* MiniAppsView.swift in Sources */,
 				A00000000000000000000013 /* MineView.swift in Sources */,
 				A00000000000000000000014 /* ProfileEditView.swift in Sources */,
@@ -699,7 +703,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1.3;
+				MARKETING_VERSION = 2.1.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.tus.tucao;
 				PRODUCT_MODULE_NAME = TuS;
 				PRODUCT_NAME = TuS;
@@ -725,7 +729,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1.3;
+				MARKETING_VERSION = 2.1.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.tus.tucao;
 				PRODUCT_MODULE_NAME = TuS;
 				PRODUCT_NAME = TuS;

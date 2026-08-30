@@ -5,6 +5,7 @@ import SwiftUI
 /// 操作：私信沟通（一键进入聊天）
 struct UserProfileView: View {
     @EnvironmentObject private var store: MockDataStore
+    @Environment(\.dismiss) private var dismiss
     let initialUser: UserModel
     @State private var user: UserModel
 
@@ -17,6 +18,9 @@ struct UserProfileView: View {
         ScrollView {
             VStack(spacing: 16) {
                 profileCard
+                if user.id == store.currentUser.id {
+                    archiveSection
+                }
 
                 if user.id != store.currentUser.id {
                     NavigationLink {
@@ -37,6 +41,12 @@ struct UserProfileView: View {
         .background(Theme.bg)
         .navigationTitle(user.userName)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button("关闭") { dismiss() }
+                    .foregroundStyle(Theme.primary)
+            }
+        }
         .refreshable {
             if store.isServerMode {
                 user = await store.refreshUser(user)
@@ -56,7 +66,6 @@ struct UserProfileView: View {
                 outfit: user.littleEnergyOutfit,
                 size: 76
             )
-            AvatarView(user: user, size: 64)
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 6) {
                     Text(user.userName)
@@ -70,7 +79,6 @@ struct UserProfileView: View {
                         .foregroundStyle(Theme.textSecondary)
                 }
                 HStack(spacing: 8) {
-                    CreditBadgeView(score: user.creditScore)
                     if user.verification != .none {
                         Label(user.verification.rawValue, systemImage: "checkmark.seal.fill")
                             .font(.caption2)
@@ -84,6 +92,33 @@ struct UserProfileView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(RoundedRectangle(cornerRadius: 16).fill(Theme.cardBg))
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.divider, lineWidth: 1))
+    }
+
+    private var archiveSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("我的档案")
+                .font(.headline)
+                .foregroundStyle(Theme.textPrimary)
+            HStack(spacing: 10) {
+                archiveMetric("我的吐槽", "\(store.myComplaints.count)", .profileComplaints)
+                archiveMetric("我的收藏", "\(store.favoriteComplaints.count)", .profileFavorites)
+                archiveMetric("我的动态", "\(store.statuses.count)", .profilePosts)
+                archiveMetric("情绪记录", "30 天", .profileHistory)
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 16).fill(Theme.cardBg))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.divider, lineWidth: 1))
+    }
+
+    private func archiveMetric(_ title: String, _ value: String, _ asset: UIAsset) -> some View {
+        VStack(spacing: 5) {
+            UIAssetImage(asset, size: 24)
+            Text(value).font(.subheadline).bold().foregroundStyle(Theme.primary)
+            Text(title).font(.caption2).foregroundStyle(Theme.textSecondary).lineLimit(1)
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 

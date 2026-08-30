@@ -14,6 +14,7 @@ struct MessageView: View {
     @State private var searchResults: [UserModel] = []
     @State private var isSearching = false
     @State private var showMiniApps = false
+    @State private var showVersionNotice = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -72,6 +73,9 @@ struct MessageView: View {
         .sheet(isPresented: $showMiniApps) {
             MiniAppsView()
         }
+        .sheet(isPresented: $showVersionNotice) {
+            NavigationStack { VersionNoticeView() }
+        }
     }
 
     // MARK: - 会话列表（带过渡动画）
@@ -108,7 +112,10 @@ struct MessageView: View {
             messageCategory(.messageInteraction, "互动消息", Theme.secondary)
             messageCategory(.messageSystem, "系统通知", Theme.primary)
             messageCategory(.messageAI, "AI 助手", Theme.primaryDeep)
-            messageCategory(.messageUpdate, "版本通知", Theme.success)
+            Button { showVersionNotice = true } label: {
+                messageCategory(.messageUpdate, "版本通知", Theme.success)
+            }
+            .buttonStyle(.plain)
         }
         .padding(12)
         .background(RoundedRectangle(cornerRadius: 18).fill(Theme.cardBg))
@@ -318,6 +325,7 @@ struct ChatDetailView: View {
                 ProgressView("正在加载会话…")
                 Spacer()
             } else if let conversation {
+                messageReferenceHeader(conversation)
                 messagesList(conversation)
                 if let blockedBanner {
                     blockedBannerView(blockedBanner)
@@ -391,6 +399,33 @@ struct ChatDetailView: View {
     }
 
     // MARK: - 视图
+
+    private func messageReferenceHeader(_ conversation: Conversation) -> some View {
+        HStack(spacing: 12) {
+            LittleEnergyAvatarView(
+                moodID: LittleEnergyCatalog.defaultMoodID,
+                outfit: conversation.partner.littleEnergyOutfit,
+                size: 46
+            )
+            VStack(alignment: .leading, spacing: 3) {
+                Text(conversation.partner.userName)
+                    .font(.headline)
+                    .foregroundStyle(Theme.textPrimary)
+                HStack(spacing: 5) {
+                    Circle().fill(Theme.success).frame(width: 7, height: 7)
+                    Text("在线 · 同事互助中")
+                        .font(.caption)
+                        .foregroundStyle(Theme.textSecondary)
+                }
+            }
+            Spacer()
+            UIAssetImage(.actionMore, size: 20, tint: Theme.primary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(Theme.cardBg.opacity(0.92))
+        .overlay(alignment: .bottom) { Rectangle().fill(Theme.divider).frame(height: 1) }
+    }
 
     private func messagesList(_ conversation: Conversation) -> some View {
         ScrollViewReader { proxy in
@@ -544,10 +579,13 @@ struct ChatDetailView: View {
                 }
                 .disabled(inputText.trimmingCharacters(in: .whitespaces).isEmpty || isUploading)
             }
+            .padding(10)
+            .background(RoundedRectangle(cornerRadius: 24).fill(Theme.cardBg))
+            .shadow(color: Theme.primary.opacity(0.10), radius: 12, y: 4)
+            .accessibilityIdentifier("messageComposerShell")
         }
         .padding(10)
-        .background(Theme.cardBg)
-        .overlay(alignment: .top) { Rectangle().fill(Theme.divider).frame(height: 1) }
+        .background(Theme.bg)
         .onChange(of: pickerItem) { _ in
             handleMediaSelection(conversation)
         }

@@ -78,7 +78,7 @@ export function notificationsRouter(db) {
 
     // ---- 系统 ----
     const system = [
-      { type: 'version', title: '✨ 职场那些事 v2.1', text: '27 种小能仔情绪、全局状态同步、个人换装与聊天 Emoji 已上线。', action: '', actionView: '', time: now }
+      { type: 'version', title: '✨ 职场那些事 v2.1.6', text: '小能仔完整形象、消息界面、版本通知与吐槽详情收藏同步更新。', action: '查看版本', actionView: 'version', time: now }
     ]
 
     res.json({ total: interaction.length + ai.length + system.length, interaction, ai, system })

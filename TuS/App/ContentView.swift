@@ -41,7 +41,6 @@ struct ContentView: View {
     @State private var tabIndex: HomeTab = .home
     @State private var lastRealTab: HomeTab = .home
     @State private var showCompose = false
-    @State private var updateInfo: ServerVersion?
     @AppStorage("jiyu.syncHistory") private var syncHistory = true
     @AppStorage("jiyu.syncHistoryChosen") private var syncChosen = false
     @State private var showSyncChoice = false
@@ -106,7 +105,6 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showCompose) { PublishMenuView() }
         .task {
-            await checkForUpdate()
             // 首次登录后询问聊天记录同步方式（之后可在「我的 → 设置」修改）
             if TokenStore.token != nil && !syncChosen {
                 showSyncChoice = true
@@ -124,36 +122,8 @@ struct ContentView: View {
         } message: {
             Text("不同设备登录同一账号时，可同步之前的聊天记录。你可以随时在「我的 → 聊天记录同步」中修改。")
         }
-        .alert(
-            "发现新版本 \(updateInfo?.current ?? "")",
-            isPresented: Binding(
-                get: { updateInfo != nil },
-                set: { if !$0 { updateInfo = nil } }
-            )
-        ) {
-            Button("去下载") {
-                if let urlString = updateInfo?.downloadUrl,
-                   let url = URL(string: urlString) {
-                    UIApplication.shared.open(url)
-                }
-            }
-            Button("稍后再说", role: .cancel) {
-                updateInfo = nil
-            }
-        } message: {
-            Text(updateInfo?.updateMessage ?? "")
-        }
     }
 
-    /// 版本更新检查（方案：服务器 /api/version，有新版本则弹窗提示）
-    private func checkForUpdate() async {
-        guard TokenStore.token != nil else { return }
-        guard let version = try? await APIClient.shared.fetchVersion() else { return }
-        let localVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
-        if version.current != localVersion {
-            updateInfo = version
-        }
-    }
 }
 
 private enum PublishAction: String, CaseIterable, Identifiable {

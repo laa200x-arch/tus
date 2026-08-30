@@ -18,7 +18,7 @@
 
 ## 最新版本与下载
 
-- **Windows v2.1.5**：在 [GitHub Releases](https://github.com/laa200x-arch/tus/releases/latest) 下载 `TuS-Setup-2.1.5.exe`。
+- **Windows v2.1.6**：在 [GitHub Releases](https://github.com/laa200x-arch/tus/releases/latest) 下载最新的 `TuS-Setup-2.1.6.exe`。
 - **iOS**：每次推送 `main` 都会触发 [Build IPA](https://github.com/laa200x-arch/tus/actions/workflows/build-ipa.yml)；构建完成后从 Actions 的 Artifacts 下载 IPA。
 
 ### v2.1.5：小能仔、吐槽与全页体验更新
@@ -28,6 +28,15 @@
 - 黑化同事为独立形象，不参与换装；个人页只保留一个小能仔，移除信用分与重复头像。
 - 吐槽广场加入可持久化收藏、完整详情与评论页；热搜、搜索结果和首页吐槽都可直达详情。
 - 首页、资料、发帖、搜索等主要操作改为整页流程；Windows 保留适配桌面的导航布局，不照搬移动端窄屏结构。
+
+### v2.1.6：完整小能仔、消息与发布体验修复
+
+- 小能仔改为“情绪 × 造型”的单张完整资源：首页、打卡、聊天 Emoji 与资料页不再叠加衣服、鞋子或表情图层。
+- 资料页换装拖动改为实时转向；黑化同事保持独立形象且不参与换装。个人档案移入“查看主页”。
+- 吐槽详情、评论、收藏和热搜继续走全页；情绪统一显示中文标签，不再露出 `xnz_*` 内部标识。
+- 消息页改为轻紫聊天布局，保留图片、位置、语音等“更多”发送入口；版本更新改为“消息 → 版本通知”由用户主动查看。
+- iOS、Windows、安装包、窗口和托盘统一使用小能仔职场图标；启动页采用动态渐变。
+- 后端源码包含吐槽详情与收藏接口。线上服务需要同步部署 v2.1.6 后，旧服务的 `GET /api/complaints/:id` 404 才会消失。
 
 ---
 

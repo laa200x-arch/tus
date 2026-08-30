@@ -4,19 +4,16 @@ import SwiftUI
 /// 含品牌弹入动画（与 Windows 端启动动画风格一致）
 struct LaunchView: View {
     @State private var appeared = false
+    @State private var gradientShift = false
 
     var body: some View {
         VStack(spacing: 16) {
             ZStack {
-                Circle()
-                    .fill(Theme.gradient)
-                    .frame(width: 76, height: 76)
-                    .shadow(color: Theme.primary.opacity(0.35), radius: 16, y: 8)
-                    .scaleEffect(appeared ? 1 : 0.3)
-                    .opacity(appeared ? 1 : 0)
-                Image(systemName: "arrow.left.arrow.right")
-                    .font(.system(size: 32))
-                    .foregroundStyle(.white)
+                Image("ui_brand_tus")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 94, height: 94)
+                    .shadow(color: Theme.primary.opacity(0.28), radius: 20, y: 9)
                     .scaleEffect(appeared ? 1 : 0.3)
                     .opacity(appeared ? 1 : 0)
             }
@@ -32,10 +29,20 @@ struct LaunchView: View {
                 .opacity(appeared ? 1 : 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Theme.bg)
+        .background {
+            LinearGradient(
+                colors: [Theme.bg, Theme.primary.opacity(0.16), Theme.secondary.opacity(0.13), Theme.bg],
+                startPoint: gradientShift ? .topTrailing : .bottomLeading,
+                endPoint: gradientShift ? .bottomLeading : .topTrailing
+            )
+            .ignoresSafeArea()
+        }
         .onAppear {
             withAnimation(.spring(response: 0.55, dampingFraction: 0.65).delay(0.05)) {
                 appeared = true
+            }
+            withAnimation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true)) {
+                gradientShift = true
             }
         }
     }

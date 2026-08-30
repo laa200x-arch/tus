@@ -1010,7 +1010,7 @@ final class MockDataStore: ObservableObject {
 
     /// 情绪倾向 id（如 tired）→ 中文标签（好累）
     func label(forSentiment id: String) -> String {
-        tagDict.moods.first(where: { $0.id == id })?.label ?? id
+        tagDict.moods.first(where: { $0.id == id })?.label ?? LittleEnergyCatalog.mood(for: id).label
     }
 
     // MARK: - 档案

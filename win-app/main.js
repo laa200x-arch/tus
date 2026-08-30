@@ -7,6 +7,7 @@ nativeTheme.themeSource = 'light'
 
 let mainWindow = null
 let tray = null
+const appIconPath = path.join(__dirname, 'assets', 'branding', 'tus-office-app-icon.png')
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -15,6 +16,7 @@ function createWindow() {
     minWidth: 900,
     minHeight: 640,
     title: '职场那些事',
+    icon: appIconPath,
     autoHideMenuBar: true,
     webPreferences: {
       // 安全：禁用 Node 集成 + 开启上下文隔离，仅通过 preload 暴露最小 API（防 XSS→RCE）
@@ -77,7 +79,7 @@ function createWindow() {
 // 系统托盘（缩小窗口后驻留，继续接收消息）
 function createTray() {
   if (tray) return
-  const icon = nativeImage.createEmpty()
+  const icon = nativeImage.createFromPath(appIconPath)
   tray = new Tray(icon)
   tray.setToolTip('职场那些事')
   tray.setContextMenu(Menu.buildFromTemplate([

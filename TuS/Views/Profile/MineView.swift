@@ -25,7 +25,6 @@ struct MineView: View {
         ScrollView {
             VStack(spacing: 14) {
                 profileHeader
-                archiveSection
                 settingsSection
                 toolsSection
             }

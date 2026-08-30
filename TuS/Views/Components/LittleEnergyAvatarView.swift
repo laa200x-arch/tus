@@ -28,31 +28,15 @@ struct LittleEnergyAvatarView: View {
                     .accessibilityLabel("黑化小能仔同事")
             case .user:
                 let look = LittleEnergyLook.resolve(outfit: outfit)
-                ZStack {
-                    Image(look.frontAssetName)
-                        .resizable()
-                        .scaledToFit()
-                        .zIndex(1)
-                    layer(LittleEnergyCatalog.mood(for: moodID).assetName)
-                        // 情绪图只负责脸部；完整造型图始终负责身体。
-                        // 这样不会把整张情绪身体与整套服装重叠显示。
-                        .mask(alignment: .top) {
-                            Rectangle()
-                                .frame(height: size * 0.60)
-                                .frame(maxHeight: .infinity, alignment: .top)
-                        }
-                        .zIndex(2)
-                }
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel("小能仔，\(LittleEnergyCatalog.mood(for: moodID).label)")
+                Image(LittleEnergyCatalog.completeAvatarAsset(moodID: moodID, lookID: look.id))
+                    .resizable()
+                    .scaledToFit()
+                    .accessibilityLabel("小能仔，\(LittleEnergyCatalog.mood(for: moodID).label)")
             }
         }
         .frame(width: size, height: size)
     }
 
-    private func layer(_ assetName: String) -> some View {
-        Image(assetName).resizable().scaledToFit()
-    }
 }
 
 /// 资料页使用的四视角转台。它是预渲染的 3D 角色转台，不会把衣服散件叠在角色上。
@@ -60,6 +44,7 @@ struct LittleEnergyTurntableView: View {
     let outfit: LittleEnergyOutfit
     let size: CGFloat
     @State private var angle: LittleEnergyTurntableAngle = .front
+    @State private var dragStep = 0
 
     init(outfit: LittleEnergyOutfit, size: CGFloat = 180) {
         self.outfit = outfit
@@ -74,11 +59,15 @@ struct LittleEnergyTurntableView: View {
             .frame(width: size, height: size)
             .contentShape(Rectangle())
             .gesture(
-                DragGesture(minimumDistance: 12)
-                    .onEnded { value in
+                DragGesture(minimumDistance: 4)
+                    .onChanged { value in
                         guard abs(value.translation.width) > abs(value.translation.height) else { return }
-                        rotate(forward: value.translation.width < 0)
+                        let nextStep = Int(value.translation.width / 42)
+                        guard nextStep != dragStep else { return }
+                        rotate(forward: nextStep < dragStep)
+                        dragStep = nextStep
                     }
+                    .onEnded { _ in dragStep = 0 }
             )
             .accessibilityLabel("小能仔\(look.title)造型，向左或向右拖动查看角度")
     }
@@ -87,6 +76,8 @@ struct LittleEnergyTurntableView: View {
         let angles = LittleEnergyTurntableAngle.allCases
         let index = angles.firstIndex(of: angle) ?? 0
         let offset = forward ? 1 : -1
-        angle = angles[(index + offset + angles.count) % angles.count]
+        withAnimation(.easeOut(duration: 0.12)) {
+            angle = angles[(index + offset + angles.count) % angles.count]
+        }
     }
 }

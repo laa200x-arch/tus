@@ -63,17 +63,18 @@ function resolveLook(value) {
 }
 
 function assetPath(path) { return `../assets/little-energy/${path}` }
+function completeAvatarAsset(moodId, outfit) {
+  const mood = moodById.get(normalizeMood(moodId))
+  const look = resolveLook(outfit)
+  return assetPath(`complete/${mood.id}-${look.id}-front.png`)
+}
 function littleEnergyAvatarHtml({ moodId, outfit, role = 'user', className = '' } = {}) {
   if (role === 'darkColleague') {
     return `<div class="little-energy-avatar dark-colleague ${className}" aria-label="被吐槽同事小能仔"><img src="${assetPath('colleague/dark-colleague.png')}" alt=""></div>`
   }
   const mood = moodById.get(normalizeMood(moodId))
   const look = resolveLook(outfit)
-  const layers = [
-    ['look', `looks/${look.id}-front.png`],
-    ['emotion-head', `emotions/${mood.assetName}.png`]
-  ]
-  return `<div class="little-energy-avatar ${className}" data-mood="${mood.id}" data-look="${look.id}" aria-label="小能仔·${mood.label}，${look.label}">${layers.map(([kind, src]) => `<img class="little-energy-layer layer-${kind}" src="${assetPath(src)}" alt="">`).join('')}</div>`
+  return `<div class="little-energy-avatar ${className}" data-mood="${mood.id}" data-look="${look.id}" aria-label="小能仔·${mood.label}，${look.label}"><img class="little-energy-complete" src="${completeAvatarAsset(mood.id, look.outfit)}" alt=""></div>`
 }
 
 function littleEnergyEmojiPayload(id) {
@@ -116,14 +117,7 @@ function routeDataChange(currentView, renderers = {}) {
   if (currentView === 'mine') return renderers.mine && renderers.mine()
 }
 
-function littleEnergyAssetSources(moodId, outfit) {
-  const mood = moodById.get(normalizeMood(moodId))
-  const look = resolveLook(outfit)
-  return [
-    assetPath(`emotions/${mood.assetName}.png`),
-    assetPath(`looks/${look.id}-front.png`)
-  ]
-}
+function littleEnergyAssetSources(moodId, outfit) { return [completeAvatarAsset(moodId, outfit)] }
 
 function loadCanvasImage(src, imageFactory = () => new Image()) {
   return new Promise((resolve, reject) => {
@@ -136,7 +130,7 @@ function loadCanvasImage(src, imageFactory = () => new Image()) {
 }
 
 const api = {
-  MOODS, OUTFIT_CATALOG, DEFAULT_OUTFIT, LOOKS, normalizeMood, normalizeOutfit, resolveLook,
+  MOODS, OUTFIT_CATALOG, DEFAULT_OUTFIT, LOOKS, normalizeMood, normalizeOutfit, resolveLook, completeAvatarAsset,
   littleEnergyAvatarHtml, littleEnergyEmojiPayload, messageOutfit, applyMoodToday,
   routeDataChange, littleEnergyAssetSources, loadCanvasImage, userAvatarHtml,
   personalityTitle, compatibleMoodPayload

@@ -3,19 +3,13 @@ const fs = require('fs')
 const path = require('path')
 
 const css = fs.readFileSync(path.join(__dirname, 'src', 'style.css'), 'utf8')
+const littleEnergy = fs.readFileSync(path.join(__dirname, 'src', 'little-energy.js'), 'utf8')
+const completeDir = path.join(__dirname, 'assets', 'little-energy', 'complete')
 
-function rule(selector) {
-  const match = css.match(new RegExp(`${selector.replace('.', '\\.') }\\s*\\{([^}]*)\\}`))
-  assert.ok(match, `missing ${selector} layer rule`)
-  return match[1]
-}
+assert.match(littleEnergy, /function completeAvatarAsset\(/, 'complete-avatar resolver is required')
+assert.match(littleEnergy, /little-energy-complete/, 'avatar markup must render one complete image')
+assert.doesNotMatch(littleEnergy, /layer-emotion-head/, 'avatar markup must not layer a full emotion body over clothing')
+assert.doesNotMatch(css, /\.little-energy-avatar \.layer-(emotion-head|look)\s*\{/, 'CSS must not retain two full-body avatar layers')
+assert.ok(fs.existsSync(path.join(completeDir, 'xnz_happy-commute-front.png')), 'precomposed happy commute avatar must exist')
 
-const emotion = rule('.little-energy-avatar .layer-emotion-head')
-const look = rule('.little-energy-avatar .layer-look')
-
-assert.match(emotion, /z-index:\s*2/, 'emotion head must remain above the complete look shell')
-assert.match(emotion, /clip-path:\s*inset\(0\s+0\s+40%\s+0\)/, 'emotion must be cropped to its head region')
-assert.match(look, /z-index:\s*1/, 'one complete look shell must sit beneath the cropped emotion head')
-assert.doesNotMatch(css, /\.little-energy-avatar \.layer-(top|bottom|shoes|accessory)\s*\{/, 'no product-cutout layers may remain in the avatar CSS')
-
-console.log('PASS | Little Energy avatars render one complete look above the emotion base')
+console.log('PASS | Little Energy avatars use one complete precomposed asset')

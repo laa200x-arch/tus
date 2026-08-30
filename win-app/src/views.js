@@ -102,6 +102,7 @@ function renderContentPage(target) {
   if (target.page === 'complaint-detail') return renderComplaintDetailPage(target.complaintID, target.focusComments)
   if (target.page === 'complaint-compose') return renderComplaintComposePage()
   if (target.page === 'profile-edit') return renderProfileEditorPage()
+  if (target.page === 'version-notice') return renderVersionNoticePage()
   switchView('complaint')
 }
 function bindModalMask() {
@@ -819,17 +820,28 @@ function renderProfileEditorPage() {
       redrawOutfit()
     }))
     redrawOutfit()
+    for (const look of LOOKS) for (const angle of angles) {
+      const image = new Image()
+      image.src = `../assets/little-energy/looks/${look.id}-${angle}.png`
+    }
     let dragStart = null
+    let dragStep = 0
     preview.addEventListener('pointerdown', (event) => {
       dragStart = event.clientX
+      dragStep = 0
       preview.setPointerCapture?.(event.pointerId)
     })
-    preview.addEventListener('pointerup', (event) => {
-      if (dragStart == null || Math.abs(event.clientX - dragStart) < 16) return
-      angleIndex = (angleIndex + (event.clientX < dragStart ? 1 : angles.length - 1)) % angles.length
-      dragStart = null
+    preview.addEventListener('pointermove', (event) => {
+      if (dragStart == null) return
+      const nextStep = Math.trunc((event.clientX - dragStart) / 42)
+      if (!nextStep || nextStep === dragStep) return
+      const distance = nextStep - dragStep
+      angleIndex = (angleIndex + (distance < 0 ? 1 : angles.length - 1) + angles.length) % angles.length
+      dragStep = nextStep
       redrawOutfit()
     })
+    preview.addEventListener('pointerup', () => { dragStart = null; dragStep = 0 })
+    preview.addEventListener('pointercancel', () => { dragStart = null; dragStep = 0 })
     box.querySelector('#pe-save').addEventListener('click', async () => {
       const nickname = box.querySelector('#pe-nickname').value.trim()
       if (!nickname) return toast('昵称不能为空')
@@ -890,7 +902,7 @@ async function renderMessage() {
       <div class="message-category-item">${uiAssetImg('messageInteraction', 'message-category-asset', '')}<span>互动消息</span></div>
       <div class="message-category-item">${uiAssetImg('messageSystem', 'message-category-asset', '')}<span>系统通知</span></div>
       <div class="message-category-item">${uiAssetImg('messageAI', 'message-category-asset', '')}<span>AI 助手</span></div>
-      <div class="message-category-item">${uiAssetImg('messageUpdate', 'message-category-asset', '')}<span>版本更新</span></div>
+      <button class="message-category-item" id="message-version-notice">${uiAssetImg('messageUpdate', 'message-category-asset', '')}<span>版本通知</span></button>
     </div>
     <div class="msg-tools">
       <div class="search-box">
@@ -901,7 +913,7 @@ async function renderMessage() {
     </div>
     <div class="chat-layout">
       <div class="chat-list-panel" id="convo-list"></div>
-      <div class="chat-main" id="chat-main">
+      <div class="chat-main message-reference-main" id="chat-main">
         <div class="chat-head" id="chat-head"><span class="card-sub">选择左侧会话开始聊天</span></div>
         <div class="chat-messages" id="chat-messages"></div>
         <div class="chat-input" id="chat-input"></div>
@@ -909,7 +921,24 @@ async function renderMessage() {
     </div>`
   bindUserSearch()
   v.querySelector('#mini-apps-btn').addEventListener('click', showMiniApps)
+  v.querySelector('#message-version-notice').addEventListener('click', () => pushContentPage({ page: 'version-notice' }))
   await renderConvoList()
+}
+
+function renderVersionNoticePage() {
+  setContentPage({ page: 'version-notice' })
+  const notice = App.state.versionNotice || JSON.parse(localStorage.getItem('jiyu.versionNotice') || 'null')
+  const v = document.getElementById('view')
+  v.innerHTML = `
+    <div class="row" style="margin-bottom:16px"><button class="btn btn-outline btn-sm" data-page-back>${uiAssetImg('actionBack', 'inline-action-asset', '')}返回</button><span class="section-title" style="margin:0 0 0 10px">版本通知</span></div>
+    <section class="card version-notice-page">
+      ${uiAssetImg('messageUpdate', 'version-notice-icon', '')}
+      <div><div class="card-title">${notice ? `发现新版本 ${esc(notice.current)}` : '当前已是最新版本'}</div>
+      <div class="card-sub">${notice ? esc(notice.updateMessage || '') : '后续更新会在这里通知，你可自行选择下载。'}</div></div>
+      ${notice?.downloadUrl ? '<button class="btn btn-primary" id="version-download">查看下载</button>' : ''}
+    </section>`
+  v.querySelector('[data-page-back]').addEventListener('click', popContentPage)
+  v.querySelector('#version-download')?.addEventListener('click', () => window.open(notice.downloadUrl, '_blank'))
 }
 
 function bindUserSearch() {
@@ -998,7 +1027,17 @@ async function showChat(conv) {
   const head = document.getElementById('chat-head')
   const msgs = document.getElementById('chat-messages')
   const input = document.getElementById('chat-input')
-  head.innerHTML = `${avatarHtml(conv.partner, 'avatar avatar-sm')} <span>${esc(conv.partner.userName)}</span>`
+  head.innerHTML = `<div class="message-reference-header">
+    <button class="message-reference-back" id="chat-reference-back" title="返回会话">${uiAssetImg('actionBack', 'inline-action-asset', '')}</button>
+    <div class="message-reference-person">${avatarHtml(conv.partner, 'little-energy-mini')}<div><strong>${esc(conv.partner.userName)}</strong><span><i></i>在线 · 同事互助中</span></div></div>
+    <button class="message-reference-more" title="更多">${uiAssetImg('actionMore', 'inline-action-asset', '')}</button>
+  </div>`
+  head.querySelector('#chat-reference-back').addEventListener('click', () => {
+    App.state.activeConversation = null
+    head.innerHTML = '<span class="card-sub">选择左侧会话开始聊天</span>'
+    msgs.innerHTML = ''
+    input.innerHTML = ''
+  })
   msgs.innerHTML = '<div class="empty">加载中…</div>'
   input.innerHTML = buildChatInput(conv)
   bindChatInput(conv)
@@ -1052,27 +1091,33 @@ function messageHtml(m, conv) {
     </div>`
   }
   const bubble = media + (m.text && m.mediaType !== 'little_energy_emoji' ? `<div>${esc(m.text)}</div>` : '')
-  return `<div class="msg ${m.senderIsMe ? 'me' : 'them'}"><div class="msg-bubble">${bubble}</div></div>`
+  const avatar = m.senderIsMe
+    ? avatarHtml(App.state.user, 'little-energy-mini')
+    : avatarHtml(conv && conv.partner, 'little-energy-mini')
+  return `<div class="msg ${m.senderIsMe ? 'me' : 'them'}">${m.senderIsMe ? '' : avatar}<div class="msg-bubble">${bubble}</div>${m.senderIsMe ? avatar : ''}</div>`
 }
 
 function playAudio(url) { openFullscreen(`<audio src="${url}" controls autoplay style="width:60vw"></audio>`) }
 
 function buildChatInput(conv) {
   return `
-    <div class="chat-tools">
+    <div class="chat-composer-shell">
+    <div class="chat-tools" id="ci-tools">
       <button class="icon-btn" id="ci-location" title="发送我的位置">📍</button>
       <button class="icon-btn" id="ci-image" title="发送图片">🖼</button>
       <button class="icon-btn" id="ci-video" title="发送视频">🎬</button>
       <button class="icon-btn" id="ci-camera" title="拍照发送">📷</button>
       <button class="icon-btn" id="ci-voice" title="语音消息">🎤</button>
-      <button class="icon-btn" id="ci-little-energy" title="小能仔 Emoji">小能仔</button>
       <input type="file" id="ci-image-file" accept="image/*" hidden>
       <input type="file" id="ci-video-file" accept="video/*" hidden>
       <span id="ci-recording" class="recording-indicator hidden"><span class="recording-dot"></span>录音中…</span>
     </div>
-    <div id="ci-emoji-panel" class="little-energy-emoji-panel hidden">${MOODS.map((m) => moodChoiceHtml(m, 'emoji-choice')).join('')}</div>
-    <textarea id="ci-text" placeholder="发送消息" rows="1"></textarea>
-    <button class="btn btn-primary" id="ci-send" disabled>发送</button>`
+    <button class="chat-composer-emoji icon-btn" id="ci-little-energy" title="小能仔 Emoji">${uiAssetImg('messageAI', 'inline-action-asset', '')}</button>
+    <textarea id="ci-text" placeholder="说点什么…" rows="1"></textarea>
+    <button class="chat-composer-more icon-btn" id="ci-more" title="更多发送方式">${uiAssetImg('actionAdd', 'inline-action-asset', '')}</button>
+    <button class="chat-composer-send" id="ci-send" disabled>${uiAssetImg('actionSend', 'inline-action-asset light-asset', '')}</button>
+    </div>
+    <div id="ci-emoji-panel" class="little-energy-emoji-panel hidden">${MOODS.map((m) => moodChoiceHtml(m, 'emoji-choice')).join('')}</div>`
 }
 
 function bindChatInput(conv) {
@@ -1081,9 +1126,11 @@ function bindChatInput(conv) {
   const recording = document.getElementById('ci-recording')
   const fileImage = document.getElementById('ci-image-file')
   const fileVideo = document.getElementById('ci-video-file')
+  const tools = document.getElementById('ci-tools')
   text.addEventListener('input', () => { sendBtn.disabled = !text.value.trim() })
   text.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } })
   sendBtn.addEventListener('click', send)
+  document.getElementById('ci-more').addEventListener('click', () => tools.classList.toggle('expanded'))
   document.getElementById('ci-location').addEventListener('click', () => {
     if (!navigator.geolocation) return toast('当前环境不支持定位')
     toast('正在获取位置…')
@@ -1128,7 +1175,7 @@ function bindChatInput(conv) {
   document.getElementById('ci-camera').addEventListener('click', () => startCamera(conv))
   document.getElementById('ci-voice').addEventListener('click', () => toggleVoice(conv, recording))
   const emojiPanel = document.getElementById('ci-emoji-panel')
-  document.getElementById('ci-little-energy').addEventListener('click', () => emojiPanel.classList.toggle('hidden'))
+  document.querySelectorAll('#ci-little-energy').forEach((button) => button.addEventListener('click', () => emojiPanel.classList.toggle('hidden')))
   emojiPanel.querySelectorAll('.emoji-choice').forEach((button) => button.addEventListener('click', async () => {
     const payload = littleEnergyEmojiPayload(button.dataset.mood)
     if (!payload) return
@@ -1457,6 +1504,10 @@ async function ensureDict() {
 }
 function getDict() { return App.state.dict || { colleagueTypes: [], behaviorTags: [], moods: [], stressSources: [], personalityTemplates: [] } }
 function findById(arr, id) { return (arr || []).find((x) => x.id === id || String(x.id) === String(id)) }
+function sentimentLabel(value) {
+  const mood = MOODS.find((item) => item.id === normalizeMood(value))
+  return mood ? mood.label : ''
+}
 
 /* ============================================================
  * 首页（桌面 Dashboard）
@@ -1888,7 +1939,7 @@ async function renderSearch(q = '') {
       html += `<div class="search-result-section">吐槽 <span>${r.complaints.length}</span></div>` +
         r.complaints.map((c) => `<button type="button" class="card search-hit search-hit-button" data-cid="${c.id}">
           <div class="complaint-content">${esc(c.snippet)}</div>
-          <div class="card-sub">${c.isAnonymous ? '匿名' : ''}${c.category ? ' · ' + esc(c.category) : ''}${c.sentiment ? ' · ' + esc(c.sentiment) : ''}</div>
+          <div class="card-sub">${c.isAnonymous ? '匿名' : ''}${c.category ? ' · ' + esc(c.category) : ''}${c.sentiment ? ' · ' + esc(sentimentLabel(c.sentiment)) : ''}</div>
         </button>`).join('')
     }
     if (r.colleagues.length) {
@@ -2015,7 +2066,7 @@ async function loadTopics(body) {
             <div class="topic-rank" style="background:${i < 3 ? '#7c4dff' : '#a8a4b8'}">${i + 1}</div>
             <div class="topic-body">
               <div class="topic-text">${esc(t.snippet)}</div>
-              <div class="topic-meta">${t.sentiment ? `<span>${t.sentiment}</span> · ` : ''}<span>${t.resonanceCount} 人共鸣 · ${t.likeCount} 赞</span></div>
+              <div class="topic-meta">${t.sentiment ? `<span>${esc(sentimentLabel(t.sentiment))}</span> · ` : ''}<span>${t.resonanceCount} 人共鸣 · ${t.likeCount} 赞</span></div>
             </div>
             <div class="topic-hot">🔥 ${t.hotScore.toFixed(0)}</div>
           </div>`).join('')}

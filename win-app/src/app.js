@@ -211,22 +211,12 @@ function afterEnterApp() {
 async function checkVersion() {
   const v = await fetchVersion()
   if (!v) return
-  if (v.current !== '1.0') {
-    // 无新版本（本机已提示过该版本）不再弹窗；服务器 current 变化后才会再次提示
-    if (localStorage.getItem('jiyu.updateShown') === String(v.current)) return
-    localStorage.setItem('jiyu.updateShown', String(v.current))
-    openModal(`<div class="modal-title">发现新版本 ${esc(v.current)}</div>
-      <div class="card-sub" style="line-height:1.8">${esc(v.updateMessage)}</div>
-      <div class="modal-actions">
-        <button class="btn btn-primary" id="ver-goto">去下载</button>
-        <button class="btn btn-outline" data-close>稍后再说</button>
-      </div>`, (box) => {
-      box.querySelector('#ver-goto').addEventListener('click', () => {
-        const win = window.open('', '_blank')
-        if (win) win.location = v.downloadUrl
-      })
-    })
-  }
+  if (v.current !== '1.0') storeVersionNotice(v)
+}
+
+function storeVersionNotice(version) {
+  App.state.versionNotice = version
+  localStorage.setItem('jiyu.versionNotice', JSON.stringify(version))
 }
 
 /* ---------- Tab 切换 ---------- */
