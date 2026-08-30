@@ -70,8 +70,8 @@ function littleEnergyAvatarHtml({ moodId, outfit, role = 'user', className = '' 
   const mood = moodById.get(normalizeMood(moodId))
   const look = resolveLook(outfit)
   const layers = [
-    ['emotion', `emotions/${mood.assetName}.png`],
-    ['look', `looks/${look.id}-front.png`]
+    ['look', `looks/${look.id}-front.png`],
+    ['emotion-head', `emotions/${mood.assetName}.png`]
   ]
   return `<div class="little-energy-avatar ${className}" data-mood="${mood.id}" data-look="${look.id}" aria-label="小能仔·${mood.label}，${look.label}">${layers.map(([kind, src]) => `<img class="little-energy-layer layer-${kind}" src="${assetPath(src)}" alt="">`).join('')}</div>`
 }

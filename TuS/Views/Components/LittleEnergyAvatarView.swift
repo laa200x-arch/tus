@@ -29,17 +29,19 @@ struct LittleEnergyAvatarView: View {
             case .user:
                 let look = LittleEnergyLook.resolve(outfit: outfit)
                 ZStack {
-                    layer(LittleEnergyCatalog.mood(for: moodID).assetName)
                     Image(look.frontAssetName)
                         .resizable()
                         .scaledToFit()
-                        // 完整造型素材保留在同一张图中；只露出身体部分，
-                        // 让 27 种情绪底图持续控制脸部表情。
-                        .mask(alignment: .bottom) {
+                        .zIndex(1)
+                    layer(LittleEnergyCatalog.mood(for: moodID).assetName)
+                        // 情绪图只负责脸部；完整造型图始终负责身体。
+                        // 这样不会把整张情绪身体与整套服装重叠显示。
+                        .mask(alignment: .top) {
                             Rectangle()
-                                .frame(height: size * 0.56)
-                                .frame(maxHeight: .infinity, alignment: .bottom)
+                                .frame(height: size * 0.60)
+                                .frame(maxHeight: .infinity, alignment: .top)
                         }
+                        .zIndex(2)
                 }
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("小能仔，\(LittleEnergyCatalog.mood(for: moodID).label)")
