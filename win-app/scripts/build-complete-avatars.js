@@ -14,6 +14,7 @@ const emotionRoot = path.join(appRoot, 'assets', 'little-energy', 'emotions')
 const lookRoot = path.join(appRoot, 'assets', 'little-energy', 'looks')
 const winOutput = path.join(appRoot, 'assets', 'little-energy', 'complete')
 const iosOutput = path.join(workspaceRoot, 'TuS', 'Assets.xcassets', 'LittleEnergy', 'complete')
+const faceScale = 0.86
 // These bounds deliberately exclude the purple helmet and body from the mood
 // art. Only the expression-bearing white facial panel is transferred.
 function assetName(moodID, lookID) { return `${moodID}-${lookID}-front` }
@@ -74,9 +75,11 @@ async function buildOne(mood, look) {
   const name = assetName(mood.id, look.id)
   const lookFile = path.join(lookRoot, `${look.id}-front.png`)
   const target = await faceBounds(lookFile, 0.36)
-  const face = await facePanel(path.join(emotionRoot, `${mood.assetName}.png`), target)
+  const faceWidth = Math.round(target.width * faceScale)
+  const faceHeight = Math.round(target.height * faceScale)
+  const face = await facePanel(path.join(emotionRoot, `${mood.assetName}.png`), { width: faceWidth, height: faceHeight })
   const output = await sharp(lookFile)
-    .composite([{ input: face, left: target.left, top: target.top }])
+    .composite([{ input: face, left: target.left + Math.round((target.width - faceWidth) / 2), top: target.top + Math.round((target.height - faceHeight) / 2) }])
     .png({ compressionLevel: 9 }).toBuffer()
   await fs.promises.writeFile(path.join(winOutput, `${name}.png`), output)
   const imageSet = path.join(iosOutput, `${name}.imageset`)

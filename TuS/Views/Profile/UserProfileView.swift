@@ -100,10 +100,18 @@ struct UserProfileView: View {
                 .font(.headline)
                 .foregroundStyle(Theme.textPrimary)
             HStack(spacing: 10) {
-                archiveMetric("我的吐槽", "\(store.myComplaints.count)", .profileComplaints)
-                archiveMetric("我的收藏", "\(store.favoriteComplaints.count)", .profileFavorites)
-                archiveMetric("我的动态", "\(store.statuses.count)", .profilePosts)
-                archiveMetric("情绪记录", "30 天", .profileHistory)
+                NavigationLink { MyComplaintsView() } label: {
+                    archiveMetric("我的吐槽", "\(store.myComplaints.count)", .profileComplaints)
+                }
+                NavigationLink { FavoriteComplaintsView() } label: {
+                    archiveMetric("我的收藏", "\(store.favoriteComplaints.count)", .profileFavorites)
+                }
+                NavigationLink { MyStatusesArchiveView() } label: {
+                    archiveMetric("我的动态", "\(store.statuses.count)", .profilePosts)
+                }
+                NavigationLink { MoodHistoryArchiveView() } label: {
+                    archiveMetric("情绪记录", "30 天", .profileHistory)
+                }
             }
         }
         .padding(14)
@@ -119,6 +127,40 @@ struct UserProfileView: View {
             Text(title).font(.caption2).foregroundStyle(Theme.textSecondary).lineLimit(1)
         }
         .frame(maxWidth: .infinity)
+    }
+}
+
+private struct MyStatusesArchiveView: View {
+    @EnvironmentObject private var store: MockDataStore
+
+    var body: some View {
+        List(store.statuses.filter { $0.userId == store.currentUser.id }) { status in
+            VStack(alignment: .leading, spacing: 6) {
+                Text(status.content).foregroundStyle(Theme.textPrimary)
+                Text(status.time.formatted(date: .abbreviated, time: .shortened))
+                    .font(.caption).foregroundStyle(Theme.textSecondary)
+            }
+        }
+        .navigationTitle("我的动态")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+private struct MoodHistoryArchiveView: View {
+    @EnvironmentObject private var store: MockDataStore
+
+    var body: some View {
+        List(store.moodTrend.reversed()) { point in
+            HStack {
+                Text(point.date).foregroundStyle(Theme.textSecondary)
+                Spacer()
+                Text(point.mood.map { LittleEnergyCatalog.mood(for: $0).label } ?? "未记录")
+                    .foregroundStyle(Theme.textPrimary)
+            }
+        }
+        .navigationTitle("情绪记录")
+        .navigationBarTitleDisplayMode(.inline)
+        .task { await store.refreshMood() }
     }
 }
 

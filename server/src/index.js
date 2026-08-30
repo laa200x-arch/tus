@@ -68,8 +68,8 @@ async function main() {
   // 版本检查（App 启动时轮询：仅当服务器 current 与客户端已提示版本不同时客户端才弹更新窗）
   app.get('/api/version', (req, res) => {
     res.json({
-      current: '2.1.6',
-      updateMessage: '职场那些事 v2.1.6：小能仔完整形象、消息界面、版本通知与吐槽详情收藏同步更新。',
+      current: '2.1.7',
+      updateMessage: '职场那些事 v2.1.7：旧版服务兼容情绪打卡、档案入口与小能仔表情比例修复。',
       downloadUrl: 'https://github.com/laa200x-arch/tus/releases'
     })
   })

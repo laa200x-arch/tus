@@ -84,6 +84,19 @@ function littleEnergyEmojiPayload(id) {
 
 function compatibleMoodPayload(value) { return normalizeMood(value) }
 
+// Older production servers only understand the six original Emoji moods. Keep
+// the selected 27-mood state in the client, but send the nearest stable legacy
+// value when a server has not been upgraded yet.
+function legacyMoodPayload(value) {
+  const mood = moodById.get(normalizeMood(value))
+  if (mood.legacyEmoji) return mood.legacyEmoji
+  if (mood.score >= 2) return '😄'
+  if (mood.score >= 1) return '🙂'
+  if (mood.score <= -3) return '😡'
+  if (mood.score <= -2) return '😮‍💨'
+  return '😐'
+}
+
 function userAvatarHtml(user, { className = '', moodId } = {}) {
   const anonymous = Boolean(user && user.isAnonymous)
   return littleEnergyAvatarHtml({
@@ -133,7 +146,7 @@ const api = {
   MOODS, OUTFIT_CATALOG, DEFAULT_OUTFIT, LOOKS, normalizeMood, normalizeOutfit, resolveLook, completeAvatarAsset,
   littleEnergyAvatarHtml, littleEnergyEmojiPayload, messageOutfit, applyMoodToday,
   routeDataChange, littleEnergyAssetSources, loadCanvasImage, userAvatarHtml,
-  personalityTitle, compatibleMoodPayload
+  personalityTitle, compatibleMoodPayload, legacyMoodPayload
 }
 if (typeof module !== 'undefined' && module.exports) module.exports = api
 if (root) root.LittleEnergy = api

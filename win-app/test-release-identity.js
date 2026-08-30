@@ -14,6 +14,6 @@ assert.equal(pkg.build.win.icon, 'build/icon.ico', 'Windows installer/executable
 assert.match(main, /icon:\s*appIconPath/, 'Windows window must use the unified icon')
 assert.doesNotMatch(main, /nativeImage\.createEmpty\(\)/, 'Windows tray must not be blank')
 assert.ok(fs.existsSync(icon), 'multi-size Windows icon must exist')
-assert.match(project, /MARKETING_VERSION = 2\.1\.6;/, 'iOS release version must match the current release')
+assert.match(project, /MARKETING_VERSION = 2\.1\.7;/, 'iOS release version must match the current release')
 
 console.log('PASS | Application identity and release metadata are unified')

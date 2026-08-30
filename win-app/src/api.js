@@ -408,7 +408,16 @@ async function fetchMoodToday() {
   return data
 }
 async function checkinMood(payload) {
-  const data = await api('/api/mood/checkin', { method: 'POST', body: payload })
+  let data
+  try {
+    data = await api('/api/mood/checkin', { method: 'POST', body: payload })
+  } catch (error) {
+    const fallback = globalThis.LittleEnergy?.legacyMoodPayload?.(payload && payload.mood)
+    if (error.status !== 400 || !fallback || fallback === payload.mood) throw error
+    data = await api('/api/mood/checkin', { method: 'POST', body: { ...payload, mood: fallback } })
+    // Preserve the chosen Little Energy state until the server is upgraded.
+    data = { ...data, mood: payload.mood, legacyFallback: true }
+  }
   App.state.moodToday = data
   if (App.state.views && App.state.views.onDataChanged) App.state.views.onDataChanged()
   refreshHomeOverview({ force: true }).catch(() => {})

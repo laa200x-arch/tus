@@ -18,7 +18,7 @@
 
 ## 最新版本与下载
 
-- **Windows v2.1.6**：在 [GitHub Releases](https://github.com/laa200x-arch/tus/releases/latest) 下载最新的 `TuS-Setup-2.1.6.exe`。
+- **Windows v2.1.7**：在 [GitHub Releases](https://github.com/laa200x-arch/tus/releases/latest) 下载最新的 `TuS-Setup-2.1.7.exe`。
 - **iOS**：每次推送 `main` 都会触发 [Build IPA](https://github.com/laa200x-arch/tus/actions/workflows/build-ipa.yml)；构建完成后从 Actions 的 Artifacts 下载 IPA。
 
 ### v2.1.5：小能仔、吐槽与全页体验更新
@@ -37,6 +37,11 @@
 - 消息页改为轻紫聊天布局，保留图片、位置、语音等“更多”发送入口；版本更新改为“消息 → 版本通知”由用户主动查看。
 - iOS、Windows、安装包、窗口和托盘统一使用小能仔职场图标；启动页采用动态渐变。
 - 后端源码包含吐槽详情与收藏接口。线上服务需要同步部署 v2.1.6 后，旧服务的 `GET /api/complaints/:id` 404 才会消失。
+
+### v2.1.7：兼容与交互修复
+
+- Windows 情绪打卡在旧服务拒绝 27 情绪 ID 时自动以最接近的旧情绪提交，同时保持当前小能仔状态。
+- 查看主页的“我的档案”四个统计项均改为可进入的完整页面；完整形象的表情贴图缩小并居中。
 
 ---
 

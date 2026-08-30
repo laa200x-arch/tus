@@ -703,7 +703,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1.6;
+				MARKETING_VERSION = 2.1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.tus.tucao;
 				PRODUCT_MODULE_NAME = TuS;
 				PRODUCT_NAME = TuS;
@@ -729,7 +729,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1.6;
+				MARKETING_VERSION = 2.1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.tus.tucao;
 				PRODUCT_MODULE_NAME = TuS;
 				PRODUCT_NAME = TuS;
