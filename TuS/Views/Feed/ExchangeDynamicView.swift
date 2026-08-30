@@ -78,10 +78,10 @@ struct ComplaintTabView: View {
                 }
             }
         }
-        .sheet(isPresented: $showCompose) {
+        .fullScreenCover(isPresented: $showCompose) {
             ComplaintComposeView()
         }
-        .sheet(isPresented: $showSearch) {
+        .fullScreenCover(isPresented: $showSearch) {
             NavigationStack { HomeSearchView() }
         }
         .task {
@@ -150,22 +150,28 @@ struct ComplaintTabView: View {
                     .foregroundStyle(Theme.textSecondary)
             }
             ForEach(Array(store.topics.prefix(10).enumerated()), id: \.element.id) { index, topic in
-                HStack(alignment: .top, spacing: 10) {
-                    Text("\(index + 1)")
-                        .font(.caption)
-                        .bold()
-                        .foregroundStyle(index < 3 ? Theme.secondary : Theme.textSecondary)
-                        .frame(width: 18)
-                    Text(topic.snippet)
-                        .font(.caption)
-                        .foregroundStyle(Theme.textPrimary)
-                        .lineLimit(1)
-                    Spacer()
-                    Text("\(Int(topic.hotScore)) 热度")
-                        .font(.caption2)
-                        .foregroundStyle(Theme.secondary)
+                NavigationLink {
+                    ComplaintDetailView(complaintID: topic.id)
+                } label: {
+                    HStack(alignment: .top, spacing: 10) {
+                        Text("\(index + 1)")
+                            .font(.caption)
+                            .bold()
+                            .foregroundStyle(index < 3 ? Theme.secondary : Theme.textSecondary)
+                            .frame(width: 18)
+                        Text(topic.snippet)
+                            .font(.caption)
+                            .foregroundStyle(Theme.textPrimary)
+                            .lineLimit(1)
+                        Spacer()
+                        Text("\(Int(topic.hotScore)) 热度")
+                            .font(.caption2)
+                            .foregroundStyle(Theme.secondary)
+                        UIAssetImage(.actionChevron, size: 12, tint: Theme.textSecondary)
+                    }
+                    .padding(.vertical, 3)
                 }
-                .padding(.vertical, 3)
+                .buttonStyle(.plain)
             }
         }
         .padding(14)
@@ -216,7 +222,48 @@ struct MyComplaintsView: View {
     }
 }
 
-/// 单条吐槽卡片（点赞 / 共鸣 / 删除）
+/// 收藏吐槽：复用同一份 store.favoriteComplaints，避免形成另一个收藏数据源。
+struct FavoriteComplaintsView: View {
+    @EnvironmentObject private var store: MockDataStore
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                LazyVStack(spacing: 12) {
+                    if store.favoriteComplaints.isEmpty {
+                        EmptyStateView(
+                            icon: "bookmark",
+                            title: "你还没有收藏吐槽",
+                            message: "在广场点收藏，之后可以在这里查看"
+                        )
+                        .padding(.top, 60)
+                    } else {
+                        ForEach(store.favoriteComplaints) { complaint in
+                            ComplaintCardView(complaint: complaint)
+                        }
+                    }
+                }
+                .padding(16)
+            }
+            .background(Theme.bg)
+            .navigationTitle("我的收藏（\(store.favoriteComplaints.count)）")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("关闭") { dismiss() }
+                }
+            }
+            .task {
+                if store.isServerMode {
+                    await store.refreshComplaints()
+                }
+            }
+        }
+    }
+}
+
+/// 单条吐槽卡片（点赞 / 收藏 / 评论 / 删除）
 struct ComplaintCardView: View {
     @EnvironmentObject private var store: MockDataStore
     let complaint: ComplaintModel
@@ -343,11 +390,23 @@ struct ComplaintCardView: View {
             .buttonStyle(.plain)
 
             Button {
-                Task { await store.toggleResonate(complaint) }
+                Task { await store.toggleFavorite(complaint) }
             } label: {
                 HStack(spacing: 4) {
-                    UIAssetImage(.actionComment, size: 17, tint: complaint.resonated ? Theme.primary : Theme.textSecondary)
-                    Text("共鸣 \(complaint.resonanceCount)")
+                    UIAssetImage(.profileFavorites, size: 17, tint: complaint.favorited ? Theme.primary : Theme.textSecondary)
+                    Text("收藏 \(complaint.favoriteCount)")
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                .font(.caption)
+            }
+            .buttonStyle(.plain)
+
+            NavigationLink {
+                ComplaintDetailView(complaintID: complaint.id, focusComments: true)
+            } label: {
+                HStack(spacing: 4) {
+                    UIAssetImage(.actionComment, size: 17, tint: Theme.textSecondary)
+                    Text("评论 \(complaint.commentCount ?? 0)")
                         .foregroundStyle(Theme.textSecondary)
                 }
                 .font(.caption)

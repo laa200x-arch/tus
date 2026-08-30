@@ -1120,6 +1120,46 @@ body {
 .search-hit { cursor: pointer; margin-bottom: 8px; transition: border-color .15s; }
 .search-hit:hover { border-color: #c9b6f2; }
 
+/* 搜索完整页：保持桌面可用的两列信息密度，同时复用移动端参考的热词/分类层级。 */
+.search-page { max-width: 920px; margin: 0 auto; padding: 10px 0 32px; }
+.search-page-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.search-page-field { display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 14px; border: 1px solid var(--divider); background: var(--card); border-radius: 16px; box-shadow: var(--shadow); }
+.search-page-icon { width: 20px; height: 20px; object-fit: contain; opacity: .72; }
+.search-page-field input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--text); font: inherit; font-size: 15px; }
+.search-page-field button { border: 0; border-left: 1px solid var(--divider); background: transparent; color: var(--primary); font: inherit; font-weight: 700; cursor: pointer; padding: 4px 10px 4px 16px; }
+.search-discover { padding-top: 24px; }
+.search-discover-title { color: var(--text); font-size: 17px; font-weight: 750; margin: 22px 0 12px; }
+.search-hot-terms { display: flex; flex-wrap: wrap; gap: 10px; }
+.search-hot-term { border: 1px solid #dfd8ef; background: #fff; color: #6654a5; border-radius: 999px; padding: 8px 14px; font: inherit; cursor: pointer; }
+.search-category-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.search-category { display: flex; align-items: center; gap: 12px; min-height: 84px; padding: 14px; text-align: left; border: 1px solid var(--divider); border-radius: 16px; background: var(--card); box-shadow: var(--shadow); cursor: pointer; }
+.search-category:hover { border-color: #bfa8ff; }
+.search-category span { display: grid; gap: 4px; flex: 1; }
+.search-category b { color: var(--text); font-size: 15px; }
+.search-category small { color: var(--text-2); font-size: 12px; }
+.search-category-asset { width: 36px; height: 36px; object-fit: contain; }
+.search-category-chevron, .search-history-chevron { width: 14px; height: 14px; object-fit: contain; opacity: .6; }
+.search-clear-history { float: right; border: 0; background: transparent; color: var(--text-2); font: inherit; cursor: pointer; }
+.search-history { overflow: hidden; border: 1px solid var(--divider); border-radius: 16px; background: var(--card); }
+.search-history-item { width: 100%; display: flex; align-items: center; gap: 12px; padding: 13px 15px; border: 0; border-bottom: 1px solid var(--divider); background: transparent; color: var(--text); text-align: left; font: inherit; cursor: pointer; }
+.search-history-item:last-child { border-bottom: 0; }
+.search-history-item span { color: var(--text-2); font-size: 12px; }
+.search-history-item .search-history-chevron { margin-left: auto; }
+.search-history-empty { color: var(--text-2); font-size: 13px; padding: 16px; }
+.search-mascot { display: grid; justify-items: center; gap: 10px; color: var(--text-2); font-size: 13px; padding: 30px 0 6px; }
+.little-energy-search { width: 142px; height: 142px; }
+.search-results { padding-top: 22px; }
+.search-result-label { color: var(--text-2); font-size: 13px; margin-bottom: 16px; }
+.search-result-section { color: var(--text); font-weight: 750; margin: 20px 0 10px; }
+.search-result-section span { color: var(--text-2); font-size: 12px; font-weight: 500; }
+.search-hit-button { width: 100%; border: 1px solid var(--divider); text-align: left; font: inherit; background: var(--card); color: var(--text); padding: 14px; }
+.little-energy-search-empty { width: 112px; height: 112px; margin-bottom: 8px; }
+
+@media (max-width: 650px) {
+  .search-category-grid { grid-template-columns: 1fr; }
+  .search-page { padding-inline: 2px; }
+}
+
 @media (max-width: 1000px) {
   .home-grid { flex-direction: column; }
   .home-aside { width: 100%; flex-direction: row; flex-wrap: wrap; }

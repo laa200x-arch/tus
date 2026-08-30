@@ -101,6 +101,7 @@ function renderContentPage(target) {
   if (target.page === 'complaint-feed') return renderComplaint(target.options || {})
   if (target.page === 'complaint-detail') return renderComplaintDetailPage(target.complaintID, target.focusComments)
   if (target.page === 'complaint-compose') return renderComplaintComposePage()
+  if (target.page === 'profile-edit') return renderProfileEditorPage()
   switchView('complaint')
 }
 function bindModalMask() {
@@ -754,7 +755,8 @@ function renderMine() {
     </div>`
 
   v.querySelector('#edit-profile').addEventListener('click', showProfileEditor)
-  v.querySelector('#profile-my-complaints').addEventListener('click', showMyStatuses)
+  v.querySelector('#profile-my-complaints').addEventListener('click', () => switchView('complaint', { mode: 'mine' }))
+  v.querySelector('.profile-asset-item:nth-child(2)').addEventListener('click', () => switchView('complaint', { mode: 'favorites' }))
   v.querySelector('#profile-mood-history').addEventListener('click', showMyStatuses)
   v.querySelector('#tool-mystatus').addEventListener('click', showMyStatuses)
   v.querySelector('#tool-report').addEventListener('click', () => switchView('ai'))
@@ -775,12 +777,19 @@ function renderMine() {
 
 /* 编辑资料（账号信息，不含技能/互换） */
 function showProfileEditor() {
+  pushContentPage({ page: 'profile-edit' })
+}
+
+function renderProfileEditorPage() {
   const u = App.state.user
   const draft = normalizeOutfit(u.littleEnergyOutfit)
   const angles = ['front', 'left', 'back', 'right']
   let angleIndex = 0
-  openModal(`
-    <div class="modal-title">编辑资料</div>
+  setContentPage({ page: 'profile-edit' })
+  const v = document.getElementById('view')
+  v.innerHTML = `
+    <div class="row" style="margin-bottom:16px"><button class="btn btn-outline btn-sm" data-page-back>${uiAssetImg('actionBack', 'inline-action-asset', '')}返回</button><span class="section-title" style="margin:0 0 0 10px">编辑资料</span></div>
+    <section class="card profile-editor-page">
     <div class="form-row">
       <div class="form-field"><label>昵称</label><input id="pe-nickname" value="${esc(u.userName)}"></div>
       <div class="form-field"><label>所在城市</label><input id="pe-location" value="${esc(u.locationLabel || '')}" placeholder="如：广州·天河"></div>
@@ -792,8 +801,10 @@ function showProfileEditor() {
       <div class="turntable-hint">左右拖动查看小能仔 3D 造型</div>
       <div class="outfit-group"><label>整套造型</label><div class="outfit-grid look-grid">${LOOKS.map((look) => `<button type="button" class="outfit-item look-item" data-look-id="${look.id}"><img src="../assets/little-energy/looks/${look.id}-front.png" alt=""><span>${esc(look.label)}</span></button>`).join('')}</div></div>
     </div>
-    <div class="modal-actions"><button class="btn btn-outline" data-close>取消</button><button class="btn btn-primary" id="pe-save">💾 保存</button></div>
-  `, (box) => {
+    <div class="modal-actions"><button class="btn btn-outline" data-page-back>取消</button><button class="btn btn-primary" id="pe-save">💾 保存资料与造型</button></div>
+    </section>`
+  const box = v
+  box.querySelectorAll('[data-page-back]').forEach((button) => button.addEventListener('click', popContentPage))
     const preview = box.querySelector('#pe-outfit-preview')
     const redrawOutfit = () => {
       const look = resolveLook(draft)
@@ -824,10 +835,9 @@ function showProfileEditor() {
       if (!nickname) return toast('昵称不能为空')
       try {
         await updateProfile({ nickname, bio: box.querySelector('#pe-bio').value.trim(), locationLabel: box.querySelector('#pe-location').value.trim(), littleEnergyOutfit: normalizeOutfit(draft) })
-        toast('✅ 资料已保存'); closeModal(); renderMine()
+        toast('✅ 资料与造型已保存'); contentHistory().reset(); switchView('mine')
       } catch (e) { toast(e.message) }
     })
-  })
 }
 
 /* 我的状态历史（原我的动态） */
@@ -1673,9 +1683,12 @@ function bindHome() {
   const v = document.getElementById('view')
   // 搜索框（接入后端全局搜索）
   const s = v.querySelector('#home-search-input')
-  if (s) s.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && s.value.trim()) renderSearch(s.value.trim())
-  })
+  if (s) {
+    s.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') renderSearch(s.value.trim())
+    })
+    s.addEventListener('focus', () => renderSearch(s.value.trim()), { once: true })
+  }
   // 委托处理各内容区的导航（快捷入口 / 模块卡）
   v.addEventListener('click', (e) => {
     const navEl = e.target.closest('[data-nav]')
@@ -1782,53 +1795,122 @@ async function renderHomeTop3() {
   }
 }
 
-// 搜索结果页（设计稿搜索框：同事 / 公司 / 话题）
-async function renderSearch(q) {
+function searchDiscoverHtml() {
+  const hotTerms = ['摸鱼型', '已读不回', '周末加班', '甩锅', '喜欢 PUA']
+  return `
+    <section class="search-discover">
+      <div class="search-discover-title">热门搜索</div>
+      <div class="search-hot-terms">${hotTerms.map((term) => `<button type="button" class="search-hot-term" data-search-term="${esc(term)}">${esc(term)}</button>`).join('')}</div>
+      <div class="search-discover-title">快捷分类</div>
+      <div class="search-category-grid">
+        <button type="button" class="search-category" data-search-category="complaint">${uiAssetImg('featurePlaza', 'search-category-asset', '')}<span><b>吐槽内容</b><small>搜吐槽关键词</small></span>${uiAssetImg('actionChevron', 'search-category-chevron', '')}</button>
+        <button type="button" class="search-category" data-search-category="colleague">${uiAssetImg('featureColleagues', 'search-category-asset', '')}<span><b>同事昵称</b><small>搜同事或称呼</small></span>${uiAssetImg('actionChevron', 'search-category-chevron', '')}</button>
+        <button type="button" class="search-category" data-search-category="company">${uiAssetImg('rowCompany', 'search-category-asset', '')}<span><b>公司名称</b><small>搜公司或部门</small></span>${uiAssetImg('actionChevron', 'search-category-chevron', '')}</button>
+        <button type="button" class="search-category" data-search-category="tag">${uiAssetImg('profileFavorites', 'search-category-asset', '')}<span><b>行为标签</b><small>搜行为或特征</small></span>${uiAssetImg('actionChevron', 'search-category-chevron', '')}</button>
+      </div>
+      <div class="search-discover-title">最近搜索 <button type="button" class="search-clear-history" id="search-clear-history">清空</button></div>
+      <div class="search-history" id="search-history"></div>
+      <div class="search-mascot">${littleEnergyAvatarHtml({ moodId: 'xnz_motivated', outfit: currentOutfit(), className: 'little-energy-search' })}<span>输入关键词，发现同频吐槽</span></div>
+    </section>`
+}
+
+function recentSearches() { return Array.isArray(App.state.searchHistory) ? App.state.searchHistory : [] }
+
+function saveRecentSearch(query) {
+  const normalized = String(query || '').trim()
+  if (!normalized) return
+  App.state.searchHistory = [normalized, ...recentSearches().filter((item) => item !== normalized)].slice(0, 6)
+}
+
+function renderSearchHistory(target) {
+  if (!target) return
+  const items = recentSearches()
+  target.innerHTML = items.length
+    ? items.map((item) => `<button type="button" class="search-history-item" data-search-term="${esc(item)}"><span>最近</span>${esc(item)}${uiAssetImg('actionChevron', 'search-history-chevron', '')}</button>`).join('')
+    : '<div class="search-history-empty">还没有搜索记录</div>'
+}
+
+// 搜索完整页：未输入时展示热词/分类/最近记录，结果与入口保持在同一视图。
+async function renderSearch(q = '') {
+  const query = String(q || '').trim()
   const v = document.getElementById('view')
   v.innerHTML = `
-    <div class="row" style="margin-bottom:12px">
-      <span class="section-title" style="margin:0;flex:1">🔍 搜索「${esc(q)}」</span>
-      <button class="btn btn-outline btn-sm" id="search-back">← 返回</button>
-    </div>
-    <div id="search-body" class="empty">搜索中…</div>`
+    <section class="search-page">
+      <div class="search-page-head">
+        <button class="btn btn-outline btn-sm" id="search-back">${uiAssetImg('actionBack', 'inline-action-asset', '')}关闭</button>
+        <span class="section-title">搜索</span>
+      </div>
+      <form class="search-page-field" id="search-form">
+        ${uiAssetImg('actionSearch', 'search-page-icon', '')}
+        <input id="search-query" value="${esc(query)}" placeholder="搜索吐槽、同事、公司、标签" autocomplete="off" />
+        <button type="submit">搜索</button>
+      </form>
+      <div id="search-body"></div>
+    </section>`
   v.querySelector('#search-back').addEventListener('click', () => switchView('home'))
+  const input = v.querySelector('#search-query')
   const body = v.querySelector('#search-body')
+  v.querySelector('#search-form').addEventListener('submit', (event) => {
+    event.preventDefault()
+    renderSearch(input.value)
+  })
+  const bindDiscover = () => {
+    body.querySelectorAll('[data-search-term]').forEach((button) => button.addEventListener('click', () => renderSearch(button.dataset.searchTerm)))
+    body.querySelectorAll('[data-search-category]').forEach((button) => button.addEventListener('click', () => {
+      const hint = { complaint: '吐槽', colleague: '同事', company: '公司', tag: '标签' }[button.dataset.searchCategory]
+      input.placeholder = `搜索${hint}`
+      input.focus()
+    }))
+    body.querySelector('#search-clear-history')?.addEventListener('click', () => {
+      App.state.searchHistory = []
+      renderSearchHistory(body.querySelector('#search-history'))
+    })
+  }
+  if (!query) {
+    body.innerHTML = searchDiscoverHtml()
+    renderSearchHistory(body.querySelector('#search-history'))
+    bindDiscover()
+    return
+  }
+  body.className = 'search-results'
+  body.innerHTML = '<div class="empty">搜索中…</div>'
   try {
-    const r = await searchAll(q)
+    const r = await searchAll(query)
+    saveRecentSearch(query)
     if (!r.complaints.length && !r.colleagues.length && !r.companies.length) {
-      body.className = 'empty'
-      body.innerHTML = '没有找到与「' + esc(q) + '」相关的内容'
+      body.className = 'search-results empty'
+      body.innerHTML = `${littleEnergyAvatarHtml({ moodId: 'xnz_composed', outfit: currentOutfit(), className: 'little-energy-search-empty' })}<div>没有找到与「${esc(query)}」相关的内容</div><button type="button" class="btn btn-outline btn-sm" id="search-retry">换个词试试</button>`
+      body.querySelector('#search-retry').addEventListener('click', () => { input.focus(); input.select() })
       return
     }
-    body.className = ''
-    let html = ''
+    let html = `<div class="search-result-label">搜索「${esc(query)}」</div>`
     if (r.complaints.length) {
-      html += `<div class="section-title" style="margin:8px 0">💬 吐槽（${r.complaints.length}）</div>` +
-        r.complaints.map((c) => `<div class="card search-hit" data-cid="${c.id}">
+      html += `<div class="search-result-section">吐槽 <span>${r.complaints.length}</span></div>` +
+        r.complaints.map((c) => `<button type="button" class="card search-hit search-hit-button" data-cid="${c.id}">
           <div class="complaint-content">${esc(c.snippet)}</div>
           <div class="card-sub">${c.isAnonymous ? '匿名' : ''}${c.category ? ' · ' + esc(c.category) : ''}${c.sentiment ? ' · ' + esc(c.sentiment) : ''}</div>
-        </div>`).join('')
+        </button>`).join('')
     }
     if (r.colleagues.length) {
-      html += `<div class="section-title" style="margin:8px 0">👥 同事（${r.colleagues.length}）</div>` +
-        r.colleagues.map((c) => `<div class="card search-hit" data-col="${c.id}">
+      html += `<div class="search-result-section">同事 <span>${r.colleagues.length}</span></div>` +
+        r.colleagues.map((c) => `<button type="button" class="card search-hit search-hit-button" data-col="${c.id}">
           <div class="feed-author">${esc(c.name)}</div>
           <div class="card-sub">${esc(c.position || '')}${c.department ? ' · ' + esc(c.department) : ''}</div>
-        </div>`).join('')
+        </button>`).join('')
     }
     if (r.companies.length) {
-      html += `<div class="section-title" style="margin:8px 0">🏢 公司（${r.companies.length}）</div>` +
-        r.companies.map((c) => `<div class="card search-hit" data-com="${c.id}">
+      html += `<div class="search-result-section">公司 <span>${r.companies.length}</span></div>` +
+        r.companies.map((c) => `<button type="button" class="card search-hit search-hit-button" data-com="${c.id}">
           <div class="feed-author">${esc(c.name)}</div>
           <div class="card-sub">${esc(c.industry || '')}</div>
-        </div>`).join('')
+        </button>`).join('')
     }
     body.innerHTML = html
     body.querySelectorAll('[data-cid]').forEach((el) => el.addEventListener('click', () => openComplaintDetail(el.dataset.cid)))
     body.querySelectorAll('[data-col]').forEach((el) => el.addEventListener('click', () => renderColleagueDetail(el.dataset.col)))
     body.querySelectorAll('[data-com]').forEach((el) => el.addEventListener('click', () => renderCompanyProfile ? renderCOSub('profile', { companyId: el.dataset.com }) : switchView('company')))
   } catch (e) {
-    body.className = 'empty'
+    body.className = 'search-results empty'
     body.innerHTML = '搜索失败：' + esc(e.message)
   }
 }

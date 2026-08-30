@@ -10,6 +10,7 @@ struct MineView: View {
     @State private var showProfile = false
     @State private var showCompanyList = false
     @State private var showMyStatuses = false
+    @State private var showFavorites = false
     @State private var showLogoutConfirm = false
     @State private var showAlert = false
     @State private var alertTitle = ""
@@ -47,13 +48,14 @@ struct MineView: View {
                 }
             }
         }
-        .sheet(isPresented: $showEdit) { ProfileEditView() }
-        .sheet(isPresented: $showProfile) { NavigationStack { UserProfileView(user: store.currentUser) } }
-        .sheet(isPresented: $showCompanyList) { CompanyListView() }
-        .sheet(isPresented: $showMyStatuses) { MyComplaintsView() }
-        .sheet(isPresented: $showColleagues) { NavigationStack { ColleagueTabView() } }
-        .sheet(isPresented: $showAI) { NavigationStack { AITabView() } }
-        .sheet(isPresented: $showMood) { MoodCheckinView() }
+        .fullScreenCover(isPresented: $showEdit) { ProfileEditView() }
+        .fullScreenCover(isPresented: $showProfile) { NavigationStack { UserProfileView(user: store.currentUser) } }
+        .fullScreenCover(isPresented: $showCompanyList) { CompanyListView() }
+        .fullScreenCover(isPresented: $showMyStatuses) { MyComplaintsView() }
+        .fullScreenCover(isPresented: $showFavorites) { FavoriteComplaintsView() }
+        .fullScreenCover(isPresented: $showColleagues) { NavigationStack { ColleagueTabView() } }
+        .fullScreenCover(isPresented: $showAI) { NavigationStack { AITabView() } }
+        .fullScreenCover(isPresented: $showMood) { MoodCheckinView() }
         .alert(alertTitle, isPresented: $showAlert) {
             Button("好的", role: .cancel) {}
         } message: {
@@ -131,11 +133,7 @@ struct MineView: View {
                 .foregroundStyle(Theme.textPrimary)
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                 statTile("\(store.myComplaints.count)", "我的吐槽", asset: .profileComplaints, color: Theme.primaryDeep) { showMyStatuses = true }
-                statTile("—", "我的收藏", asset: .profileFavorites, color: Theme.secondary) {
-                    alertTitle = "我的收藏"
-                    alertMessage = "收藏内容会在后续版本集中展示。"
-                    showAlert = true
-                }
+                statTile("\(store.favoriteComplaints.count)", "我的收藏", asset: .profileFavorites, color: Theme.secondary) { showFavorites = true }
                 statTile("\(store.statuses.count)", "我的动态", asset: .profilePosts, color: Theme.primary) { showMyStatuses = true }
                 statTile("30 天", "情绪记录", asset: .profileHistory, color: Theme.secondary) { showAI = true }
             }

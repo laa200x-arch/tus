@@ -1,4 +1,5 @@
 import SwiftUI
+import Foundation
 
 /// 首页重构：单一服务端聚合快照驱动的纵向信息流
 /// 参考图顺序：问候/Hero → 今日情绪卡 → 最新吐槽 → 职场人格
@@ -60,10 +61,11 @@ struct HomeOverviewView: View {
                 ComplaintTabView(initialMode: .mine)
             }
         }
-        .sheet(isPresented: $showCheckin) { MoodCheckinView() }
-        .sheet(isPresented: $showCompose) { ComplaintComposeView() }
-        .sheet(isPresented: $showAI) { NavigationStack { AITabView() } }
-        .sheet(isPresented: $showSearch) { NavigationStack { HomeSearchView() } }
+        // 核心操作都以完整页面进入，避免桌面端与移动端出现只展开半页的中断感。
+        .fullScreenCover(isPresented: $showCheckin) { MoodCheckinView() }
+        .fullScreenCover(isPresented: $showCompose) { ComplaintComposeView() }
+        .fullScreenCover(isPresented: $showAI) { NavigationStack { AITabView() } }
+        .fullScreenCover(isPresented: $showSearch) { NavigationStack { HomeSearchView() } }
     }
 
     // MARK: - 分区状态（缓存 / 骨架 / 失败重试 / 内容）
@@ -178,13 +180,23 @@ struct HomeSearchView: View {
     @State private var results: SearchResults?
     @State private var searching = false
     @State private var failed = false
+    @FocusState private var searchFocused: Bool
+    @AppStorage("home.search.history") private var storedHistory = "[]"
+
+    private let hotTerms = ["摸鱼型", "已读不回", "周末加班", "甩锅", "喜欢 PUA"]
+
+    private var recentSearches: [String] {
+        (try? JSONDecoder().decode([String].self, from: Data(storedHistory.utf8))) ?? []
+    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 searchField
 
-                if failed {
+                if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, results == nil, !searching {
+                    discoverContent
+                } else if failed {
                     Label("搜索失败，请重试", systemImage: "exclamationmark.triangle")
                         .font(.caption)
                         .foregroundStyle(Theme.danger)
@@ -205,20 +217,12 @@ struct HomeSearchView: View {
                         if !results.complaints.isEmpty {
                             sectionTitle("吐槽")
                             ForEach(results.complaints, id: \.id) { hit in
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(hit.content)
-                                        .font(.subheadline)
-                                        .foregroundStyle(Theme.textPrimary)
-                                        .lineLimit(2)
-                                    Text(hit.isAnonymous ? "匿名" : hit.snippet)
-                                        .font(.caption2)
-                                        .foregroundStyle(Theme.textSecondary)
-                                        .lineLimit(1)
+                                NavigationLink {
+                                    ComplaintDetailView(complaintID: hit.id)
+                                } label: {
+                                    searchComplaintRow(hit)
                                 }
-                                .padding(12)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(RoundedRectangle(cornerRadius: 14).fill(Theme.cardBg))
-                                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.divider, lineWidth: 1))
+                                .buttonStyle(.plain)
                             }
                         }
                         if !results.colleagues.isEmpty {
@@ -267,12 +271,6 @@ struct HomeSearchView: View {
                             }
                         }
                     }
-                } else {
-                    Text("输入关键词，搜索吐槽、同事或公司")
-                        .font(.caption)
-                        .foregroundStyle(Theme.textSecondary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 40)
                 }
             }
             .padding(16)
@@ -296,10 +294,12 @@ struct HomeSearchView: View {
                 .autocorrectionDisabled()
                 .submitLabel(.search)
                 .onSubmit { runSearch() }
+                .focused($searchFocused)
             if !query.isEmpty {
                 Button {
                     query = ""
                     results = nil
+                    failed = false
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(Theme.textSecondary)
@@ -321,6 +321,130 @@ struct HomeSearchView: View {
             .padding(.top, 4)
     }
 
+    private var discoverContent: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            discoverTitle("热门搜索")
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(hotTerms, id: \.self) { term in
+                        Button(term) { search(term) }
+                            .font(.caption)
+                            .foregroundStyle(Theme.primary)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .background(Capsule().fill(Theme.cardBg))
+                            .overlay(Capsule().stroke(Theme.divider, lineWidth: 1))
+                    }
+                }
+            }
+
+            discoverTitle("快捷分类")
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                searchCategory(icon: "text.bubble.fill", title: "吐槽内容", subtitle: "搜吐槽关键词")
+                searchCategory(icon: "person.2.fill", title: "同事昵称", subtitle: "搜同事或称呼")
+                searchCategory(icon: "building.2.fill", title: "公司名称", subtitle: "搜公司或部门")
+                searchCategory(icon: "tag.fill", title: "行为标签", subtitle: "搜行为或特征")
+            }
+
+            if !recentSearches.isEmpty {
+                HStack {
+                    discoverTitle("最近搜索")
+                    Spacer()
+                    Button("清空") { storedHistory = "[]" }
+                        .font(.caption)
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                .padding(.top, 2)
+                VStack(spacing: 0) {
+                    ForEach(recentSearches, id: \.self) { term in
+                        Button { search(term) } label: {
+                            HStack {
+                                Image(systemName: "clock")
+                                    .foregroundStyle(Theme.textSecondary)
+                                Text(term)
+                                    .foregroundStyle(Theme.textPrimary)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundStyle(Theme.textSecondary)
+                            }
+                            .font(.subheadline)
+                            .padding(14)
+                        }
+                        .buttonStyle(.plain)
+                        if term != recentSearches.last { Divider() }
+                    }
+                }
+                .background(RoundedRectangle(cornerRadius: 16).fill(Theme.cardBg))
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.divider, lineWidth: 1))
+            }
+
+            VStack(spacing: 8) {
+                LittleEnergyAvatarView(moodID: "xnz_motivated", outfit: store.currentUser.littleEnergyOutfit, size: 132)
+                Text("输入关键词，发现同频吐槽")
+                    .font(.caption)
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+        }
+    }
+
+    private func discoverTitle(_ title: String) -> some View {
+        Text(title)
+            .font(.headline)
+            .foregroundStyle(Theme.textPrimary)
+    }
+
+    private func searchCategory(icon: String, title: String, subtitle: String) -> some View {
+        Button {
+            query = ""
+            results = nil
+            searchFocused = true
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.title3)
+                    .foregroundStyle(Theme.primary)
+                    .frame(width: 34, height: 34)
+                    .background(Circle().fill(Theme.primary.opacity(0.10)))
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(title).font(.subheadline).bold()
+                    Text(subtitle).font(.caption2).foregroundStyle(Theme.textSecondary)
+                }
+                Spacer(minLength: 0)
+            }
+            .foregroundStyle(Theme.textPrimary)
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(RoundedRectangle(cornerRadius: 16).fill(Theme.cardBg))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.divider, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func searchComplaintRow(_ hit: SearchComplaintHit) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(hit.content)
+                .font(.subheadline)
+                .foregroundStyle(Theme.textPrimary)
+                .lineLimit(2)
+            Text(hit.isAnonymous ? "匿名" : hit.snippet)
+                .font(.caption2)
+                .foregroundStyle(Theme.textSecondary)
+                .lineLimit(1)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 14).fill(Theme.cardBg))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.divider, lineWidth: 1))
+    }
+
+    private func search(_ term: String) {
+        query = term
+        runSearch()
+    }
+
     private func runSearch() {
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
@@ -329,6 +453,8 @@ struct HomeSearchView: View {
         Task {
             do {
                 results = try await APIClient.shared.searchAll(query: trimmed)
+                let history = [trimmed] + recentSearches.filter { $0 != trimmed }
+                storedHistory = String(data: (try? JSONEncoder().encode(Array(history.prefix(6)))) ?? Data("[]".utf8), encoding: .utf8) ?? "[]"
             } catch {
                 failed = true
             }

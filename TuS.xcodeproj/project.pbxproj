@@ -63,6 +63,7 @@
 		B00000000000000000000005 /* HomeOverviewStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000106 /* HomeOverviewStoreTests.swift */; };
 		B00000000000000000000006 /* HomeNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000107 /* HomeNavigationTests.swift */; };
 		D00000000000000000000001 /* ComplaintFavoritesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00000000000000000000101 /* ComplaintFavoritesTests.swift */; };
+		D00000000000000000000002 /* ComplaintDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00000000000000000000102 /* ComplaintDetailView.swift */; };
 		C00000000000000000000002 /* UIAssetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000102 /* UIAssetTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -136,6 +137,7 @@
 		B00000000000000000000106 /* HomeOverviewStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeOverviewStoreTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000107 /* HomeNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeNavigationTests.swift; sourceTree = "<group>"; };
 		D00000000000000000000101 /* ComplaintFavoritesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComplaintFavoritesTests.swift; sourceTree = "<group>"; };
+		D00000000000000000000102 /* ComplaintDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComplaintDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -318,6 +320,7 @@
 			isa = PBXGroup;
 			children = (
 				A00000000000000000000111 /* ExchangeDynamicView.swift */,
+				D00000000000000000000102 /* ComplaintDetailView.swift */,
 			);
 			path = Feed;
 			sourceTree = "<group>";
@@ -503,6 +506,7 @@
 				A0000000000000000000000F /* MatchHomeView.swift in Sources */,
 				A00000000000000000000010 /* MatchDetailView.swift in Sources */,
 				A00000000000000000000011 /* ExchangeDynamicView.swift in Sources */,
+				D00000000000000000000002 /* ComplaintDetailView.swift in Sources */,
 				A00000000000000000000012 /* MessageView.swift in Sources */,
 				A00000000000000000000029 /* MiniAppsView.swift in Sources */,
 				A00000000000000000000013 /* MineView.swift in Sources */,

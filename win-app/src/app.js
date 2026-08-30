@@ -5,7 +5,7 @@
 
 const views = App.views
 
-function switchView(name) {
+function switchView(name, options = undefined) {
   if (views.contentHistory) views.contentHistory.reset()
   views.contentPage = null
   App.views.current = name
@@ -29,7 +29,7 @@ function switchView(name) {
     message: views.renderMessage       // 保留旧入口（被抽屉复用）
   }
   const fn = map[name]
-  if (fn) fn()
+  if (fn) fn(options)
 }
 
 function switchTab(name) {
