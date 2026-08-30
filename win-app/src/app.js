@@ -6,6 +6,8 @@
 const views = App.views
 
 function switchView(name) {
+  if (views.contentHistory) views.contentHistory.reset()
+  views.contentPage = null
   App.views.current = name
   document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t.dataset.view === name))
   if (name === 'login') {

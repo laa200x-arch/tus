@@ -32,6 +32,7 @@ const App = {
     complaints: [],          // 吐槽 feed
     topics: [],              // 热搜榜
     myComplaints: [],        // 我的吐槽
+    favoriteComplaints: [],  // 已收藏吐槽
     moodToday: null,         // 今日情绪
     moodTrends: [],          // N 天曲线
     moodSummary: null,       // AI 总结
@@ -356,8 +357,11 @@ async function fetchTags() {
 }
 
 /* ---------- 吐槽广场 ---------- */
-async function fetchFeedComplaints(sort = 'hot', filter = 'recommend') {
-  return api('/api/complaints/feed', { query: { sort, filter } })
+async function fetchFeedComplaints(sort = 'hot', filter = 'recommend', topic = null) {
+  return api('/api/complaints/feed', { query: { sort, filter, topic } })
+}
+async function fetchComplaint(id) {
+  return api('/api/complaints/' + id)
 }
 async function fetchComplaintComments(id) {
   return api('/api/complaints/' + id + '/comments')
@@ -370,6 +374,9 @@ async function deleteComplaintComment(cid, commentId) {
 }
 async function fetchMineComplaints() {
   return api('/api/complaints/mine')
+}
+async function fetchFavoriteComplaints() {
+  return api('/api/complaints/favorites')
 }
 async function fetchTopics() {
   return api('/api/complaints/topics')
@@ -386,6 +393,9 @@ async function deleteComplaint(id) {
 }
 async function toggleLikeComplaint(id) {
   return api('/api/complaints/' + id + '/like', { method: 'POST' })
+}
+async function toggleFavoriteComplaint(id) {
+  return api('/api/complaints/' + id + '/favorite', { method: 'POST' })
 }
 async function toggleResonateComplaint(id) {
   return api('/api/complaints/' + id + '/resonate', { method: 'POST' })
@@ -539,8 +549,8 @@ if (typeof module !== 'undefined' && module.exports) {
     fetchCompanies, addCompany, updateCompany, deleteCompany,
     fetchApps, publishApp, deleteApp, fetchVersion,
     // v2
-    fetchTags, fetchFeedComplaints, fetchMineComplaints, fetchTopics, postComplaint, deleteComplaint,
-    toggleLikeComplaint, toggleResonateComplaint,
+    fetchTags, fetchFeedComplaints, fetchComplaint, fetchMineComplaints, fetchFavoriteComplaints, fetchTopics, postComplaint, deleteComplaint,
+    toggleLikeComplaint, toggleFavoriteComplaint, toggleResonateComplaint,
     fetchComplaintComments, postComplaintComment, deleteComplaintComment,
     fetchMoodToday, checkinMood, fetchMoodTrends, fetchMoodSummary,
     extractTagsAI, getRelationshipSummary, getPersonality,

@@ -69,6 +69,40 @@ function openModal(html, onMount) {
   if (onMount) onMount(box)
 }
 function closeModal() { document.getElementById('modal-mask').classList.add('hidden') }
+
+function contentHistory() {
+  if (!App.views.contentHistory) App.views.contentHistory = ContentPageHistory.createContentPageHistory()
+  return App.views.contentHistory
+}
+
+function setContentPage(target) {
+  const history = contentHistory()
+  const current = history.current()
+  if (!current) history.push(target)
+  else if (current.page === target.page) Object.assign(current, target)
+  App.views.contentPage = target
+}
+
+function pushContentPage(target) {
+  const history = contentHistory()
+  if (!history.current()) history.push(App.views.contentPage || { page: 'tab', tab: App.views.current || 'home' })
+  history.push(target)
+  renderContentPage(target)
+}
+
+function popContentPage() {
+  const target = contentHistory().pop()
+  if (target) return renderContentPage(target)
+  switchView('complaint')
+}
+
+function renderContentPage(target) {
+  if (target.page === 'tab') return switchView(target.tab)
+  if (target.page === 'complaint-feed') return renderComplaint(target.options || {})
+  if (target.page === 'complaint-detail') return renderComplaintDetailPage(target.complaintID, target.focusComments)
+  if (target.page === 'complaint-compose') return renderComplaintComposePage()
+  switchView('complaint')
+}
 function bindModalMask() {
   document.getElementById('modal-mask').addEventListener('click', (e) => {
     if (e.target.id === 'modal-mask') closeModal()
@@ -1842,6 +1876,7 @@ async function renderComplaint(opts = {}) {
   const mode = opts.mode || 'feed'  // feed | mine | topics
   const sort = opts.sort || 'hot'
   const filter = opts.filter || (sort === 'new' ? 'new' : 'recommend')
+  setContentPage({ page: 'complaint-feed', options: { mode, sort, filter } })
   const v = document.getElementById('view')
   v.innerHTML = `
     <div class="row" style="margin-bottom:12px">
@@ -1854,6 +1889,7 @@ async function renderComplaint(opts = {}) {
       <button class="${mode === 'feed' && filter === 'anonymous' ? 'active' : ''}" data-mode="feed" data-filter="anonymous">匿名</button>
       <button class="${mode === 'feed' && filter === 'colleague' ? 'active' : ''}" data-mode="feed" data-filter="colleague">我的同事</button>
       <button class="${mode === 'mine' ? 'active' : ''}" data-mode="mine">我的</button>
+      <button class="${mode === 'favorites' ? 'active' : ''}" data-mode="favorites">收藏</button>
       <button class="${mode === 'topics' ? 'active' : ''}" data-mode="topics">热搜榜</button>
     </div>
     <div id="cp-body"></div>
@@ -1867,12 +1903,17 @@ async function renderComplaint(opts = {}) {
   body.innerHTML = skeletonFeed(3)
   let data
   try {
-    data = mode === 'mine' ? await fetchMineComplaints() : await fetchFeedComplaints(sort, filter)
+    data = mode === 'mine' ? await fetchMineComplaints()
+      : mode === 'favorites' ? await fetchFavoriteComplaints()
+      : await fetchFeedComplaints(sort, filter)
   } catch (e) { body.innerHTML = '<div class="empty">加载失败</div>'; return }
   const list = data.complaints || []
+  if (mode === 'mine') App.state.myComplaints = list
+  else if (mode === 'favorites') App.state.favoriteComplaints = list
+  else App.state.complaints = list
   if (!list.length) {
-    body.innerHTML = `<div class="empty"><div class="empty-icon">🔥</div>${mode === 'mine' ? '你还没有发过吐槽' : '还没有吐槽，去发一条吧'}<br><button class="btn btn-primary btn-sm" style="margin-top:12px" id="cp-empty-compose">立即吐槽</button></div>`
-    body.querySelector('#cp-empty-compose').addEventListener('click', showComplaintCompose)
+    body.innerHTML = `<div class="empty"><div class="empty-icon">🔥</div>${mode === 'mine' ? '你还没有发过吐槽' : mode === 'favorites' ? '你还没有收藏吐槽' : '还没有吐槽，去发一条吧'}<br>${mode === 'favorites' ? '' : '<button class="btn btn-primary btn-sm" style="margin-top:12px" id="cp-empty-compose">立即吐槽</button>'}</div>`
+    body.querySelector('#cp-empty-compose')?.addEventListener('click', showComplaintCompose)
     return
   }
   body.innerHTML = list.map((c) => complaintCardHtml(c)).join('')
@@ -1907,16 +1948,51 @@ async function loadTopics(body) {
 }
 
 async function openComplaintDetail(id) {
-  // 直接复用 feed 数据过滤该 id（无单条接口时）
+  pushContentPage({ page: 'complaint-detail', complaintID: id, focusComments: false })
+}
+
+async function renderComplaintDetailPage(id, focusComments = false) {
+  setContentPage({ page: 'complaint-detail', complaintID: id, focusComments })
+  const v = document.getElementById('view')
+  v.innerHTML = `
+    <div class="row" style="margin-bottom:16px">
+      <button class="btn btn-outline btn-sm" data-page-back>${uiAssetImg('actionBack', 'inline-action-asset', '')}返回</button>
+      <span class="section-title" style="margin:0 0 0 10px">吐槽详情</span>
+    </div>
+    <div id="complaint-detail-body">加载中…</div>`
+  v.querySelector('[data-page-back]').addEventListener('click', popContentPage)
   try {
-    const data = await fetchFeedComplaints('hot')
-    const c = (data.complaints || []).find((x) => String(x.id) === String(id))
-    if (c) {
-      openModal(`<div class="modal-title"><button class="asset-back-button" data-close>${uiAssetImg('actionBack', 'inline-action-asset', '')}</button>吐槽详情</div>${complaintCardHtml(c)}`, (box) => {
-        bindComplaintCardActions(box)
-      })
-    } else toast('该吐槽已被删除')
-  } catch (e) { toast('打开失败：' + e.message) }
+    const data = await fetchComplaint(id)
+    const c = data.complaint
+    if (!c) throw new Error('该吐槽已被删除')
+    const body = v.querySelector('#complaint-detail-body')
+    body.innerHTML = `${complaintCardHtml(c)}<section class="card" style="margin-top:14px"><div class="section-title">评论</div><div id="detail-comment-list" class="cmt-list">加载中…</div><div class="cmt-input-row"><input id="detail-comment-input" placeholder="说点什么…（≤300 字）" maxlength="300"><button class="btn btn-primary btn-sm" id="detail-comment-send">发送</button></div></section>`
+    bindComplaintCardActions(body)
+    await bindDetailComments(body, id, focusComments)
+  } catch (e) {
+    v.querySelector('#complaint-detail-body').innerHTML = `<div class="empty">打开失败：${esc(e.message)}</div>`
+  }
+}
+
+async function bindDetailComments(root, complaintID, focusComments) {
+  const list = root.querySelector('#detail-comment-list')
+  const input = root.querySelector('#detail-comment-input')
+  const send = root.querySelector('#detail-comment-send')
+  const load = async () => {
+    try {
+      const response = await fetchComplaintComments(complaintID)
+      const comments = response.comments || []
+      list.innerHTML = comments.length ? comments.map((comment) => `<div class="cmt-item"><span class="cmt-avatar">${avatarHtml(comment, 'little-energy-comment-avatar')}</span><div class="cmt-body"><div class="cmt-head"><span class="feed-author">${esc(comment.authorName)}</span><span class="card-sub">${fmtTime(comment.time)}</span></div><div class="cmt-text">${esc(comment.content)}</div></div></div>`).join('') : '<div class="empty">还没有评论，来抢沙发～</div>'
+    } catch (error) { list.innerHTML = '<div class="empty">评论加载失败</div>' }
+  }
+  send.addEventListener('click', async () => {
+    const content = input.value.trim()
+    if (!content) return
+    try { await postComplaintComment(complaintID, content); input.value = ''; await load() } catch (error) { toast(error.message) }
+  })
+  input.addEventListener('keydown', (event) => { if (event.key === 'Enter') send.click() })
+  await load()
+  if (focusComments) input.focus()
 }
 
 function complaintCardHtml(c) {
@@ -1925,6 +2001,7 @@ function complaintCardHtml(c) {
     return tag ? `<span class="tag tag-vip">${esc(tag.label)}</span>` : ''
   }).join(' ')
   const cat = c.category ? getDict().colleagueTypes.find((x) => x.id === c.category) : null
+  const mood = c.sentiment ? MOODS.find((item) => item.id === normalizeMood(c.sentiment)) : null
   return `
     <div class="card complaint-card" data-cid="${c.id}">
       <div class="row">
@@ -1934,7 +2011,7 @@ function complaintCardHtml(c) {
             <span class="feed-author">${esc(c.authorName)}</span>
             <span class="card-sub">·</span>
             <span class="feed-time">${fmtTime(c.time)}</span>
-            ${c.sentiment ? `<span class="card-sub">· ${esc(c.sentiment)}</span>` : ''}
+            ${mood ? `<span class="card-sub">· ${esc(mood.label)}</span>` : ''}
             <span class="spacer"></span><button class="cp-more-btn cp-act-btn" data-act="more" title="更多">${uiAssetImg('actionMore', 'cp-action-icon', '')}</button>
           </div>
           ${c.colleagueName ? `<div class="card-sub" style="margin-top:2px">@ ${esc(c.colleagueName)}</div>` : ''}
@@ -1942,12 +2019,11 @@ function complaintCardHtml(c) {
           ${(cat || tagHtml) ? `<div class="row" style="margin-top:8px;flex-wrap:wrap;gap:6px">${cat ? `<span class="tag tag-verified">${cat.emoji} ${esc(cat.label)}</span>` : ''}${tagHtml}</div>` : ''}
         </div>
       </div>
-          <div class="complaint-actions">
-        <span class="cp-resonate-rate ${c.resonanceRate > 0 ? '' : 'dim'}" title="共鸣值 = 共鸣 / (赞+共鸣)">🎯 共鸣值 ${c.resonanceRate || 0}%</span>
+      <div class="complaint-actions">
         <span class="spacer"></span>
         <button class="cp-act-btn ${c.liked ? 'active' : ''}" data-act="like">${uiAssetImg('actionLike', 'cp-action-icon', '')} <span data-lc>${c.likeCount || 0}</span></button>
-        <button class="cp-act-btn ${c.resonated ? 'active' : ''}" data-act="resonate">${uiAssetImg('actionComment', 'cp-action-icon', '')} <span data-rc>${c.resonanceCount || 0}</span> 共鸣</button>
-        <button class="cp-act-btn" data-act="comment">${uiAssetImg('actionComment', 'cp-action-icon', '')} <span data-cc>${c.commentCount || 0}</span></button>
+        <button class="cp-act-btn ${c.favorited ? 'active' : ''}" data-act="favorite">${uiAssetImg('profileFavorites', 'cp-action-icon', '')} <span data-fc>${c.favoriteCount || 0}</span> 收藏</button>
+        <button class="cp-act-btn" data-act="comment">${uiAssetImg('actionComment', 'cp-action-icon', '')} <span data-cc>${c.commentCount || 0}</span> 评论</button>
         <button class="cp-act-btn" data-act="share">${uiAssetImg('actionShare', 'cp-action-icon', '')} 分享</button>
         ${c.userId === (App.state.user ? App.state.user.id : null) ? `<button class="cp-act-btn" data-act="del" title="删除">🗑</button>` : ''}
       </div>
@@ -1966,14 +2042,15 @@ function bindComplaintCardActions(root, opts = {}) {
           btn.classList.toggle('active', r.liked)
           card.querySelector('[data-lc]').textContent = r.likeCount
         } catch (err) { toast(err.message) }
-      } else if (act === 'resonate') {
+      } else if (act === 'favorite') {
         try {
-          const r = await toggleResonateComplaint(cid)
-          btn.classList.toggle('active', r.resonated)
-          card.querySelector('[data-rc]').textContent = r.resonanceCount
+          const r = await toggleFavoriteComplaint(cid)
+          btn.classList.toggle('active', r.favorited)
+          card.querySelector('[data-fc]').textContent = r.favoriteCount
+          reconcileFavoriteComplaint(cid, r.favorited, r.favoriteCount)
         } catch (err) { toast(err.message) }
       } else if (act === 'comment') {
-        showCommentPanel(cid, card)
+        pushContentPage({ page: 'complaint-detail', complaintID: cid, focusComments: true })
       } else if (act === 'share' || act === 'more') {
         const text = card.querySelector('.complaint-content')?.textContent || ''
         if (navigator.share) navigator.share({ title: '职场那些事', text }).catch(() => {})
@@ -1987,7 +2064,23 @@ function bindComplaintCardActions(root, opts = {}) {
         } catch (err) { toast(err.message) }
       }
     }))
+    card.addEventListener('click', (event) => {
+      if (!event.target.closest('.cp-act-btn')) openComplaintDetail(cid)
+    })
   })
+}
+
+function reconcileFavoriteComplaint(id, favorited, favoriteCount) {
+  const update = (complaint) => complaint.id === id ? { ...complaint, favorited, favoriteCount } : complaint
+  App.state.complaints = (App.state.complaints || []).map(update)
+  App.state.myComplaints = (App.state.myComplaints || []).map(update)
+  App.state.favoriteComplaints = (App.state.favoriteComplaints || []).map(update)
+  if (favorited) {
+    const source = [...App.state.complaints, ...App.state.myComplaints].find((complaint) => complaint.id === id)
+    if (source && !App.state.favoriteComplaints.some((complaint) => complaint.id === id)) App.state.favoriteComplaints.unshift(source)
+  } else {
+    App.state.favoriteComplaints = App.state.favoriteComplaints.filter((complaint) => complaint.id !== id)
+  }
 }
 
 // 评论弹窗（设计稿卡片"评论 N"）
@@ -2075,11 +2168,21 @@ function showPublishMenu() {
 
 /* ---------- 快速发布吐槽（带 AI 自动识别） ---------- */
 async function showComplaintCompose() {
+  pushContentPage({ page: 'complaint-compose' })
+}
+
+async function renderComplaintComposePage() {
   await ensureDict()
   const d = getDict()
   const colleagues = App.state.colleagues || []
-  openModal(`
-    <div class="modal-title">✏️ 发吐槽</div>
+  setContentPage({ page: 'complaint-compose' })
+  const v = document.getElementById('view')
+  v.innerHTML = `
+    <div class="row" style="margin-bottom:16px">
+      <button class="btn btn-outline btn-sm" data-page-back>${uiAssetImg('actionBack', 'inline-action-asset', '')}取消</button>
+      <span class="section-title" style="margin:0 0 0 10px">发吐槽</span>
+    </div>
+    <section class="card complaint-compose-page">
     <div class="form-field">
       <label>同事类型</label>
       <select id="cmp-category">${d.colleagueTypes.map((t) => `<option value="${t.id}">${t.emoji} ${esc(t.label)}</option>`).join('')}</select>
@@ -2106,11 +2209,13 @@ async function showComplaintCompose() {
     </div>
     <div class="card-sub" style="color:#f29e4d;margin:8px 0">⚠️ 吐槽请遵守社区规范，请勿泄露真实姓名/公司/严重指控</div>
     <div class="modal-actions">
-      <button class="btn btn-outline" data-close>取消</button>
+      <button class="btn btn-outline" data-page-back>取消</button>
       <button class="btn btn-primary" id="cmp-submit">发布</button>
     </div>
-  `, (box) => {
-    const sel = new Set()
+    </section>`
+  const box = v
+  box.querySelectorAll('[data-page-back]').forEach((button) => button.addEventListener('click', popContentPage))
+  const sel = new Set()
     box.querySelectorAll('#cmp-behavior .pet-chip').forEach((c) => c.addEventListener('click', () => {
       c.classList.toggle('active')
       if (c.classList.contains('active')) sel.add(c.dataset.id); else sel.delete(c.dataset.id)
@@ -2159,14 +2264,15 @@ async function showComplaintCompose() {
       try {
         await postComplaint(payload)
         toast('✅ 已发布')
-        closeModal()
-        if (App.state.views.current === 'complaint' || App.state.views.current === 'home') {
-          if (App.state.views.current === 'complaint') renderComplaint({ mode: 'feed' })
+        if (App.views.current === 'complaint' || App.views.current === 'home') {
+          if (App.views.current === 'complaint') {
+            contentHistory().reset()
+            renderComplaint({ mode: 'feed' })
+          }
           else { await refreshHomeOverview({ force: true }); switchView('home') }
         }
       } catch (err) { toast('发布失败：' + err.message) }
     })
-  })
 }
 
 /* ---------- 同事详情（含关系雷达 + AI 解读） ---------- */
