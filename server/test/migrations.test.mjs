@@ -19,6 +19,7 @@ assert.equal(userColumns.includes('little_energy_outfit'), true)
 assert.equal(userColumns.includes('phone'), true)
 assert.equal(userColumns.includes('avatar_url'), true)
 assert.notEqual(database.prepare("SELECT 1 FROM pragma_index_list('users') WHERE name = 'idx_users_phone'").get(), undefined)
+assert.notEqual(database.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'complaint_favorites'").get(), undefined)
 
 await applyMigrations({
   exec: (sql) => database.exec(sql)

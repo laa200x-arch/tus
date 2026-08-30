@@ -183,7 +183,7 @@ if (aqingToken) {
       }
     })
     const data = responseObject('创建吐槽响应', created, 201)
-    const valid = hasFields(data?.complaint, ['id', 'content', 'likeCount', 'resonanceCount'])
+    const valid = hasFields(data?.complaint, ['id', 'content', 'likeCount', 'favoriteCount', 'favorited', 'resonanceCount'])
     check('创建吐槽', valid, `status=${created.status}`)
     if (valid) complaintId = data.complaint.id
 
@@ -208,12 +208,27 @@ if (aqingToken) {
       const likeData = responseObject('吐槽点赞响应', liked)
       check('点赞吐槽', likeData?.liked === true && Number.isFinite(likeData?.likeCount), `status=${liked.status}`)
 
+      const favorited = await api(`/api/complaints/${complaintId}/favorite`, { method: 'POST', token: aqingToken })
+      const favoriteData = responseObject('吐槽收藏响应', favorited)
+      check('收藏吐槽', favoriteData?.favorited === true && favoriteData?.favoriteCount === 1, `status=${favorited.status}`)
+
+      const detail = await api(`/api/complaints/${complaintId}`, { token: aqingToken })
+      const detailData = responseObject('吐槽详情响应', detail)
+      check('吐槽详情同步收藏状态', detailData?.complaint?.favorited === true && detailData?.complaint?.favoriteCount === 1, `status=${detail.status}`)
+
+      const saved = await api('/api/complaints/favorites', { token: aqingToken })
+      const savedComplaints = responseArray('收藏吐槽列表响应', saved, 'complaints')
+      check('收藏吐槽出现在收藏列表', savedComplaints.some((complaint) => complaint?.id === complaintId))
+
       const resonated = await api(`/api/complaints/${complaintId}/resonate`, { method: 'POST', token: aqingToken })
       const resonanceData = responseObject('吐槽共鸣响应', resonated)
       check('共鸣吐槽', resonanceData?.resonated === true && Number.isFinite(resonanceData?.resonanceCount), `status=${resonated.status}`)
     } else {
       check('吐槽出现在广场', false, '创建响应缺少 complaint 对象')
       check('点赞吐槽', false, '创建响应缺少 complaint id')
+      check('收藏吐槽', false, '创建响应缺少 complaint id')
+      check('吐槽详情同步收藏状态', false, '创建响应缺少 complaint id')
+      check('收藏吐槽出现在收藏列表', false, '创建响应缺少 complaint id')
       check('共鸣吐槽', false, '创建响应缺少 complaint id')
       check('删除吐槽', false, '创建响应缺少 complaint id')
     }
@@ -229,6 +244,9 @@ if (aqingToken) {
   check('创建吐槽', false, '缺少 aqing token')
   check('吐槽出现在广场', false, '缺少 aqing token')
   check('点赞吐槽', false, '缺少 aqing token')
+  check('收藏吐槽', false, '缺少 aqing token')
+  check('吐槽详情同步收藏状态', false, '缺少 aqing token')
+  check('收藏吐槽出现在收藏列表', false, '缺少 aqing token')
   check('共鸣吐槽', false, '缺少 aqing token')
   check('删除吐槽', false, '缺少 aqing token')
 }

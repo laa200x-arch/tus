@@ -168,6 +168,15 @@ CREATE TABLE IF NOT EXISTS complaint_likes (
   UNIQUE (complaint_id, user_id)
 );
 
+-- 收藏（同上，唯一）
+CREATE TABLE IF NOT EXISTS complaint_favorites (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  complaint_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  created_at TEXT NOT NULL,
+  UNIQUE (complaint_id, user_id)
+);
+
 -- 共鸣（同上，唯一）
 CREATE TABLE IF NOT EXISTS complaint_resonances (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -393,6 +402,15 @@ CREATE TABLE IF NOT EXISTS complaint_likes (
   created_at DATETIME NOT NULL,
   UNIQUE KEY uq_complaint_like (complaint_id, user_id),
   KEY idx_like_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS complaint_favorites (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  complaint_id INT NOT NULL,
+  user_id INT NOT NULL,
+  created_at DATETIME NOT NULL,
+  UNIQUE KEY uq_complaint_favorite (complaint_id, user_id),
+  KEY idx_favorite_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS complaint_resonances (

@@ -35,11 +35,14 @@ export function complaintsRouter(db, io) {
   const enrichRow = (row, viewerId) => {
     if (!row) return null
     const likes = db.get('SELECT COUNT(*) AS c FROM complaint_likes WHERE complaint_id = ?', [row.id])
+    const favorites = db.get('SELECT COUNT(*) AS c FROM complaint_favorites WHERE complaint_id = ?', [row.id])
     const resonances = db.get('SELECT COUNT(*) AS c FROM complaint_resonances WHERE complaint_id = ?', [row.id])
     const comments = db.get('SELECT COUNT(*) AS c FROM complaint_comments WHERE complaint_id = ?', [row.id])
     const liked = !!db.get('SELECT 1 FROM complaint_likes WHERE complaint_id = ? AND user_id = ?', [row.id, viewerId])
+    const favorited = !!db.get('SELECT 1 FROM complaint_favorites WHERE complaint_id = ? AND user_id = ?', [row.id, viewerId])
     const resonated = !!db.get('SELECT 1 FROM complaint_resonances WHERE complaint_id = ? AND user_id = ?', [row.id, viewerId])
     const likeCount = Number(likes?.c || 0)
+    const favoriteCount = Number(favorites?.c || 0)
     const resonanceCount = Number(resonances?.c || 0)
     // 共鸣率 = 共鸣数 / (点赞+共鸣)，无互动时为 0（设计稿卡片"共鸣值 %"）
     const resonanceRate = (likeCount + resonanceCount) > 0 ? Math.round((resonanceCount / (likeCount + resonanceCount)) * 100) : 0
@@ -58,11 +61,13 @@ export function complaintsRouter(db, io) {
       sentiment: row.sentiment || null,
       aiExtracted: row.ai_extracted ? JSON.parse(row.ai_extracted) : null,
       likeCount,
+      favoriteCount,
       resonanceCount,
       commentCount: Number(comments?.c || 0),
       resonanceRate,
       hotScore: Number(row.hot_score || 0),
       liked,
+      favorited,
       resonated,
       time: row.created_at
     }
@@ -77,6 +82,7 @@ export function complaintsRouter(db, io) {
   router.get('/complaints/feed', requireAuth, (req, res) => {
     const sort = String(req.query.sort || 'hot')
     const filter = String(req.query.filter || 'recommend')
+    const topic = String(req.query.topic || '').trim().slice(0, 64)
     const limit = Math.min(50, Number(req.query.limit) || 30)
     // 先把 hot_score 重算（简单的"按需"重算：取前 100 条）
     const ids = db.all('SELECT id FROM complaints ORDER BY id DESC LIMIT 200')
@@ -97,6 +103,11 @@ export function complaintsRouter(db, io) {
       where = 'WHERE c.user_id = ?'
       args.push(req.userId)
     }
+    if (topic) {
+      where += `${where ? ' AND' : 'WHERE'} (c.content LIKE ? OR c.category LIKE ? OR c.behavior_tags LIKE ?)`
+      const match = `%${topic}%`
+      args.push(match, match, match)
+    }
     const rows = db.all(`
       SELECT c.*, u.nickname AS author_name, u.avatar_symbol AS author_avatar, u.little_energy_outfit AS author_outfit,
              col.name AS colleague_name
@@ -109,7 +120,8 @@ export function complaintsRouter(db, io) {
     res.json({
       complaints: rows.map((r) => enrichRow(r, req.userId)),
       sort,
-      filter
+      filter,
+      topic: topic || null
     })
   })
 
@@ -124,6 +136,34 @@ export function complaintsRouter(db, io) {
       WHERE c.user_id = ?
       ORDER BY c.id DESC LIMIT 100`, [req.userId])
     res.json({ complaints: rows.map((r) => enrichRow(r, req.userId)) })
+  })
+
+  // ── 已收藏 ──
+  router.get('/complaints/favorites', requireAuth, (req, res) => {
+    const rows = db.all(`
+      SELECT c.*, u.nickname AS author_name, u.avatar_symbol AS author_avatar, u.little_energy_outfit AS author_outfit,
+             col.name AS colleague_name
+      FROM complaint_favorites cf
+      JOIN complaints c ON c.id = cf.complaint_id
+      JOIN users u ON u.id = c.user_id
+      LEFT JOIN colleagues col ON col.id = c.colleague_id
+      WHERE cf.user_id = ?
+      ORDER BY cf.id DESC LIMIT 100`, [req.userId])
+    res.json({ complaints: rows.map((r) => enrichRow(r, req.userId)) })
+  })
+
+  // ── 吐槽详情 ──
+  router.get('/complaints/:id', requireAuth, (req, res) => {
+    const id = Number(req.params.id)
+    const row = db.get(`
+      SELECT c.*, u.nickname AS author_name, u.avatar_symbol AS author_avatar, u.little_energy_outfit AS author_outfit,
+             col.name AS colleague_name
+      FROM complaints c
+      JOIN users u ON u.id = c.user_id
+      LEFT JOIN colleagues col ON col.id = c.colleague_id
+      WHERE c.id = ?`, [id])
+    if (!row) return res.status(404).json({ error: '吐槽不存在' })
+    res.json({ complaint: enrichRow(row, req.userId) })
   })
 
   // ── 发布 ──
@@ -164,6 +204,7 @@ export function complaintsRouter(db, io) {
     const r = db.run('DELETE FROM complaints WHERE id = ? AND user_id = ?', [id, req.userId])
     if (r.changes === 0) return res.status(404).json({ error: '吐槽不存在或无权删除' })
     db.run('DELETE FROM complaint_likes WHERE complaint_id = ?', [id])
+    db.run('DELETE FROM complaint_favorites WHERE complaint_id = ?', [id])
     db.run('DELETE FROM complaint_resonances WHERE complaint_id = ?', [id])
     res.json({ ok: true })
   })
@@ -184,6 +225,23 @@ export function complaintsRouter(db, io) {
     const cnt = db.get('SELECT COUNT(*) AS c FROM complaint_likes WHERE complaint_id = ?', [id])
     db.run('UPDATE complaints SET hot_score = ? WHERE id = ?', [recomputeHotScore(id), id])
     res.json({ liked, likeCount: Number(cnt?.c || 0) })
+  })
+
+  // ── 收藏 toggle ──
+  router.post('/complaints/:id/favorite', requireAuth, (req, res) => {
+    const id = Number(req.params.id)
+    if (!db.get('SELECT 1 FROM complaints WHERE id = ?', [id])) return res.status(404).json({ error: '吐槽不存在' })
+    const existing = db.get('SELECT 1 FROM complaint_favorites WHERE complaint_id = ? AND user_id = ?', [id, req.userId])
+    let favorited
+    if (existing) {
+      db.run('DELETE FROM complaint_favorites WHERE complaint_id = ? AND user_id = ?', [id, req.userId])
+      favorited = false
+    } else {
+      db.run('INSERT INTO complaint_favorites (complaint_id, user_id, created_at) VALUES (?,?,?)', [id, req.userId, now()])
+      favorited = true
+    }
+    const count = db.get('SELECT COUNT(*) AS c FROM complaint_favorites WHERE complaint_id = ?', [id])
+    res.json({ favorited, favoriteCount: Number(count?.c || 0) })
   })
 
   // ── 共鸣 toggle ──

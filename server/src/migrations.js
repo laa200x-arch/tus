@@ -14,6 +14,22 @@ export async function runMigration(db, sql) {
 
 export async function applyMigrations(db, dbDriver) {
   const textType = dbDriver === 'mysql' ? 'TEXT NULL' : 'TEXT'
+  const complaintFavoritesTable = dbDriver === 'mysql'
+    ? `CREATE TABLE IF NOT EXISTS complaint_favorites (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        complaint_id INT NOT NULL,
+        user_id INT NOT NULL,
+        created_at DATETIME NOT NULL,
+        UNIQUE KEY uq_complaint_favorite (complaint_id, user_id),
+        KEY idx_favorite_user (user_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`
+    : `CREATE TABLE IF NOT EXISTS complaint_favorites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        complaint_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        created_at TEXT NOT NULL,
+        UNIQUE (complaint_id, user_id)
+      )`
   const migrations = [
     'ALTER TABLE messages ADD COLUMN media_type TEXT',
     'ALTER TABLE messages ADD COLUMN media_url TEXT',
@@ -28,7 +44,8 @@ export async function applyMigrations(db, dbDriver) {
     'ALTER TABLE colleagues ADD COLUMN workplace_type TEXT',
     'ALTER TABLE colleagues ADD COLUMN risk_level TEXT',
     'ALTER TABLE colleagues ADD COLUMN avatar_url TEXT',
-    'ALTER TABLE colleagues ADD COLUMN quote TEXT'
+    'ALTER TABLE colleagues ADD COLUMN quote TEXT',
+    complaintFavoritesTable
   ]
   for (const sql of migrations) await runMigration(db, sql)
 }
