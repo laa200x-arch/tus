@@ -1,0 +1,46 @@
+name: Release Windows
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'win-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  package-and-release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: win-app/package-lock.json
+
+      - name: Read app version
+        id: version
+        shell: pwsh
+        run: |
+          $version = (Get-Content win-app/package.json -Raw | ConvertFrom-Json).version
+          "value=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Install dependencies
+        working-directory: win-app
+        run: npm ci
+
+      - name: Build NSIS installer
+        working-directory: win-app
+        run: npm run dist
+
+      - name: Publish installer
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: win-v${{ steps.version.outputs.value }}
+          name: 职场那些事 Windows v${{ steps.version.outputs.value }}
+          body: |
+            v${{ steps.version.outputs.value }}：小能仔完整造型、吐槽收藏与详情、全页搜索/资料/发布流程更新。
+          files: win-app/dist/*Setup*.exe
