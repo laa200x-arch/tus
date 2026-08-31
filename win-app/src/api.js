@@ -181,7 +181,7 @@ async function updateProfile({ nickname, bio, locationLabel, avatarUrl, littleEn
   App.state.user = data.user
   const acc = App.state.savedAccounts.find((a) => a.username === data.user.username)
   if (acc) { acc.nickname = data.user.userName; storage.setItem('jiyu.accounts', JSON.stringify(App.state.savedAccounts)) }
-  if (App.state.views && App.state.views.onDataChanged) App.state.views.onDataChanged()
+  if (App.views && App.views.onDataChanged) App.views.onDataChanged()
   refreshHomeOverview({ force: true }).catch(() => {})
 }
 
@@ -304,16 +304,16 @@ function connectSocket() {
     const list = App.state.messages[msg.conversationId] || []
     if (!list.some((m) => m.id === msg.id)) {
       App.state.messages[msg.conversationId] = [...list, normalizeMessage(msg, isMe)]
-      if (App.state.views.onMessage) App.state.views.onMessage(msg.conversationId)
+      if (App.views.onMessage) App.views.onMessage(msg.conversationId)
     }
     if (conv) {
       conv.lastMessageText = msg.text || (msg.mediaType === 'video' ? '[视频]' : msg.mediaType === 'audio' ? '[语音]' : '[图片]')
       conv.lastTime = msg.time
       if (!isMe && App.state.activeConversation !== msg.conversationId) conv.unreadCount = (conv.unreadCount || 0) + 1
-      if (App.state.views.onConversationUpdate) App.state.views.onConversationUpdate()
+      if (App.views.onConversationUpdate) App.views.onConversationUpdate()
       if (!isMe && App.state.activeConversation !== msg.conversationId) {
         // 应用内弹窗（点击跳转会话）
-        if (App.state.views.onNewMessage) App.state.views.onNewMessage(msg, conv)
+        if (App.views.onNewMessage) App.views.onNewMessage(msg, conv)
         // 系统桌面通知
         try { new Notification('职场那些事 · ' + conv.partner.userName + ' 发来消息', { body: msg.text || '[媒体消息]' }) } catch (e) {}
         // 任务栏闪烁提醒（通过 preload 暴露的最小 API，渲染进程无 Node 权限）
@@ -419,7 +419,7 @@ async function checkinMood(payload) {
     data = { ...data, mood: payload.mood, legacyFallback: true }
   }
   App.state.moodToday = data
-  if (App.state.views && App.state.views.onDataChanged) App.state.views.onDataChanged()
+  if (App.views && App.views.onDataChanged) App.views.onDataChanged()
   refreshHomeOverview({ force: true }).catch(() => {})
   return data
 }
@@ -503,7 +503,7 @@ function applyHomeOverview(overview) {
   if (App.state.user && overview.user && String(App.state.user.id) === String(overview.user.id)) {
     App.state.user.littleEnergyOutfit = overview.user.littleEnergyOutfit
   }
-  if (App.state.views && App.state.views.onDataChanged) App.state.views.onDataChanged()
+  if (App.views && App.views.onDataChanged) App.views.onDataChanged()
   return overview
 }
 

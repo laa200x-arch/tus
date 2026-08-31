@@ -1,5 +1,5 @@
 // 职场那些事 Windows 桌面版 - Electron 主进程
-const { app, BrowserWindow, Notification, shell, ipcMain, dialog, Tray, Menu, nativeImage, nativeTheme } = require('electron')
+const { app, BrowserWindow, Notification, shell, ipcMain, Tray, Menu, nativeImage, nativeTheme } = require('electron')
 const path = require('path')
 
 // 强制浅色模式：应用仅设计浅色 UI，禁用系统暗黑模式反转（黑块/灰遮罩根因）
@@ -37,26 +37,11 @@ function createWindow() {
     }
   })
 
-  // 关闭窗口：先确认，确认后最小化到托盘（缩小窗口），再次确认才真正退出
+  // 关闭窗口：由渲染进程展示符合产品设计的确认弹窗。
   mainWindow.on('close', (e) => {
     if (!global.__jiyuQuitting) {
       e.preventDefault()
-      const choice = dialog.showMessageBoxSync(mainWindow, {
-        type: 'question',
-        title: '退出职场那些事',
-        message: '确定要退出职场那些事吗？',
-        detail: '选择「退出」将完全退出应用；选择「最小化到托盘」将继续在后台接收消息。',
-        buttons: ['退出应用', '最小化到托盘', '取消'],
-        defaultId: 1,
-        cancelId: 2
-      })
-      if (choice === 0) {
-        global.__jiyuQuitting = true
-        app.quit()
-      } else if (choice === 1) {
-        mainWindow.hide()
-        createTray()
-      }
+      mainWindow.webContents.send('tus:request-close')
     }
   })
 
@@ -75,6 +60,20 @@ function createWindow() {
     mainWindow = null
   })
 }
+
+ipcMain.handle('tus:hide-to-tray', () => {
+  if (mainWindow) {
+    mainWindow.hide()
+    createTray()
+  }
+  return true
+})
+
+ipcMain.handle('tus:quit-app', () => {
+  global.__jiyuQuitting = true
+  app.quit()
+  return true
+})
 
 // 系统托盘（缩小窗口后驻留，继续接收消息）
 function createTray() {

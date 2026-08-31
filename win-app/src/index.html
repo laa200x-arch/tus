@@ -119,6 +119,21 @@
   <div id="modal-mask" class="modal-mask hidden">
     <div id="modal-box" class="modal-box"></div>
   </div>
+  <div id="exit-confirm-modal" class="exit-confirm-mask hidden" role="dialog" aria-modal="true" aria-labelledby="exit-confirm-title">
+    <section class="exit-confirm-card">
+      <button id="exit-confirm-close" class="exit-confirm-close" type="button" aria-label="关闭"><img src="../assets/branding/exit-confirm-close.png" alt=""></button>
+      <div class="exit-confirm-hero"><img src="../assets/branding/exit-confirm-mascot.png" alt="挥手告别的小能仔"></div>
+      <div class="exit-confirm-copy">
+        <h2 id="exit-confirm-title">退出职场那些事？</h2>
+        <p>你可以直接退出应用，也可以最小化到托盘，继续接收消息通知。</p>
+      </div>
+      <div class="exit-confirm-actions">
+        <button id="exit-confirm-tray" class="exit-confirm-primary" type="button"><img src="../assets/branding/exit-confirm-tray.png" alt="">最小化到托盘</button>
+        <button id="exit-confirm-quit" class="exit-confirm-secondary" type="button"><img src="../assets/branding/exit-confirm-quit.png" alt="">退出应用</button>
+        <button id="exit-confirm-cancel" class="exit-confirm-cancel" type="button">取消</button>
+      </div>
+    </section>
+  </div>
   <div id="toast" class="toast hidden"></div>
 
   <script src="../node_modules/socket.io-client/dist/socket.io.min.js"></script>

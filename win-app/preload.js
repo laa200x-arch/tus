@@ -4,5 +4,12 @@ const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('jiyu', {
   // 新消息时触发主进程任务栏闪烁
-  flash: () => ipcRenderer.send('flash')
+  flash: () => ipcRenderer.send('flash'),
+  onRequestClose: (listener) => {
+    const handler = () => listener()
+    ipcRenderer.on('tus:request-close', handler)
+    return () => ipcRenderer.removeListener('tus:request-close', handler)
+  },
+  hideToTray: () => ipcRenderer.invoke('tus:hide-to-tray'),
+  quitApp: () => ipcRenderer.invoke('tus:quit-app')
 })

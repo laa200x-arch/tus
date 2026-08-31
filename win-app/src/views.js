@@ -1484,7 +1484,7 @@ App.views = {
   onConversationUpdate: () => renderConvoList(),
   onNewMessage: showNewMessagePopup,
   onDataChanged: () => {
-    routeDataChange(App.state.views.current, {
+    routeDataChange(App.views.current, {
       status: renderStatus, colleagues: renderColleagues, home: syncHomeMood, mine: renderMine
     })
   }
@@ -2193,7 +2193,7 @@ function bindComplaintCardActions(root, opts = {}) {
         try {
           await deleteComplaint(cid)
           toast('已删除')
-          renderComplaint({ mode: App.state.views.current === 'complaint' ? 'mine' : 'feed' })
+          renderComplaint({ mode: App.views.current === 'complaint' ? 'mine' : 'feed' })
         } catch (err) { toast(err.message) }
       }
     }))
@@ -3147,8 +3147,8 @@ async function renderMoodCheckin() {
         await checkinMood({ mood: chosenMood, stressSources: [...sources], note: box.querySelector('#mc-note').value.trim() })
         toast('✅ 已保存')
         closeModal()
-        if (App.state.views.current === 'home') loadHome()
-        else if (App.state.views.current === 'ai') renderAISub('trends')
+        if (App.views.current === 'home') loadHome()
+        else if (App.views.current === 'ai') renderAISub('trends')
       } catch (err) { toast('保存失败：' + err.message) }
     })
   })

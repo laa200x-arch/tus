@@ -36,6 +36,23 @@ function switchTab(name) {
   switchView(name)
 }
 
+function bindExitConfirmation() {
+  const modal = document.getElementById('exit-confirm-modal')
+  if (!modal) return
+  const close = () => modal.classList.add('hidden')
+  const desktop = window.jiyu
+  if (!desktop || !desktop.onRequestClose) return
+  desktop.onRequestClose(() => modal.classList.remove('hidden'))
+  modal.querySelector('#exit-confirm-close').addEventListener('click', close)
+  modal.querySelector('#exit-confirm-cancel').addEventListener('click', close)
+  modal.addEventListener('click', (event) => { if (event.target === modal) close() })
+  modal.querySelector('#exit-confirm-tray').addEventListener('click', async () => {
+    await desktop.hideToTray()
+    close()
+  })
+  modal.querySelector('#exit-confirm-quit').addEventListener('click', () => desktop.quitApp())
+}
+
 /* ---------- 登录页事件 ---------- */
 function bindLogin() {
   let isRegister = false
@@ -314,6 +331,7 @@ async function bootstrap() {
   bindTabs()
   bindModalMask()
   bindGlobalDelegates()
+  bindExitConfirmation()
   // 请求桌面通知权限（消息推送）
   if ('Notification' in window && Notification.permission === 'default') {
     try { Notification.requestPermission() } catch (e) { /* ignore */ }
