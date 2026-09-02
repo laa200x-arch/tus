@@ -10,7 +10,7 @@ const expectedIcons = [
   'ui_brand_tus',
   'ui_nav_home', 'ui_nav_plaza', 'ui_nav_publish', 'ui_nav_messages', 'ui_nav_profile',
   'ui_action_search', 'ui_action_back', 'ui_action_more', 'ui_action_chevron',
-  'ui_action_like', 'ui_action_comment', 'ui_action_share', 'ui_action_send', 'ui_action_add',
+  'ui_action_like', 'ui_action_view', 'ui_action_comment', 'ui_action_share', 'ui_action_send', 'ui_action_add',
   'ui_feature_checkin', 'ui_feature_plaza', 'ui_feature_my_complaints', 'ui_feature_colleagues',
   'ui_publish_complaint', 'ui_publish_dynamic', 'ui_publish_mood', 'ui_publish_colleague',
   'ui_message_interaction', 'ui_message_system', 'ui_message_ai', 'ui_message_update',
@@ -47,12 +47,12 @@ function validateSchema(manifest) {
     manifest.reference.sha256,
     'design reference hash changed'
   )
-  assert.equal(manifest.icons.length, 39)
+  assert.equal(manifest.icons.length, 40)
   assert.equal(manifest.backgrounds.length, 2)
 
   const iconNames = manifest.icons.map((item) => item.name)
   const backgroundNames = manifest.backgrounds.map((item) => item.name)
-  assert.equal(new Set(iconNames).size, 39)
+  assert.equal(new Set(iconNames).size, 40)
   assert.equal(new Set(backgroundNames).size, 2)
   assert.deepEqual([...iconNames].sort(), [...expectedIcons].sort())
   assert.deepEqual([...backgroundNames].sort(), [...expectedBackgrounds].sort())
@@ -172,7 +172,7 @@ async function main() {
   validateAccessors(manifest)
 
   if (process.argv.includes('--schema-only')) {
-    console.log('PASS | 39 icons / 2 backgrounds / 0 duplicate names')
+    console.log('PASS | 40 icons / 2 backgrounds / 0 duplicate names')
     return
   }
 

@@ -232,6 +232,8 @@ struct ComplaintModel: Codable, Identifiable, Hashable {
     var likeCount: Int
     /// 收藏字段在旧版服务端中不存在，解码时默认成未收藏 / 0。
     var favoriteCount: Int = 0
+    /// 浏览人数：同一登录用户反复打开同一帖子只计一次，旧服务响应缺失时默认 0。
+    var viewCount: Int = 0
     var resonanceCount: Int
     var hotScore: Double
     var liked: Bool
@@ -245,7 +247,7 @@ struct ComplaintModel: Codable, Identifiable, Hashable {
     private enum CodingKeys: String, CodingKey {
         case id, userId, authorName, avatarSymbol, littleEnergyOutfit, isAnonymous, content
         case colleagueId, colleagueName, category, behaviorTags, sentiment, aiExtracted
-        case likeCount, favoriteCount, resonanceCount, hotScore, liked, favorited, resonated
+        case likeCount, favoriteCount, viewCount, resonanceCount, hotScore, liked, favorited, resonated
         case commentCount, resonanceRate, time
     }
 
@@ -266,6 +268,7 @@ struct ComplaintModel: Codable, Identifiable, Hashable {
         aiExtracted = try container.decodeIfPresent(AIExtracted.self, forKey: .aiExtracted)
         likeCount = try container.decode(Int.self, forKey: .likeCount)
         favoriteCount = try container.decodeIfPresent(Int.self, forKey: .favoriteCount) ?? 0
+        viewCount = try container.decodeIfPresent(Int.self, forKey: .viewCount) ?? 0
         resonanceCount = try container.decode(Int.self, forKey: .resonanceCount)
         hotScore = try container.decode(Double.self, forKey: .hotScore)
         liked = try container.decode(Bool.self, forKey: .liked)
@@ -292,6 +295,7 @@ struct ComplaintModel: Codable, Identifiable, Hashable {
         aiExtracted: AIExtracted?,
         likeCount: Int,
         favoriteCount: Int = 0,
+        viewCount: Int = 0,
         resonanceCount: Int,
         hotScore: Double,
         liked: Bool,
@@ -316,6 +320,7 @@ struct ComplaintModel: Codable, Identifiable, Hashable {
         self.aiExtracted = aiExtracted
         self.likeCount = likeCount
         self.favoriteCount = favoriteCount
+        self.viewCount = viewCount
         self.resonanceCount = resonanceCount
         self.hotScore = hotScore
         self.liked = liked

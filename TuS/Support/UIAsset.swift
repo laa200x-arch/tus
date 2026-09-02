@@ -12,6 +12,7 @@ enum UIAsset: String, CaseIterable {
     case actionMore = "ui_action_more"
     case actionChevron = "ui_action_chevron"
     case actionLike = "ui_action_like"
+    case actionView = "ui_action_view"
     case actionComment = "ui_action_comment"
     case actionShare = "ui_action_share"
     case actionSend = "ui_action_send"

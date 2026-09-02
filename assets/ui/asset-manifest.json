@@ -262,6 +262,28 @@
       "color": "#747B96"
     },
     {
+      "name": "ui_action_view",
+      "category": "action",
+      "method": "library",
+      "group": "library",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "screens": [
+        "square",
+        "complaint-detail"
+      ],
+      "iosAsset": "ui_action_view",
+      "windowsPath": "icons/ui_action_view.png",
+      "canonicalPath": "assets/ui/icons/ui_action_view.png",
+      "consumers": [
+        "TuS/Views/Feed/ExchangeDynamicView.swift",
+        "win-app/src/views.js"
+      ],
+      "iconifyName": "eye",
+      "color": "#747B96"
+    },
+    {
       "name": "ui_action_comment",
       "category": "action",
       "method": "library",

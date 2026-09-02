@@ -81,6 +81,20 @@ try {
   assert.equal(detail.data.complaint?.id, complaintId)
   assert.equal(detail.data.complaint?.favorited, true)
   assert.equal(detail.data.complaint?.favoriteCount, 1)
+  assert.equal(detail.data.complaint?.viewCount, 1, 'first authenticated detail view counts one viewer')
+
+  const repeatedDetail = await request(`/api/complaints/${complaintId}`, { token })
+  assert.equal(repeatedDetail.status, 200)
+  assert.equal(repeatedDetail.data.complaint?.viewCount, 1, 'the same viewer is counted once')
+
+  const secondLogin = await request('/api/auth/login', {
+    method: 'POST',
+    body: { username: 'mili', password: '123456' }
+  })
+  assert.equal(secondLogin.status, 200)
+  const secondDetail = await request(`/api/complaints/${complaintId}`, { token: secondLogin.data.token })
+  assert.equal(secondDetail.status, 200)
+  assert.equal(secondDetail.data.complaint?.viewCount, 2, 'a different authenticated viewer increments the people count')
 
   const saved = await request('/api/complaints/favorites', { token })
   assert.equal(saved.status, 200)

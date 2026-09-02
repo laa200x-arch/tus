@@ -36,6 +36,7 @@ export function complaintsRouter(db, io) {
     if (!row) return null
     const likes = db.get('SELECT COUNT(*) AS c FROM complaint_likes WHERE complaint_id = ?', [row.id])
     const favorites = db.get('SELECT COUNT(*) AS c FROM complaint_favorites WHERE complaint_id = ?', [row.id])
+    const views = db.get('SELECT COUNT(*) AS c FROM complaint_views WHERE complaint_id = ?', [row.id])
     const resonances = db.get('SELECT COUNT(*) AS c FROM complaint_resonances WHERE complaint_id = ?', [row.id])
     const comments = db.get('SELECT COUNT(*) AS c FROM complaint_comments WHERE complaint_id = ?', [row.id])
     const liked = !!db.get('SELECT 1 FROM complaint_likes WHERE complaint_id = ? AND user_id = ?', [row.id, viewerId])
@@ -62,6 +63,7 @@ export function complaintsRouter(db, io) {
       aiExtracted: row.ai_extracted ? JSON.parse(row.ai_extracted) : null,
       likeCount,
       favoriteCount,
+      viewCount: Number(views?.c || 0),
       resonanceCount,
       commentCount: Number(comments?.c || 0),
       resonanceRate,
@@ -163,6 +165,9 @@ export function complaintsRouter(db, io) {
       LEFT JOIN colleagues col ON col.id = c.colleague_id
       WHERE c.id = ?`, [id])
     if (!row) return res.status(404).json({ error: '吐槽不存在' })
+    // 每位登录用户对同一帖子仅记录一次浏览，详情返回的数量即浏览人数。
+    const viewed = db.get('SELECT 1 FROM complaint_views WHERE complaint_id = ? AND user_id = ?', [id, req.userId])
+    if (!viewed) db.run('INSERT INTO complaint_views (complaint_id, user_id, created_at) VALUES (?,?,?)', [id, req.userId, now()])
     res.json({ complaint: enrichRow(row, req.userId) })
   })
 
@@ -205,6 +210,7 @@ export function complaintsRouter(db, io) {
     if (r.changes === 0) return res.status(404).json({ error: '吐槽不存在或无权删除' })
     db.run('DELETE FROM complaint_likes WHERE complaint_id = ?', [id])
     db.run('DELETE FROM complaint_favorites WHERE complaint_id = ?', [id])
+    db.run('DELETE FROM complaint_views WHERE complaint_id = ?', [id])
     db.run('DELETE FROM complaint_resonances WHERE complaint_id = ?', [id])
     res.json({ ok: true })
   })

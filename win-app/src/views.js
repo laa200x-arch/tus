@@ -2156,6 +2156,7 @@ function complaintCardHtml(c) {
         <span class="spacer"></span>
         <button class="cp-act-btn ${c.liked ? 'active' : ''}" data-act="like">${uiAssetImg('actionLike', 'cp-action-icon', '')} <span data-lc>${c.likeCount || 0}</span></button>
         <button class="cp-act-btn ${c.favorited ? 'active' : ''}" data-act="favorite">${uiAssetImg('profileFavorites', 'cp-action-icon', '')} <span data-fc>${c.favoriteCount || 0}</span> 收藏</button>
+        <span class="cp-act-btn cp-view-count" title="浏览人数">${uiAssetImg('actionView', 'cp-action-icon', '')} <span data-vc>${c.viewCount || 0}</span></span>
         <button class="cp-act-btn" data-act="comment">${uiAssetImg('actionComment', 'cp-action-icon', '')} <span data-cc>${c.commentCount || 0}</span> 评论</button>
         <button class="cp-act-btn" data-act="share">${uiAssetImg('actionShare', 'cp-action-icon', '')} 分享</button>
         ${c.userId === (App.state.user ? App.state.user.id : null) ? `<button class="cp-act-btn" data-act="del" title="删除">🗑</button>` : ''}

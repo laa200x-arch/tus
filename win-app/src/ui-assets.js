@@ -12,6 +12,7 @@ const UI_ASSET = Object.freeze({
   actionMore: 'icons/ui_action_more.png',
   actionChevron: 'icons/ui_action_chevron.png',
   actionLike: 'icons/ui_action_like.png',
+  actionView: 'icons/ui_action_view.png',
   actionComment: 'icons/ui_action_comment.png',
   actionShare: 'icons/ui_action_share.png',
   actionSend: 'icons/ui_action_send.png',

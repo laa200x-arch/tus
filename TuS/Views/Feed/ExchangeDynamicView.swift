@@ -401,6 +401,13 @@ struct ComplaintCardView: View {
             }
             .buttonStyle(.plain)
 
+            HStack(spacing: 4) {
+                UIAssetImage(.actionView, size: 17, tint: Theme.textSecondary)
+                Text("\(complaint.viewCount)")
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            .font(.caption)
+
             NavigationLink {
                 ComplaintDetailView(complaintID: complaint.id, focusComments: true)
             } label: {
